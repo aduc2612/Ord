@@ -57,7 +57,7 @@ Do not install new libraries without approval.
 
 ## Architecture
 
-Use this folder structure:
+Use this folder structure (all of those folders should be put inside src/):
 
 ```
 app/
@@ -112,6 +112,8 @@ Never expose secret keys here.
 
 ## UI Rules
 
+Use SafeAreaView from react-native-safe-area-context for every screen, modal, and everywhere needed for safety
+
 For any UI task:
 
 - Replicate the provided design exactly.
@@ -122,10 +124,12 @@ For any UI task:
 
 ## Styling Rules
 
-Use `StyleSheet.create` for all styles. Do not use NativeWind or
-className-based styling.
+Use `StyleSheet.create` for all styles (should be defined outside components). Do not use NativeWind or className-based styling.
+Avoid using borders as much as possible, instead use different surface colors and/or shadows.
+Basic styles should be defined in `constants/theme.ts` and adapts to system theme. Avoid using custom styles in different files unless explicitly asked / necessary.
 
 Refer to `constants/theme.ts` for colors, spacing, typography, border radii, and basic component styles.
+Styles have to follow current system theme.
 Do not hardcode values inline.
 Use `constants/ThemeExampleStylesheet.tsx` as a reference if you need.
 

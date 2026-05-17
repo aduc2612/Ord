@@ -79,80 +79,80 @@ export const colors = {
 export const typography = {
   displayLarge: {
     fontSize: 57,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     lineHeight: 64,
   },
   displayMedium: {
     fontSize: 45,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     lineHeight: 52,
   },
   displaySmall: {
     fontSize: 36,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     lineHeight: 44,
   },
   headlineLarge: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 40,
   },
   headlineMedium: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 36,
   },
   headlineSmall: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 32,
   },
   titleLarge: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 28,
   },
   titleMedium: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 24,
   },
   titleSmall: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 20,
   },
   labelLarge: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 20,
   },
   labelMedium: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 16,
   },
   labelSmall: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     lineHeight: 16,
   },
   bodyLarge: {
     fontSize: 16,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     lineHeight: 24,
   },
   bodyMedium: {
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     lineHeight: 20,
   },
   bodySmall: {
     fontSize: 12,
-    fontWeight: '400',
+    fontWeight: '400' as const,
     lineHeight: 16,
   },
-};
+} as const
 
 // Spacing scale
 export const spacing = {
@@ -226,7 +226,7 @@ export const componentStyles = {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     fontSize: 16,
-    borderWidth: 1,
+    ...shadows.sm,
   },
   modal: {
     borderTopLeftRadius: borderRadius.round,
