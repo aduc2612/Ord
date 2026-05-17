@@ -45,7 +45,7 @@ export default function HomeScreen() {
       <Text style={styles.title}>Welcome!</Text>
       <View style={styles.profileContainer}>
         <Text style={styles.label}>Profile ID</Text>
-        <Text style={styles.value}>{(profile as Record<string, string> | null)?.id ?? 'N/A'}</Text>
+        <Text style={styles.value}>{profile?.id ?? 'N/A'}</Text>
       </View>
       <SignOutButton />
     </SafeAreaView>

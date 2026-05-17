@@ -85,6 +85,8 @@ store/
 types/
 
 assets/
+
+providers/
 ```
 
 **app/** is for routes and screens only. Screens compose components and
@@ -124,14 +126,40 @@ For any UI task:
 
 ## Styling Rules
 
-Use `StyleSheet.create` for all styles (should be defined outside components). Do not use NativeWind or className-based styling.
+Use `StyleSheet.create` for all styles. Do not use NativeWind or className-based styling.
 Avoid using borders as much as possible, instead use different surface colors and/or shadows.
-Basic styles should be defined in `constants/theme.ts` and adapts to system theme. Avoid using custom styles in different files unless explicitly asked / necessary.
 
-Refer to `constants/theme.ts` for colors, spacing, typography, border radii, and basic component styles.
-Styles have to follow current system theme.
-Do not hardcode values inline.
-Use `constants/ThemeExampleStylesheet.tsx` as a reference if you need.
+Static base tokens (colors, spacing, typography, border radii, shadows) are defined in `constants/theme.ts` and adapt to system theme via `createTheme(isDark)`.
+
+For component styles that depend on theme colors or values, use a **theme-aware style factory** pattern:
+
+1. **Factory function (preferred):** Define a `createStyles(theme)` function outside the component that returns `StyleSheet.create(...)`. Call it inside the component with the current theme.
+
+   ```ts
+   function createStyles(theme: Theme) {
+     return StyleSheet.create({
+       container: {
+         backgroundColor: theme.colors.background,
+         padding: spacing.lg,
+       },
+     });
+   }
+
+   export default function MyComponent() {
+     const theme = useTheme();
+     const styles = createStyles(theme);
+     // ...
+   }
+   ```
+
+2. **useMemo alternative:** Use `useMemo` with `theme` in the dependency array to create styles outside render logic but regenerate on theme change.
+
+   ```ts
+   const styles = useMemo(() => StyleSheet.create({ ... }), [theme]);
+   ```
+
+Do not hardcode values inline. Always reference tokens from `constants/theme.ts` or the theme object.
+Refer to `constants/ThemeExampleStylesheet.tsx` as a reference if you need.
 
 ## Image Rule
 

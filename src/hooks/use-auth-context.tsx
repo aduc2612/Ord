@@ -1,11 +1,5 @@
 import { createContext, useContext } from 'react'
-
-export type AuthData = {
-  claims: Record<string, unknown> | null | undefined
-  profile: Record<string, unknown> | null | undefined
-  isLoading: boolean
-  isLoggedIn: boolean
-}
+import type { AuthData } from '@/types/auth'
 
 export const AuthContext = createContext<AuthData>({
   claims: undefined,

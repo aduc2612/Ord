@@ -35,6 +35,10 @@ function createStyles(theme: Theme) {
     buttonWrapper: {
       marginTop: spacing.md,
     },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
   })
 }
 
@@ -44,7 +48,7 @@ export default function LoginScreen() {
   const isDark = useColorScheme() === 'dark'
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
         <Image

@@ -2,10 +2,11 @@ import { AuthContext } from '@/hooks/use-auth-context'
 import { supabase } from '@/lib/supabase'
 import { PropsWithChildren, useEffect, useState } from 'react'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import type { Profile } from '@/types/auth'
 
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [claims, setClaims] = useState<Record<string, unknown> | null | undefined>()
-  const [profile, setProfile] = useState<Record<string, unknown> | null | undefined>()
+  const [profile, setProfile] = useState<Profile | null | undefined>()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -41,26 +42,44 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }, [])
 
   useEffect(() => {
+    let isActive = true
+
     const fetchProfile = async () => {
+      if (!claims?.sub) {
+        setProfile(null)
+        setIsLoading(false)
+        return
+      }
+
       setIsLoading(true)
 
-      if (claims) {
-        const { data } = await supabase
+      try {
+        const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', claims.sub)
           .single()
 
-        setProfile(data)
-      } else {
-        setProfile(null)
+        if (error) {
+          console.error('Error fetching profile:', error)
+          if (isActive) setProfile(null)
+        } else if (isActive) {
+          setProfile(data)
+        }
+      } catch (err) {
+        console.error('Profile fetch exception:', err)
+        if (isActive) setProfile(null)
       }
 
-      setIsLoading(false)
+      if (isActive) setIsLoading(false)
     }
 
     fetchProfile()
-  }, [claims])
+
+    return () => {
+      isActive = false
+    }
+  }, [claims?.sub])
 
   return (
     <AuthContext.Provider

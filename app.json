@@ -22,7 +22,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.ad2612.Ord"
+      "package": "com.ad2612.ord"
     },
     "web": {
       "output": "static",

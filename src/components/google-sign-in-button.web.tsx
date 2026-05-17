@@ -37,9 +37,9 @@ export default function GoogleSignInButton() {
 
   useEffect(() => {
     function generateNonce(): string {
-      const array = new Uint32Array(1);
-      window.crypto.getRandomValues(array);
-      return array[0].toString();
+      const bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "");
     }
 
     async function generateSha256Nonce(n: string): Promise<string> {
@@ -58,6 +58,8 @@ export default function GoogleSignInButton() {
       setSha256Nonce(sha256);
     });
   }, []);
+
+  if (!sha256Nonce) return null;
 
   return (
     <GoogleOAuthProvider

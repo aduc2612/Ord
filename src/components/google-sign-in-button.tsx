@@ -77,7 +77,14 @@ export default function GoogleSignInButton() {
       },
     });
 
-    const googleOAuthUrl = res.data.url;
+    const { data, error } = res;
+
+    if (error) {
+      console.error("OAuth sign-in error:", error);
+      return;
+    }
+
+    const googleOAuthUrl = data?.url;
 
     if (!googleOAuthUrl) {
       console.error("No OAuth URL found");

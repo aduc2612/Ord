@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupportedStorage } from '@supabase/supabase-js'
 import * as SecureStore from 'expo-secure-store'
 import { Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -25,7 +25,7 @@ export const supabase = createClient(
   process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '',
   {
     auth: {
-      storage: Platform.OS === 'web' ? AsyncStorage : (ExpoSecureStoreAdapter as any),
+      storage: Platform.OS === 'web' ? AsyncStorage : (ExpoSecureStoreAdapter as SupportedStorage),
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
