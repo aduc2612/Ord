@@ -46,7 +46,8 @@
         {
           "experimentalLauncherActivity": false
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
