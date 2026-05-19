@@ -1,9 +1,10 @@
-import { Stack } from 'expo-router'
+import { Tabs } from 'expo-router'
 
 export default function TabsLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-    </Stack>
+    <Tabs>
+      <Tabs.Screen name="index" options={{ headerShown: false }} />
+      <Tabs.Screen name="db-test" options={{ title: 'DB Test' }} />
+    </Tabs>
   )
 }

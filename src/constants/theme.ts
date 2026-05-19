@@ -207,6 +207,11 @@ export const shadows = {
   },
 };
 
+// Interaction tokens
+export const interaction = {
+  pressedOpacity: 0.6,
+};
+
 // Common component styles
 export const componentStyles = {
   button: {
@@ -250,6 +255,7 @@ export const createTheme = (isDark: boolean) => {
     borderRadius,
     componentStyles,
     shadows,
+    interaction,
   };
 };
 
@@ -268,4 +274,5 @@ export default {
   borderRadius,
   componentStyles,
   shadows,
+  interaction,
 };
