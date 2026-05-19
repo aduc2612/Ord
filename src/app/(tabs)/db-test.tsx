@@ -90,29 +90,7 @@ function createStyles(theme: Theme) {
 export default function DbTestScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { success, error, items, loading, loadItems, insertItem, deleteAll } = useDbTest();
-
-  if (error) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Database Test</Text>
-        </View>
-        <Text style={styles.statusText}>Migration error: {error.message}</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (!success) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Database Test</Text>
-        </View>
-        <Text style={styles.statusText}>Applying migrations...</Text>
-      </SafeAreaView>
-    );
-  }
+  const { items, loading, loadItems, insertItem, deleteAll } = useDbTest();
 
   return (
     <SafeAreaView style={styles.container}>
