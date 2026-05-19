@@ -1,46 +1,61 @@
+import type { TestItem } from "@/db/schema";
+import { testItems } from "@/db/schema";
+import { db } from "@/lib/powersync-db";
+import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import * as Crypto from "expo-crypto";
-import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
-import { db } from "@/lib/database";
-import migrations from "@/db/migrations/migrations";
-import { testItems } from "@/db/schema";
-import type { TestItem } from "@/db/schema";
 
 export function useDbTest() {
-  const { success, error } = useMigrations(db, migrations);
   const [items, setItems] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [watchError, setWatchError] = useState<Error | string | null>(null);
   const countRef = useRef(items.length);
   countRef.current = items.length;
 
+  // Manual re-fetch kept as a safety net for the Refresh button.
+  // The reactive watch above handles automatic updates.
   const loadItems = useCallback(async () => {
     try {
-      const result = await db
-        .select()
-        .from(testItems)
-        .orderBy(testItems.createdAt);
-      setItems(result);
+      const result = await db.select().from(testItems).orderBy(testItems.createdAt);
+      setItems(result as TestItem[]);
     } catch {
       Alert.alert("Error", "Failed to load items");
     }
   }, []);
 
+  // Reactive watch: auto-fetches data on mount and updates whenever
+  // the underlying table changes (e.g. after PowerSync syncs data on sign-in).
   useEffect(() => {
-    if (success) {
-      loadItems();
-    }
-  }, [success, loadItems]);
+    const abortController = new AbortController();
+    const query = db.select().from(testItems).orderBy(testItems.createdAt);
+    db.watch(
+      query,
+      {
+        onResult: (results) => {
+          setItems(results as TestItem[]);
+          setReady(true);
+          setWatchError(null);
+        },
+        onError: (error) => {
+          console.error("useDbTest watch error:", error);
+          setWatchError(error);
+          setReady(true);
+        },
+      },
+      { signal: abortController.signal },
+    );
+    return () => abortController.abort();
+  }, []);
 
   const insertItem = useCallback(async () => {
-    if (!success) return;
     setLoading(true);
     try {
       const id = Crypto.randomUUID();
-      const now = new Date();
+      const now = Date.now();
       await db.insert(testItems).values({
         id,
-        userId: "test-user",
+        userId: "9ccc15d6-db9c-4b64-9ec2-599e2841a061",
         title: `Test Item ${countRef.current + 1}`,
         createdAt: now,
         updatedAt: now,
@@ -51,10 +66,9 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [success, loadItems]);
+  }, [loadItems]);
 
   const deleteAll = useCallback(async () => {
-    if (!success) return;
     setLoading(true);
     try {
       await db.delete(testItems);
@@ -64,7 +78,7 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [success]);
+  }, []);
 
-  return { success, error, items, loading, loadItems, insertItem, deleteAll };
+  return { items, loading, ready, error: watchError, loadItems, insertItem, deleteAll };
 }

@@ -114,7 +114,9 @@ Never expose secret keys here.
 
 ## UI Rules
 
-Use SafeAreaView from react-native-safe-area-context for every screen, modal, and everywhere needed for safety
+Use SafeAreaView from react-native-safe-area-context for every screen, modal, and everywhere needed for safety.
+
+Never use FlashList or .map(), instead use FlashList from Shopify for performance
 
 For any UI task:
 

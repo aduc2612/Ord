@@ -11,6 +11,9 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@powersync/drizzle-driver": "^0.7.3",
+    "@powersync/op-sqlite": "^0.9.8",
+    "@powersync/react-native": "^1.35.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.15.5",
     "@react-navigation/elements": "^2.9.10",
@@ -47,8 +50,6 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
-    "babel-plugin-inline-import": "^3.0.0",
-    "drizzle-kit": "^0.31.10",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~55.0.1",
     "typescript": "~5.9.2"
