@@ -90,7 +90,7 @@ function createStyles(theme: Theme) {
 export default function DbTestScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { items, loading, loadItems, insertItem, deleteAll } = useDbTest();
+  const { items, loading, ready, error, loadItems, insertItem, deleteAll } = useDbTest();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -133,7 +133,13 @@ export default function DbTestScreen() {
 
         <View style={styles.resultContainer}>
           <Text style={styles.resultTitle}>Items ({items.length})</Text>
-          {items.length === 0 ? (
+          {!ready ? (
+            <Text style={styles.statusText}>Loading...</Text>
+          ) : error ? (
+            <Text style={styles.statusText}>
+              Error: {typeof error === "string" ? error : error.message}
+            </Text>
+          ) : items.length === 0 ? (
             <Text style={styles.statusText}>No items yet</Text>
           ) : (
             items.map((item) => (

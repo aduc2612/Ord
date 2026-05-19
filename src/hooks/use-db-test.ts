@@ -8,6 +8,8 @@ import { Alert } from "react-native";
 export function useDbTest() {
   const [items, setItems] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [watchError, setWatchError] = useState<Error | string | null>(null);
   const countRef = useRef(items.length);
   countRef.current = items.length;
 
@@ -32,9 +34,13 @@ export function useDbTest() {
       {
         onResult: (results) => {
           setItems(results as TestItem[]);
+          setReady(true);
+          setWatchError(null);
         },
         onError: (error) => {
           console.error("useDbTest watch error:", error);
+          setWatchError(error);
+          setReady(true);
         },
       },
       { signal: abortController.signal },
@@ -74,5 +80,5 @@ export function useDbTest() {
     }
   }, []);
 
-  return { items, loading, loadItems, insertItem, deleteAll };
+  return { items, loading, ready, error: watchError, loadItems, insertItem, deleteAll };
 }

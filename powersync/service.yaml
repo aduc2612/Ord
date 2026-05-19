@@ -14,7 +14,7 @@ replication:
       database: postgres
       username: powersync_role
       password:
-        secret: N0clY1tCiQdWyCqVOZTMwWmKcm
+        secret: !env POWERSYNC_DATABASE_PASSWORD
       sslmode: verify-full
 
 client_auth:
