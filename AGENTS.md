@@ -114,9 +114,11 @@ Never expose secret keys here.
 
 ## UI Rules
 
-Always consider using useSafeAreaInsets (over SafeAreaView) from react-native-safe-area-context in anywhere that needs to handle safe area (must have SafeAreaProvider at the root of the app)
+Always make the hitbox / hitslop of a clickable component at least **48x48**
 
-Never use FlatList or .map(), instead use FlashList from Shopify for performance
+Always consider using **useSafeAreaInsets** (over SafeAreaView) from react-native-safe-area-context in anywhere that needs to handle safe area (must have SafeAreaProvider at the root of the app)
+
+Never use FlatList or .map(), instead use **FlashList** from Shopify for performance
 
 For any UI task:
 
@@ -264,10 +266,11 @@ When building a feature:
 1. Read this file first.
 2. Identify the files to change.
 3. Keep changes focused.
-4. Do not rewrite unrelated code.
-5. Follow existing patterns.
-6. Make sure the feature works end to end.
-7. Fix lint and type errors before finishing.
+4. Always inform the user if there are manual operations they have to do themselves, do not try to do those operations by yourself unless the user explicitly asks you to do so.
+5. Do not rewrite unrelated code.
+6. Follow existing patterns.
+7. Make sure the feature works end to end.
+8. Fix lint and type errors before finishing.
 
 ---
 
@@ -282,4 +285,5 @@ Before every feature:
 - Read this file.
 - Follow it strictly.
 - Build clean, simple code.
+- Follow basic principles: Separation of Concerns, Reusablility, Performance.
 - Replicate UI exactly when designs are provided.

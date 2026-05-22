@@ -4,10 +4,15 @@ import {
   spacing,
   typography,
 } from "@/constants/theme";
+import type { Tag, Task } from "@/db/schema";
+import { useAuthContext } from "@/hooks/use-auth-context";
+import { useDbProjects } from "@/hooks/use-db-projects";
+import { useDbTags } from "@/hooks/use-db-tags";
+import { useDbTaskTags } from "@/hooks/use-db-task-tags";
+import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { useDbTest } from "@/hooks/use-db-test";
-import type { Task, Tag } from "@/db/schema";
+import PromptModal from "@/components/prompt-modal";
 import {
   Pressable,
   ScrollView,
@@ -16,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useState } from "react";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -186,16 +192,33 @@ function createStyles(theme: Theme) {
       color: theme.colors.primary,
       paddingVertical: spacing.xs,
     },
+    editSmallButton: {
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: borderRadius.md,
+      backgroundColor: theme.colors.tertiaryContainer,
+    },
+    editSmallButtonText: {
+      ...typography.labelSmall,
+      color: theme.colors.onTertiaryContainer,
+    },
   });
 }
 
-function TaskItem({ task, tags, styles, onComplete, onDelete, onAddTag }: {
+function TaskItem({
+  task,
+  tags,
+  styles,
+  onComplete,
+  onDelete,
+  onEdit,
+}: {
   task: Task;
   tags: Tag[];
   styles: ReturnType<typeof createStyles>;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
-  onAddTag: (taskId: string, tagId: string) => void;
+  onEdit: (id: string, title: string) => void;
 }) {
   const isCompleted = task.completedAt != null;
   const taskTags = tags.filter((t) => t.id != null);
@@ -204,25 +227,45 @@ function TaskItem({ task, tags, styles, onComplete, onDelete, onAddTag }: {
     <View style={styles.resultItem}>
       <View style={styles.taskRow}>
         <View style={styles.taskInfo}>
-          <Text style={isCompleted ? styles.taskTitleCompleted : styles.taskTitle}>
+          <Text
+            style={isCompleted ? styles.taskTitleCompleted : styles.taskTitle}
+          >
             {task.title}
           </Text>
           <Text style={styles.taskMeta}>
             {task.category}
-            {task.dueDate ? ` | Due: ${new Date(task.dueDate).toLocaleDateString()}` : ""}
-            {isCompleted ? ` | Completed: ${new Date(task.completedAt!).toLocaleDateString()}` : ""}
+            {task.dueDate
+              ? ` | Due: ${new Date(task.dueDate).toLocaleDateString()}`
+              : ""}
+            {isCompleted
+              ? ` | Completed: ${new Date(task.completedAt!).toLocaleDateString()}`
+              : ""}
           </Text>
           {task.description ? (
-            <Text style={[styles.taskMeta, { marginTop: 2 }]}>{task.description}</Text>
+            <Text style={[styles.taskMeta, { marginTop: 2 }]}>
+              {task.description}
+            </Text>
           ) : null}
         </View>
         <View style={styles.taskActions}>
           {!isCompleted ? (
-            <Pressable style={styles.smallButton} onPress={() => onComplete(task.id)}>
+            <Pressable
+              style={styles.smallButton}
+              onPress={() => onComplete(task.id)}
+            >
               <Text style={styles.smallButtonText}>Done</Text>
             </Pressable>
           ) : null}
-          <Pressable style={styles.smallDangerButton} onPress={() => onDelete(task.id)}>
+          <Pressable
+            style={styles.editSmallButton}
+            onPress={() => onEdit(task.id, task.title)}
+          >
+            <Text style={styles.editSmallButtonText}>Edit</Text>
+          </Pressable>
+          <Pressable
+            style={styles.smallDangerButton}
+            onPress={() => onDelete(task.id)}
+          >
             <Text style={styles.smallDangerButtonText}>Del</Text>
           </Pressable>
         </View>
@@ -244,34 +287,83 @@ export default function DbTestScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
-  const {
-    userId,
-    taskList,
-    projectList,
-    tagList,
-    taskTagList,
-    loading,
-    ready,
-    error,
-    loadAll,
-    insertTask,
-    completeTask,
-    deleteTask,
-    deleteAllTasks,
-    insertProject,
-    toggleProject,
-    deleteProject,
-    deleteAllProjects,
-    insertTag,
-    deleteTag,
-    deleteAllTags,
-    addTagToTask,
-    deleteAllTaskTags,
-  } = useDbTest();
+  const { claims } = useAuthContext();
+  const userId = claims?.sub as string | undefined;
+
+  const tasks = useDbTasks();
+  const projects = useDbProjects();
+  const tags = useDbTags();
+  const taskTags = useDbTaskTags();
+
+  const loading =
+    tasks.loading || projects.loading || tags.loading || taskTags.loading;
+  const ready = tasks.ready && projects.ready && tags.ready && taskTags.ready;
+  const error = tasks.error || projects.error || tags.error || taskTags.error;
+
+  const loadAll = () => {
+    Promise.all([
+      tasks.loadTasks(),
+      projects.loadProjects(),
+      tags.loadTags(),
+      taskTags.loadTaskTags(),
+    ]);
+  };
+
+  const [prompt, setPrompt] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    defaultValue: string;
+    onConfirm: (value: string) => void;
+  }>({ visible: false, title: "", message: "", defaultValue: "", onConfirm: () => {} });
+
+  const editTaskTitle = (taskId: string, currentTitle: string) => {
+    setPrompt({
+      visible: true,
+      title: "Edit Task",
+      message: "Enter a new title for this task:",
+      defaultValue: currentTitle,
+      onConfirm: (newTitle) => {
+        if (newTitle.trim()) {
+          tasks.updateTask(taskId, { title: newTitle.trim() });
+        }
+      },
+    });
+  };
+
+  const editProjectTitle = (projectId: string, currentTitle: string) => {
+    setPrompt({
+      visible: true,
+      title: "Edit Project",
+      message: "Enter a new title for this project:",
+      defaultValue: currentTitle,
+      onConfirm: (newTitle) => {
+        if (newTitle.trim()) {
+          projects.updateProject(projectId, { title: newTitle.trim() });
+        }
+      },
+    });
+  };
+
+  const editTagTitle = (tagId: string, currentTitle: string) => {
+    setPrompt({
+      visible: true,
+      title: "Edit Tag",
+      message: "Enter a new title for this tag:",
+      defaultValue: currentTitle,
+      onConfirm: (newTitle) => {
+        if (newTitle.trim()) {
+          tags.updateTag(tagId, { title: newTitle.trim() });
+        }
+      },
+    });
+  };
 
   const getTagsForTask = (taskId: string): Tag[] => {
-    const tagIds = taskTagList.filter((tt) => tt.taskId === taskId).map((tt) => tt.tagId);
-    return tagList.filter((t) => tagIds.includes(t.id));
+    const tagIds = taskTags.taskTagList
+      .filter((tt) => tt.taskId === taskId)
+      .map((tt) => tt.tagId);
+    return tags.tagList.filter((t) => tagIds.includes(t.id));
   };
 
   return (
@@ -288,7 +380,10 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.secondaryButton,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
               onPress={loadAll}
               disabled={loading}
@@ -305,14 +400,19 @@ export default function DbTestScreen() {
 
         {/* Tasks Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tasks ({taskList.length})</Text>
+          <Text style={styles.sectionTitle}>
+            Tasks ({tasks.taskList.length})
+          </Text>
           <View style={styles.buttonRow}>
             <Pressable
               style={({ pressed }) => [
                 styles.button,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={() => insertTask("inbox")}
+              onPress={() => tasks.insertTask("inbox")}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Inbox</Text>
@@ -320,9 +420,12 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.button,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={() => insertTask("next_action")}
+              onPress={() => tasks.insertTask("next_action")}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Next</Text>
@@ -330,9 +433,12 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.button,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={() => insertTask("waiting_for")}
+              onPress={() => tasks.insertTask("waiting_for")}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Waiting</Text>
@@ -340,9 +446,12 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.button,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={() => insertTask("someday")}
+              onPress={() => tasks.insertTask("someday")}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Someday</Text>
@@ -352,9 +461,12 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.dangerButton,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={deleteAllTasks}
+              onPress={tasks.deleteAllTasks}
               disabled={loading}
             >
               <Text style={styles.dangerButtonText}>Delete All Tasks</Text>
@@ -362,19 +474,19 @@ export default function DbTestScreen() {
           </View>
           {!ready ? (
             <Text style={styles.statusText}>Loading...</Text>
-          ) : taskList.length === 0 ? (
+          ) : tasks.taskList.length === 0 ? (
             <Text style={styles.statusText}>No tasks yet</Text>
           ) : (
             <View style={styles.resultContainer}>
-              {taskList.map((task, index) => (
+              {tasks.taskList.map((task, index) => (
                 <TaskItem
                   key={task.id}
                   task={task}
                   tags={getTagsForTask(task.id)}
                   styles={styles}
-                  onComplete={completeTask}
-                  onDelete={deleteTask}
-                  onAddTag={addTagToTask}
+                  onComplete={tasks.completeTask}
+                  onDelete={tasks.deleteTask}
+                  onEdit={editTaskTitle}
                 />
               ))}
             </View>
@@ -383,14 +495,19 @@ export default function DbTestScreen() {
 
         {/* Projects Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Projects ({projectList.length})</Text>
+          <Text style={styles.sectionTitle}>
+            Projects ({projects.projectList.length})
+          </Text>
           <View style={styles.buttonRow}>
             <Pressable
               style={({ pressed }) => [
                 styles.button,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={insertProject}
+              onPress={projects.insertProject}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Project</Text>
@@ -400,22 +517,29 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.dangerButton,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={deleteAllProjects}
+              onPress={projects.deleteAllProjects}
               disabled={loading}
             >
               <Text style={styles.dangerButtonText}>Delete All Projects</Text>
             </Pressable>
           </View>
-          {projectList.length === 0 ? (
+          {projects.projectList.length === 0 ? (
             <Text style={styles.statusText}>No projects yet</Text>
           ) : (
             <View style={styles.resultContainer}>
-              {projectList.map((project, index) => (
+              {projects.projectList.map((project, index) => (
                 <View
                   key={project.id}
-                  style={index === projectList.length - 1 ? styles.taskRowLast : styles.taskRow}
+                  style={
+                    index === projects.projectList.length - 1
+                      ? styles.taskRowLast
+                      : styles.taskRow
+                  }
                 >
                   <View style={styles.taskInfo}>
                     <Text style={styles.taskTitle}>
@@ -427,8 +551,18 @@ export default function DbTestScreen() {
                   </View>
                   <View style={styles.taskActions}>
                     <Pressable
+                      style={styles.editSmallButton}
+                      onPress={() =>
+                        editProjectTitle(project.id, project.title)
+                      }
+                    >
+                      <Text style={styles.editSmallButtonText}>Edit</Text>
+                    </Pressable>
+                    <Pressable
                       style={styles.smallButton}
-                      onPress={() => toggleProject(project.id, project.isActive)}
+                      onPress={() =>
+                        projects.toggleProject(project.id, project.isActive)
+                      }
                     >
                       <Text style={styles.smallButtonText}>
                         {project.isActive ? "Deactivate" : "Activate"}
@@ -436,7 +570,7 @@ export default function DbTestScreen() {
                     </Pressable>
                     <Pressable
                       style={styles.smallDangerButton}
-                      onPress={() => deleteProject(project.id)}
+                      onPress={() => projects.deleteProject(project.id)}
                     >
                       <Text style={styles.smallDangerButtonText}>Del</Text>
                     </Pressable>
@@ -449,14 +583,17 @@ export default function DbTestScreen() {
 
         {/* Tags Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tags ({tagList.length})</Text>
+          <Text style={styles.sectionTitle}>Tags ({tags.tagList.length})</Text>
           <View style={styles.buttonRow}>
             <Pressable
               style={({ pressed }) => [
                 styles.button,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={insertTag}
+              onPress={tags.insertTag}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Tag</Text>
@@ -466,30 +603,43 @@ export default function DbTestScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.dangerButton,
-                { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
               ]}
-              onPress={deleteAllTags}
+              onPress={tags.deleteAllTags}
               disabled={loading}
             >
               <Text style={styles.dangerButtonText}>Delete All Tags</Text>
             </Pressable>
           </View>
-          {tagList.length === 0 ? (
+          {tags.tagList.length === 0 ? (
             <Text style={styles.statusText}>No tags yet</Text>
           ) : (
             <View style={styles.resultContainer}>
-              {tagList.map((tag, index) => (
+              {tags.tagList.map((tag, index) => (
                 <View
                   key={tag.id}
-                  style={index === tagList.length - 1 ? styles.taskRowLast : styles.taskRow}
+                  style={
+                    index === tags.tagList.length - 1
+                      ? styles.taskRowLast
+                      : styles.taskRow
+                  }
                 >
                   <View style={styles.taskInfo}>
                     <Text style={styles.taskTitle}>{tag.title}</Text>
                   </View>
                   <View style={styles.taskActions}>
                     <Pressable
+                      style={styles.editSmallButton}
+                      onPress={() => editTagTitle(tag.id, tag.title)}
+                    >
+                      <Text style={styles.editSmallButtonText}>Edit</Text>
+                    </Pressable>
+                    <Pressable
                       style={styles.smallDangerButton}
-                      onPress={() => deleteTag(tag.id)}
+                      onPress={() => tags.deleteTag(tag.id)}
                     >
                       <Text style={styles.smallDangerButtonText}>Del</Text>
                     </Pressable>
@@ -501,15 +651,17 @@ export default function DbTestScreen() {
         </View>
 
         {/* Task-Tag Linking Section */}
-        {taskList.length > 0 && tagList.length > 0 ? (
+        {tasks.taskList.length > 0 && tags.tagList.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Link Tags to Tasks</Text>
             <View style={styles.resultContainer}>
-              {taskList.map((task) => {
-                const linkedTagIds = taskTagList
+              {tasks.taskList.map((task) => {
+                const linkedTagIds = taskTags.taskTagList
                   .filter((tt) => tt.taskId === task.id)
                   .map((tt) => tt.tagId);
-                const availableTags = tagList.filter((t) => !linkedTagIds.includes(t.id));
+                const availableTags = tags.tagList.filter(
+                  (t) => !linkedTagIds.includes(t.id),
+                );
 
                 return (
                   <View key={task.id} style={{ marginBottom: spacing.md }}>
@@ -521,11 +673,19 @@ export default function DbTestScreen() {
                             key={tag.id}
                             style={({ pressed }) => [
                               styles.secondaryButton,
-                              { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
+                              {
+                                opacity: pressed
+                                  ? theme.interaction.pressedOpacity
+                                  : 1,
+                              },
                             ]}
-                            onPress={() => addTagToTask(task.id, tag.id)}
+                            onPress={() =>
+                              taskTags.addTagToTask(task.id, tag.id)
+                            }
                           >
-                            <Text style={styles.secondaryButtonText}>+ {tag.title}</Text>
+                            <Text style={styles.secondaryButtonText}>
+                              + {tag.title}
+                            </Text>
                           </Pressable>
                         ))}
                       </View>
@@ -540,9 +700,12 @@ export default function DbTestScreen() {
               <Pressable
                 style={({ pressed }) => [
                   styles.dangerButton,
-                  { opacity: pressed || loading ? theme.interaction.pressedOpacity : 1 },
+                  {
+                    opacity:
+                      pressed || loading ? theme.interaction.pressedOpacity : 1,
+                  },
                 ]}
-                onPress={deleteAllTaskTags}
+                onPress={taskTags.deleteAllTaskTags}
                 disabled={loading}
               >
                 <Text style={styles.dangerButtonText}>Clear All Links</Text>
@@ -551,6 +714,14 @@ export default function DbTestScreen() {
           </View>
         ) : null}
       </ScrollView>
+      <PromptModal
+        visible={prompt.visible}
+        title={prompt.title}
+        message={prompt.message}
+        defaultValue={prompt.defaultValue}
+        onConfirm={prompt.onConfirm}
+        onCancel={() => setPrompt((p) => ({ ...p, visible: false }))}
+      />
     </View>
   );
 }
