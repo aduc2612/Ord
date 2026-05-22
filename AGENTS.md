@@ -285,5 +285,5 @@ Before every feature:
 - Read this file.
 - Follow it strictly.
 - Build clean, simple code.
-- Follow basic principles: Separation of Concerns, Reusablility, Performance.
+- Follow basic principles: Separation of Concerns, Reusability, Performance.
 - Replicate UI exactly when designs are provided.
