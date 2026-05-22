@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const tasks = sqliteTable("tasks", {
   id: text("id").primaryKey(),
@@ -6,7 +6,7 @@ export const tasks = sqliteTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   category: text("category").notNull(), // inbox | next_action | waiting_for | someday
-  projectId: text("project_id"),
+  projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
   dueDate: integer("due_date"),
   completedAt: integer("completed_at"),
   updatedAt: integer("updated_at").notNull(),
@@ -37,6 +37,9 @@ export const taskTags = sqliteTable(
     tagId: text("tag_id").notNull().references(() => tags.id),
     updatedAt: integer("updated_at").notNull(),
   },
+  (t) => ({
+    uniqueUserTaskTag: uniqueIndex("task_tags_user_id_task_id_tag_id_unique").on(t.userId, t.taskId, t.tagId),
+  }),
 );
 
 export type Task = typeof tasks.$inferSelect;

@@ -15,7 +15,7 @@ CREATE TABLE tasks (
   title TEXT NOT NULL,
   description TEXT,
   category TEXT NOT NULL CHECK (category IN ('inbox', 'next_action', 'waiting_for', 'someday')),
-  project_id UUID,
+  project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
   due_date BIGINT,
   completed_at BIGINT,
   updated_at BIGINT NOT NULL
@@ -57,6 +57,7 @@ CREATE INDEX idx_projects_user_id ON projects(user_id);
 CREATE INDEX idx_tags_user_id ON tags(user_id);
 CREATE INDEX idx_task_tags_task_id ON task_tags(task_id);
 CREATE INDEX idx_task_tags_tag_id ON task_tags(tag_id);
+CREATE INDEX idx_task_tags_user_id ON task_tags(user_id);
 
 -- RLS policies
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
@@ -103,15 +104,31 @@ CREATE POLICY "Users can update own tags" ON tags
 CREATE POLICY "Users can delete own tags" ON tags
   FOR DELETE USING (auth.uid() = user_id);
 
--- Task-Tags policies (direct user_id check)
+-- Task-Tags policies (direct user_id + referenced row ownership)
 CREATE POLICY "Users can view own task_tags" ON task_tags
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (
+    auth.uid() = user_id
+    AND EXISTS (SELECT 1 FROM tasks WHERE id = task_id AND user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM tags WHERE id = tag_id AND user_id = auth.uid())
+  );
 
 CREATE POLICY "Users can insert own task_tags" ON task_tags
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (SELECT 1 FROM tasks WHERE id = task_id AND user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM tags WHERE id = tag_id AND user_id = auth.uid())
+  );
 
 CREATE POLICY "Users can update own task_tags" ON task_tags
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (
+    auth.uid() = user_id
+    AND EXISTS (SELECT 1 FROM tasks WHERE id = task_id AND user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM tags WHERE id = tag_id AND user_id = auth.uid())
+  );
 
 CREATE POLICY "Users can delete own task_tags" ON task_tags
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING (
+    auth.uid() = user_id
+    AND EXISTS (SELECT 1 FROM tasks WHERE id = task_id AND user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM tags WHERE id = tag_id AND user_id = auth.uid())
+  );

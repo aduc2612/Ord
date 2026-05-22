@@ -30,14 +30,26 @@ export function useDbTest() {
   tagCountRef.current = tagList.length;
 
   // --- Load all data ---
+  const clearState = useCallback(() => {
+    setTaskList([]);
+    setProjectList([]);
+    setTagList([]);
+    setTaskTagList([]);
+    setError(null);
+    setReady(false);
+  }, []);
+
   const loadAll = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      clearState();
+      return;
+    }
     try {
       const [t, p, tg, tt] = await Promise.all([
-        db.select().from(tasks).orderBy(tasks.updatedAt),
-        db.select().from(projects).orderBy(projects.updatedAt),
-        db.select().from(tags).orderBy(tags.updatedAt),
-        db.select().from(taskTags).orderBy(taskTags.updatedAt),
+        db.select().from(tasks).where(eq(tasks.userId, userId)).orderBy(tasks.updatedAt),
+        db.select().from(projects).where(eq(projects.userId, userId)).orderBy(projects.updatedAt),
+        db.select().from(tags).where(eq(tags.userId, userId)).orderBy(tags.updatedAt),
+        db.select().from(taskTags).where(eq(taskTags.userId, userId)).orderBy(taskTags.updatedAt),
       ]);
       setTaskList(t as Task[]);
       setProjectList(p as Project[]);
@@ -47,14 +59,17 @@ export function useDbTest() {
       console.error("loadAll error:", e);
       Alert.alert("Error", "Failed to load data");
     }
-  }, [userId]);
+  }, [userId, clearState]);
 
   // --- Reactive watches ---
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      clearState();
+      return;
+    }
     const abortController = new AbortController();
 
-    const taskQuery = db.select().from(tasks).orderBy(tasks.updatedAt);
+    const taskQuery = db.select().from(tasks).where(eq(tasks.userId, userId)).orderBy(tasks.updatedAt);
     db.watch(
       taskQuery,
       {
@@ -72,7 +87,7 @@ export function useDbTest() {
       { signal: abortController.signal },
     );
 
-    const projectQuery = db.select().from(projects).orderBy(projects.updatedAt);
+    const projectQuery = db.select().from(projects).where(eq(projects.userId, userId)).orderBy(projects.updatedAt);
     db.watch(
       projectQuery,
       {
@@ -86,7 +101,7 @@ export function useDbTest() {
       { signal: abortController.signal },
     );
 
-    const tagQuery = db.select().from(tags).orderBy(tags.updatedAt);
+    const tagQuery = db.select().from(tags).where(eq(tags.userId, userId)).orderBy(tags.updatedAt);
     db.watch(
       tagQuery,
       {
@@ -100,7 +115,7 @@ export function useDbTest() {
       { signal: abortController.signal },
     );
 
-    const taskTagQuery = db.select().from(taskTags).orderBy(taskTags.updatedAt);
+    const taskTagQuery = db.select().from(taskTags).where(eq(taskTags.userId, userId)).orderBy(taskTags.updatedAt);
     db.watch(
       taskTagQuery,
       {
@@ -115,7 +130,7 @@ export function useDbTest() {
     );
 
     return () => abortController.abort();
-  }, [userId]);
+  }, [userId, clearState]);
 
   // --- Task operations ---
   const insertTask = useCallback(async (category?: Category) => {
@@ -148,12 +163,13 @@ export function useDbTest() {
   }, [userId, loadAll]);
 
   const completeTask = useCallback(async (taskId: string) => {
+    if (!userId) return;
     setLoading(true);
     try {
       await db.update(tasks).set({
         completedAt: Date.now(),
         updatedAt: Date.now(),
-      }).where(eq(tasks.id, taskId));
+      }).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
       await loadAll();
     } catch (e) {
       console.error("completeTask error:", e);
@@ -161,12 +177,13 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   const deleteTask = useCallback(async (taskId: string) => {
+    if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(tasks).where(eq(tasks.id, taskId));
+      await db.delete(tasks).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
       await loadAll();
     } catch (e) {
       console.error("deleteTask error:", e);
@@ -174,13 +191,13 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   const deleteAllTasks = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(tasks);
+      await db.delete(tasks).where(eq(tasks.userId, userId));
       await loadAll();
     } catch (e) {
       console.error("deleteAllTasks error:", e);
@@ -218,12 +235,13 @@ export function useDbTest() {
   }, [userId, loadAll]);
 
   const toggleProject = useCallback(async (projectId: string, isActive: boolean) => {
+    if (!userId) return;
     setLoading(true);
     try {
       await db.update(projects).set({
         isActive: !isActive,
         updatedAt: Date.now(),
-      }).where(eq(projects.id, projectId));
+      }).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
       await loadAll();
     } catch (e) {
       console.error("toggleProject error:", e);
@@ -231,12 +249,13 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   const deleteProject = useCallback(async (projectId: string) => {
+    if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(projects).where(eq(projects.id, projectId));
+      await db.delete(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
       await loadAll();
     } catch (e) {
       console.error("deleteProject error:", e);
@@ -244,13 +263,13 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   const deleteAllProjects = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(projects);
+      await db.delete(projects).where(eq(projects.userId, userId));
       await loadAll();
     } catch (e) {
       console.error("deleteAllProjects error:", e);
@@ -286,9 +305,10 @@ export function useDbTest() {
   }, [userId, loadAll]);
 
   const deleteTag = useCallback(async (tagId: string) => {
+    if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(tags).where(eq(tags.id, tagId));
+      await db.delete(tags).where(and(eq(tags.id, tagId), eq(tags.userId, userId)));
       await loadAll();
     } catch (e) {
       console.error("deleteTag error:", e);
@@ -296,13 +316,13 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   const deleteAllTags = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(tags);
+      await db.delete(tags).where(eq(tags.userId, userId));
       await loadAll();
     } catch (e) {
       console.error("deleteAllTags error:", e);
@@ -339,10 +359,11 @@ export function useDbTest() {
   }, [loadAll, userId]);
 
   const removeTagFromTask = useCallback(async (taskId: string, tagId: string) => {
+    if (!userId) return;
     setLoading(true);
     try {
       await db.delete(taskTags).where(
-        and(eq(taskTags.taskId, taskId), eq(taskTags.tagId, tagId)),
+        and(eq(taskTags.taskId, taskId), eq(taskTags.tagId, tagId), eq(taskTags.userId, userId)),
       );
       await loadAll();
     } catch (e) {
@@ -351,12 +372,13 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   const deleteAllTaskTags = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     try {
-      await db.delete(taskTags);
+      await db.delete(taskTags).where(eq(taskTags.userId, userId));
       await loadAll();
     } catch (e) {
       console.error("deleteAllTaskTags error:", e);
@@ -364,7 +386,7 @@ export function useDbTest() {
     } finally {
       setLoading(false);
     }
-  }, [loadAll]);
+  }, [userId, loadAll]);
 
   return {
     userId,

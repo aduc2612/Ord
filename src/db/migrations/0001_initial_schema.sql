@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   user_id TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
-  category TEXT NOT NULL,
-  project_id TEXT,
+  category TEXT NOT NULL CHECK (category IN ('inbox', 'next_action', 'waiting_for', 'someday')),
+  project_id TEXT REFERENCES projects(id) ON DELETE SET NULL,
   due_date INTEGER,
   completed_at INTEGER,
   updated_at INTEGER NOT NULL

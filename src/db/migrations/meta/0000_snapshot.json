@@ -18,8 +18,29 @@
         "updated_at": { "name": "updated_at", "type": "integer", "primaryKey": false, "notNull": true }
       },
       "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "idx_tasks_user_id": { "name": "idx_tasks_user_id", "columns": ["user_id"], "isUnique": false },
+        "idx_tasks_category": { "name": "idx_tasks_category", "columns": ["category"], "isUnique": false },
+        "idx_tasks_project_id": { "name": "idx_tasks_project_id", "columns": ["project_id"], "isUnique": false }
+      },
+      "foreignKeys": {
+        "tasks_project_id_projects_id_fk": {
+          "name": "tasks_project_id_projects_id_fk",
+          "tableFrom": "tasks",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "checkConstraints": {
+        "tasks_category_check": {
+          "name": "tasks_category_check",
+          "columns": ["category"],
+          "expression": "category IN ('inbox', 'next_action', 'waiting_for', 'someday')"
+        }
+      },
       "uniqueConstraints": {}
     },
     "projects": {
@@ -33,8 +54,11 @@
         "updated_at": { "name": "updated_at", "type": "integer", "primaryKey": false, "notNull": true }
       },
       "compositePrimaryKeys": {},
-      "indexes": {},
+      "indexes": {
+        "idx_projects_user_id": { "name": "idx_projects_user_id", "columns": ["user_id"], "isUnique": false }
+      },
       "foreignKeys": {},
+      "checkConstraints": {},
       "uniqueConstraints": {}
     },
     "tags": {
@@ -46,8 +70,11 @@
         "updated_at": { "name": "updated_at", "type": "integer", "primaryKey": false, "notNull": true }
       },
       "compositePrimaryKeys": {},
-      "indexes": {},
+      "indexes": {
+        "idx_tags_user_id": { "name": "idx_tags_user_id", "columns": ["user_id"], "isUnique": false }
+      },
       "foreignKeys": {},
+      "checkConstraints": {},
       "uniqueConstraints": {}
     },
     "task_tags": {
@@ -60,7 +87,10 @@
         "updated_at": { "name": "updated_at", "type": "integer", "primaryKey": false, "notNull": true }
       },
       "compositePrimaryKeys": {},
-      "indexes": {},
+      "indexes": {
+        "idx_task_tags_task_id": { "name": "idx_task_tags_task_id", "columns": ["task_id"], "isUnique": false },
+        "idx_task_tags_tag_id": { "name": "idx_task_tags_tag_id", "columns": ["tag_id"], "isUnique": false }
+      },
       "foreignKeys": {
         "task_tags_task_id_tasks_id_fk": {
           "name": "task_tags_task_id_tasks_id_fk",
@@ -81,10 +111,26 @@
           "onUpdate": "no action"
         }
       },
-      "uniqueConstraints": {}
+      "checkConstraints": {},
+      "uniqueConstraints": {
+        "task_tags_user_id_task_id_tag_id_unique": {
+          "name": "task_tags_user_id_task_id_tag_id_unique",
+          "columns": ["user_id", "task_id", "tag_id"]
+        }
+      }
     }
   },
   "enums": {},
   "_meta": { "schemas": {}, "tables": {}, "columns": {} },
-  "internal": { "indexes": {} }
+  "internal": {
+    "indexes": {
+      "idx_tasks_user_id": "CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);",
+      "idx_tasks_category": "CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category);",
+      "idx_tasks_project_id": "CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);",
+      "idx_projects_user_id": "CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);",
+      "idx_tags_user_id": "CREATE INDEX IF NOT EXISTS idx_tags_user_id ON tags(user_id);",
+      "idx_task_tags_task_id": "CREATE INDEX IF NOT EXISTS idx_task_tags_task_id ON task_tags(task_id);",
+      "idx_task_tags_tag_id": "CREATE INDEX IF NOT EXISTS idx_task_tags_tag_id ON task_tags(tag_id);"
+    }
+  }
 }
