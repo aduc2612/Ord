@@ -2,7 +2,6 @@ import SegmentedControl from "@/components/segmented-control";
 import {
   borderRadius,
   componentStyles,
-  shadows,
   spacing,
   typography,
 } from "@/constants/theme";
@@ -59,6 +58,7 @@ function createStyles(theme: Theme) {
     summaryCard: {
       ...componentStyles.card,
       backgroundColor: theme.colors.surface,
+      // ...shadows.md,
     },
     summaryRow: {
       flexDirection: "row",
@@ -85,6 +85,7 @@ function createStyles(theme: Theme) {
       borderRadius: componentStyles.card.borderRadius,
       padding: spacing.lg,
       gap: spacing.sm,
+      // ...shadows.sm,
     },
     taskDot: {
       width: 10,
@@ -108,7 +109,7 @@ function createStyles(theme: Theme) {
       backgroundColor: theme.colors.surface,
       borderRadius: borderRadius.round,
       paddingHorizontal: spacing.lg,
-      ...shadows.sm,
+      // ...shadows.sm,
     },
     searchInput: {
       flex: 1,

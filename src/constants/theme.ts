@@ -22,7 +22,7 @@ export const colors = {
     errorContainer: "#F9DEDC",
     onErrorContainer: "#410E0B",
 
-    background: "#FAFAFA",
+    background: "#F7F7F7",
     onBackground: "#1C1C1C",
 
     surface: "#FFFFFF",
@@ -225,14 +225,12 @@ export const componentStyles = {
     borderRadius: borderRadius.lg,
     borderWidth: 0,
     padding: spacing.lg,
-    ...shadows.sm,
   },
   input: {
     borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     fontSize: 16,
-    ...shadows.sm,
   },
   modal: {
     borderTopLeftRadius: borderRadius.round,
