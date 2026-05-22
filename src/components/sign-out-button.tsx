@@ -35,7 +35,7 @@ export default function SignOutButton() {
   const styles = createStyles(theme);
 
   return (
-    <TouchableOpacity style={styles.button} onPress={onSignOutButtonPress}>
+    <TouchableOpacity style={styles.button} onPress={onSignOutButtonPress} hitSlop={{ top: 2, bottom: 2 }}>
       <Text style={styles.text}>Sign out</Text>
     </TouchableOpacity>
   );
