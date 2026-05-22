@@ -10,9 +10,9 @@ We are building Ord, a mobile productivity / todo list app following the simplif
 The app includes:
 
 - Capture: quickly store raw notes from the user
-- Clarify: move notes into GTD categories (Inbox, Next Actions, Waiting For, Someday/Maybe, Reference) and assign optional projects
+- Clarify: move notes into GTD categories (Next Actions, Waiting For, Someday/Maybe, Reference) and assign optional projects
 - Filter: filter tasks by category, project, or context
-- Review: sort and review tasks (Weekly Review flow)
+- Review: review tasks, notes, projects (Weekly Review flow)
 - Offline-first sync via PowerSync + Supabase
 
 ## Keep the implementation simple and readable.
@@ -114,9 +114,9 @@ Never expose secret keys here.
 
 ## UI Rules
 
-Use SafeAreaView from react-native-safe-area-context for every screen, modal, and everywhere needed for safety.
+Always consider using useSafeAreaInsets (over SafeAreaView) from react-native-safe-area-context in anywhere that needs to handle safe area (must have SafeAreaProvider at the root of the app)
 
-Never use FlashList or .map(), instead use FlashList from Shopify for performance
+Never use FlatList or .map(), instead use FlashList from Shopify for performance
 
 For any UI task:
 
@@ -129,6 +129,7 @@ For any UI task:
 ## Styling Rules
 
 Use `StyleSheet.create` for all styles. Do not use NativeWind or className-based styling.
+
 Avoid using borders as much as possible, instead use different surface colors and/or shadows.
 
 Static base tokens (colors, spacing, typography, border radii, shadows) are defined in `constants/theme.ts` and adapt to system theme via `createTheme(isDark)`.
@@ -187,7 +188,7 @@ export const images = {
 
 ## State Management
 
-- Zustand for global client state (filters, review mode, UI state).
+- Zustand for global client state (for example: filters, review mode, UI state).
 - Local state for temporary UI state (input values, modal visibility).
 - Do not store auth session in Zustand — read it from Supabase directly.
 - PowerSync handles task/note data reactively; prefer PowerSync hooks over manual Zustand caching for synced data.
