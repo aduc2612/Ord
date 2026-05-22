@@ -1,19 +1,47 @@
 import { wrapPowerSyncWithDrizzle } from '@powersync/drizzle-driver'
 import { PowerSyncDatabase, Schema, Table, column } from '@powersync/react-native'
 import { OPSqliteOpenFactory } from '@powersync/op-sqlite'
-import { testItems } from '@/db/schema'
+import { tasks, projects, tags, taskTags } from '@/db/schema'
 
 export const drizzleSchema = {
-  test_items: testItems,
+  tasks,
+  projects,
+  tags,
+  task_tags: taskTags,
 }
 
 // PowerSync schema
 const powerSyncSchema = new Schema({
-  test_items: new Table({
+  tasks: new Table({
     id: column.text,
     user_id: column.text,
     title: column.text,
-    created_at: column.integer,
+    description: column.text,
+    category: column.text,
+    project_id: column.text,
+    due_date: column.integer,
+    completed_at: column.integer,
+    updated_at: column.integer,
+  }),
+  projects: new Table({
+    id: column.text,
+    user_id: column.text,
+    title: column.text,
+    description: column.text,
+    is_active: column.integer,
+    updated_at: column.integer,
+  }),
+  tags: new Table({
+    id: column.text,
+    user_id: column.text,
+    title: column.text,
+    updated_at: column.integer,
+  }),
+  task_tags: new Table({
+    id: column.text,
+    user_id: column.text,
+    task_id: column.text,
+    tag_id: column.text,
     updated_at: column.integer,
   }),
 })
