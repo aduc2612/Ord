@@ -4,7 +4,19 @@ config:
   edition: 3
 
 streams:
-  user_data:
+  tasks:
     auto_subscribe: true
     queries:
-      - SELECT * FROM test_items WHERE user_id = auth.user_id()
+      - SELECT * FROM tasks WHERE user_id = auth.user_id()
+  projects:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM projects WHERE user_id = auth.user_id()
+  tags:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM tags WHERE user_id = auth.user_id()
+  task_tags:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM task_tags WHERE user_id = auth.user_id()
