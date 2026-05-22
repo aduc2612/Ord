@@ -47,7 +47,9 @@
           "experimentalLauncherActivity": false
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-font",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
