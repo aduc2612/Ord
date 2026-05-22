@@ -19,15 +19,14 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.lg,
-      padding: 2,
     },
     option: {
       flex: 1,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.md,
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: theme.borderRadius.md,
+      borderRadius: theme.borderRadius.lg,
     },
     selectedOption: {
       backgroundColor: theme.colors.surfaceVariant,
