@@ -60,6 +60,7 @@ export default function SegmentedControl({
             key={option.value}
             style={[styles.option, isSelected && styles.selectedOption]}
             onPress={() => onSelect(option.value)}
+            hitSlop={{ top: 6, bottom: 6 }}
           >
             <Text
               style={[

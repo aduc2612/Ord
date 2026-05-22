@@ -1,10 +1,24 @@
 import SegmentedControl from "@/components/segmented-control";
-import { componentStyles, spacing, typography } from "@/constants/theme";
+import {
+  borderRadius,
+  componentStyles,
+  shadows,
+  spacing,
+  typography,
+} from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const summaryOptions: { label: string; value: number }[] = [
@@ -54,7 +68,7 @@ function createStyles(theme: Theme) {
     },
     summaryLabel: {
       ...typography.bodyMedium,
-      color: theme.colors.onSurfaceVariant,
+      color: theme.colors.onSurface,
     },
     summaryValue: {
       ...typography.bodyMedium,
@@ -82,6 +96,29 @@ function createStyles(theme: Theme) {
       ...typography.bodyMedium,
       color: theme.colors.onSurface,
     },
+    searchRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    searchBar: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.colors.surface,
+      borderRadius: borderRadius.round,
+      paddingHorizontal: spacing.lg,
+      ...shadows.sm,
+    },
+    searchInput: {
+      flex: 1,
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
+      paddingVertical: spacing.md,
+    },
+    filterButton: {
+      padding: spacing.sm,
+    },
   });
 }
 
@@ -90,6 +127,7 @@ export default function HomeScreen() {
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("due_today");
 
   const currentTasks = fillerTasks[selectedSegment] ?? [];
@@ -103,6 +141,30 @@ export default function HomeScreen() {
         ]}
       >
         <Text style={styles.header}>Home</Text>
+
+        {/* Search Row */}
+        <View style={styles.searchRow}>
+          <View style={styles.searchBar}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search tasks"
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <Ionicons
+              name="search"
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </View>
+          <Pressable
+            style={styles.filterButton}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+          >
+            <Ionicons name="filter" size={24} color={theme.colors.onSurface} />
+          </Pressable>
+        </View>
 
         {/* Summary Statistics Card */}
         <View style={styles.summaryCard}>
