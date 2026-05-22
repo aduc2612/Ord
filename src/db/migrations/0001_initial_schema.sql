@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS tags (
 CREATE TABLE IF NOT EXISTS task_tags (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  task_id TEXT NOT NULL REFERENCES tasks(id),
-  tag_id TEXT NOT NULL REFERENCES tags(id),
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
   updated_at INTEGER NOT NULL,
   UNIQUE (user_id, task_id, tag_id)
 );
