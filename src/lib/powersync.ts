@@ -41,6 +41,8 @@ export const connector: PowerSyncBackendConnector = {
     const transaction = await database.getNextCrudTransaction();
     if (!transaction) return;
 
+    console.log(`[PowerSync] Uploading ${transaction.crud.length} operations`);
+
     for (const op of transaction.crud) {
       const { op: opType, table, opData, id } = op;
       try {
@@ -58,6 +60,7 @@ export const connector: PowerSyncBackendConnector = {
           result = await supabase.from(table).delete().eq("id", id);
         }
         if (result.error) throw result.error;
+        console.log(`[PowerSync] ${opType} ${table}/${id} OK`);
       } catch (error: unknown) {
         if (isPermanentError(error)) {
           console.error(
@@ -67,9 +70,12 @@ export const connector: PowerSyncBackendConnector = {
           );
           continue;
         }
-        throw error;
+        console.error("[PowerSync] Upload error, skipping:", id, error);
+        continue;
       }
     }
+
+    console.log("[PowerSync] Transaction complete");
     await transaction.complete();
   },
 };

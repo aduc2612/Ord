@@ -10,7 +10,7 @@ export const tasks = sqliteTable("tasks", {
   userId: text("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  category: text("category").notNull(), // inbox | next_action | waiting_for | someday
+  category: text("category").notNull(), // next_action | waiting_for | someday
   projectId: text("project_id").references(() => projects.id, {
     onDelete: "set null",
   }),
@@ -57,7 +57,15 @@ export const taskTags = sqliteTable(
   ],
 );
 
+export const notes = sqliteTable("notes", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
 export type Task = typeof tasks.$inferSelect;
 export type Project = typeof projects.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type TaskTag = typeof taskTags.$inferSelect;
+export type Note = typeof notes.$inferSelect;

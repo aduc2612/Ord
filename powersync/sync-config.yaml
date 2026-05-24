@@ -4,6 +4,10 @@ config:
   edition: 3
 
 streams:
+  notes:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM notes WHERE user_id = auth.user_id()
   tasks:
     auto_subscribe: true
     queries:

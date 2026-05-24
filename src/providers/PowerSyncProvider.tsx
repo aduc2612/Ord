@@ -23,8 +23,8 @@ export function PowerSyncProvider({ children }: PropsWithChildren) {
             await powerSyncDb.disconnectAndClear();
           }
         })
-        .catch(() => {
-          // optionally report
+        .catch((err) => {
+          console.error("[PowerSync] Auth state change error:", err);
         });
       if (isFirstCallback) {
         isFirstCallback = false;

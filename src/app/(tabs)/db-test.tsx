@@ -4,11 +4,12 @@ import {
   spacing,
   typography,
 } from "@/constants/theme";
-import type { Tag, Task } from "@/db/schema";
+import type { Note, Tag, Task } from "@/db/schema";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
+import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
@@ -294,11 +295,12 @@ export default function DbTestScreen() {
   const projects = useDbProjects();
   const tags = useDbTags();
   const taskTags = useDbTaskTags();
+  const notes = useDbNotes();
 
   const loading =
-    tasks.loading || projects.loading || tags.loading || taskTags.loading;
-  const ready = tasks.ready && projects.ready && tags.ready && taskTags.ready;
-  const error = tasks.error || projects.error || tags.error || taskTags.error;
+    tasks.loading || projects.loading || tags.loading || taskTags.loading || notes.loading;
+  const ready = tasks.ready && projects.ready && tags.ready && taskTags.ready && notes.ready;
+  const error = tasks.error || projects.error || tags.error || taskTags.error || notes.error;
 
   const loadAll = () => {
     Promise.all([
@@ -306,6 +308,7 @@ export default function DbTestScreen() {
       projects.loadProjects(),
       tags.loadTags(),
       taskTags.loadTaskTags(),
+      notes.loadNotes(),
     ]);
   };
 
@@ -340,6 +343,20 @@ export default function DbTestScreen() {
       onConfirm: (newTitle) => {
         if (newTitle.trim()) {
           projects.updateProject(projectId, { title: newTitle.trim() });
+        }
+      },
+    });
+  };
+
+  const editNoteTitle = (noteId: string, currentTitle: string) => {
+    setPrompt({
+      visible: true,
+      title: "Edit Note",
+      message: "Enter a new title for this note:",
+      defaultValue: currentTitle,
+      onConfirm: (newTitle) => {
+        if (newTitle.trim()) {
+          notes.updateNote(noteId, { title: newTitle.trim() });
         }
       },
     });
@@ -412,19 +429,6 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={() => tasks.insertTask("inbox")}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>+ Inbox</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.button,
-                {
-                  opacity:
-                    pressed || loading ? theme.interaction.pressedOpacity : 1,
-                },
-              ]}
               onPress={() => tasks.insertTask("next_action")}
               disabled={loading}
             >
@@ -488,6 +492,77 @@ export default function DbTestScreen() {
                   onDelete={tasks.deleteTask}
                   onEdit={editTaskTitle}
                 />
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Notes Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Notes ({notes.noteList.length})
+          </Text>
+          <View style={styles.buttonRow}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.button,
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
+              ]}
+              onPress={notes.insertNote}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>+ Note</Text>
+            </Pressable>
+          </View>
+          <View style={styles.buttonRow}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.dangerButton,
+                {
+                  opacity:
+                    pressed || loading ? theme.interaction.pressedOpacity : 1,
+                },
+              ]}
+              onPress={notes.deleteAllNotes}
+              disabled={loading}
+            >
+              <Text style={styles.dangerButtonText}>Delete All Notes</Text>
+            </Pressable>
+          </View>
+          {notes.noteList.length === 0 ? (
+            <Text style={styles.statusText}>No notes yet</Text>
+          ) : (
+            <View style={styles.resultContainer}>
+              {notes.noteList.map((note, index) => (
+                <View
+                  key={note.id}
+                  style={
+                    index === notes.noteList.length - 1
+                      ? styles.taskRowLast
+                      : styles.taskRow
+                  }
+                >
+                  <View style={styles.taskInfo}>
+                    <Text style={styles.taskTitle}>{note.title}</Text>
+                  </View>
+                  <View style={styles.taskActions}>
+                    <Pressable
+                      style={styles.editSmallButton}
+                      onPress={() => editNoteTitle(note.id, note.title)}
+                    >
+                      <Text style={styles.editSmallButtonText}>Edit</Text>
+                    </Pressable>
+                    <Pressable
+                      style={styles.smallDangerButton}
+                      onPress={() => notes.deleteNote(note.id)}
+                    >
+                      <Text style={styles.smallDangerButtonText}>Del</Text>
+                    </Pressable>
+                  </View>
+                </View>
               ))}
             </View>
           )}

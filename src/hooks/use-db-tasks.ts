@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { eq, and } from "drizzle-orm";
 
-type Category = "inbox" | "next_action" | "waiting_for" | "someday";
+type Category = "next_action" | "waiting_for" | "someday";
 
 export function useDbTasks() {
   const { claims } = useAuthContext();
@@ -95,7 +95,7 @@ export function useDbTasks() {
           userId,
           title: `Task ${taskCountRef.current + 1}`,
           description: `Description for task ${taskCountRef.current + 1}`,
-          category: category ?? "inbox",
+          category: category ?? "next_action",
           projectId: null,
           dueDate: null,
           completedAt: null,
