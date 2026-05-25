@@ -78,30 +78,33 @@ export function useDbTags() {
     return () => abortController.abort();
   }, [userId, clearState]);
 
-  const insertTag = useCallback(async () => {
-    if (!userId) {
-      Alert.alert("Error", "No user ID available");
-      return;
-    }
-    setLoading(true);
-    try {
-      const id = Crypto.randomUUID();
-      const now = Date.now();
-      await db.insert(tags).values({
-        id,
-        userId,
-        title: `Tag ${tagCountRef.current + 1}`,
-        createdAt: now,
-        updatedAt: now,
-      });
-      await loadTags();
-    } catch (e) {
-      console.error("insertTag error:", e);
-      Alert.alert("Error", "Failed to insert tag");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, loadTags]);
+  const insertTag = useCallback(
+    async (title?: string) => {
+      if (!userId) {
+        Alert.alert("Error", "No user ID available");
+        return;
+      }
+      setLoading(true);
+      try {
+        const id = Crypto.randomUUID();
+        const now = Date.now();
+        await db.insert(tags).values({
+          id,
+          userId,
+          title: title ?? `Tag ${tagCountRef.current + 1}`,
+          createdAt: now,
+          updatedAt: now,
+        });
+        await loadTags();
+      } catch (e) {
+        console.error("insertTag error:", e);
+        Alert.alert("Error", "Failed to insert tag");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, loadTags],
+  );
 
   const updateTag = useCallback(
     async (tagId: string, updates: Partial<Pick<Tag, "title">>) => {

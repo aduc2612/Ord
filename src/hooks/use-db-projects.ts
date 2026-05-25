@@ -78,32 +78,35 @@ export function useDbProjects() {
     return () => abortController.abort();
   }, [userId, clearState]);
 
-  const insertProject = useCallback(async () => {
-    if (!userId) {
-      Alert.alert("Error", "No user ID available");
-      return;
-    }
-    setLoading(true);
-    try {
-      const id = Crypto.randomUUID();
-      const now = Date.now();
-      await db.insert(projects).values({
-        id,
-        userId,
-        title: `Project ${projectCountRef.current + 1}`,
-        description: `Description for project ${projectCountRef.current + 1}`,
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      });
-      await loadProjects();
-    } catch (e) {
-      console.error("insertProject error:", e);
-      Alert.alert("Error", "Failed to insert project");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, loadProjects]);
+  const insertProject = useCallback(
+    async (title?: string) => {
+      if (!userId) {
+        Alert.alert("Error", "No user ID available");
+        return;
+      }
+      setLoading(true);
+      try {
+        const id = Crypto.randomUUID();
+        const now = Date.now();
+        await db.insert(projects).values({
+          id,
+          userId,
+          title: title ?? `Project ${projectCountRef.current + 1}`,
+          description: title ? "" : `Description for project ${projectCountRef.current + 1}`,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+        await loadProjects();
+      } catch (e) {
+        console.error("insertProject error:", e);
+        Alert.alert("Error", "Failed to insert project");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, loadProjects],
+  );
 
   const updateProject = useCallback(
     async (

@@ -1,3 +1,4 @@
+import FabButton from "@/components/fab-button";
 import SearchBar from "@/components/search-bar";
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import type { Note } from "@/db/schema";
@@ -5,7 +6,8 @@ import { useDbNotes } from "@/hooks/use-db-notes";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { FlashList } from "@shopify/flash-list";
-import { useMemo, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -63,12 +65,18 @@ export default function InboxScreen() {
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setSearchQuery("");
+      };
+    }, []),
+  );
+
   const filteredNotes = useMemo(() => {
     if (!searchQuery.trim()) return noteList;
     const query = searchQuery.toLowerCase().trim();
-    return noteList.filter((note) =>
-      note.title.toLowerCase().includes(query),
-    );
+    return noteList.filter((note) => note.title.toLowerCase().includes(query));
   }, [noteList, searchQuery]);
 
   const renderItem = ({ item }: { item: Note }) => (
@@ -79,56 +87,45 @@ export default function InboxScreen() {
       <Text style={styles.noteText}>{item.title}</Text>
     </Pressable>
   );
-
-  const ListHeader = (
-    <View style={{ gap: spacing.lg, paddingBottom: spacing.lg }}>
-      <View style={styles.headerRow}>
-        <Text style={styles.header}>Inbox</Text>
-        <Pressable
-          style={styles.processButton}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Text style={styles.processButtonText}>Process</Text>
-        </Pressable>
-      </View>
-      <View style={styles.searchWrapper}>
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search notes"
-        />
-      </View>
-    </View>
-  );
-
-  if (!ready) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { paddingTop: insets.top + spacing.lg },
-        ]}
-      >
-        {ListHeader}
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
+      <View
+        style={{
+          paddingTop: insets.top + spacing.lg,
+          // paddingHorizontal: spacing.lg,
+          gap: spacing.lg,
+          paddingBottom: spacing.lg,
+        }}
+      >
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>Inbox</Text>
+          <Pressable
+            style={styles.processButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.processButtonText}>Process</Text>
+          </Pressable>
+        </View>
+        <View style={styles.searchWrapper}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search notes"
+          />
+        </View>
+      </View>
       <FlashList
         data={filteredNotes}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
-          paddingTop: insets.top + spacing.lg,
           paddingBottom: spacing.lg,
         }}
-        ListHeaderComponent={ListHeader}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No notes yet</Text>
+          ready ? <Text style={styles.emptyText}>No notes found</Text> : null
         }
       />
+      <FabButton type="note" />
     </View>
   );
 }

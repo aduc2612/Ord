@@ -1,5 +1,6 @@
 import SearchBar from "@/components/search-bar";
 import SegmentedControl from "@/components/segmented-control";
+import FabButton from "@/components/fab-button";
 import {
   componentStyles,
   spacing,
@@ -170,6 +171,7 @@ export default function HomeScreen() {
           ))}
         </View>
       </ScrollView>
+      <FabButton type="note" />
     </View>
   );
 }

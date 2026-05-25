@@ -58,29 +58,32 @@ export function useDbNotes() {
     return () => abortController.abort();
   }, [userId, clearState]);
 
-  const insertNote = useCallback(async () => {
-    if (!userId) {
-      Alert.alert("Error", "No user ID available");
-      return;
-    }
-    setLoading(true);
-    try {
-      const id = Crypto.randomUUID();
-      const now = Date.now();
-      await db.insert(notes).values({
-        id,
-        userId,
-        title: `Note ${noteCountRef.current + 1}`,
-        createdAt: now,
-        updatedAt: now,
-      });
-    } catch (e) {
-      console.error("insertNote error:", e);
-      Alert.alert("Error", "Failed to insert note");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+  const insertNote = useCallback(
+    async (title?: string) => {
+      if (!userId) {
+        Alert.alert("Error", "No user ID available");
+        return;
+      }
+      setLoading(true);
+      try {
+        const id = Crypto.randomUUID();
+        const now = Date.now();
+        await db.insert(notes).values({
+          id,
+          userId,
+          title: title ?? `Note ${noteCountRef.current + 1}`,
+          createdAt: now,
+          updatedAt: now,
+        });
+      } catch (e) {
+        console.error("insertNote error:", e);
+        Alert.alert("Error", "Failed to insert note");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId],
+  );
 
   const updateNote = useCallback(
     async (

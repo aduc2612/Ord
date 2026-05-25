@@ -510,7 +510,7 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={notes.insertNote}
+              onPress={() => notes.insertNote()}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Note</Text>
@@ -581,7 +581,7 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={projects.insertProject}
+              onPress={() => projects.insertProject()}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Project</Text>
@@ -667,7 +667,7 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={tags.insertTag}
+              onPress={() => tags.insertTag()}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Tag</Text>
