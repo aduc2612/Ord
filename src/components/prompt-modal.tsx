@@ -134,7 +134,7 @@ export default function PromptModal({
       setShowError(true);
       return;
     }
-    onConfirm(text);
+    onConfirm(text.trim());
     onCancel();
   }, [onConfirm, onCancel, text]);
 
@@ -153,7 +153,12 @@ export default function PromptModal({
       <TouchableWithoutFeedback onPress={onCancel}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
+            <View
+              style={[
+                styles.container,
+                { paddingTop: insets.top + spacing.lg },
+              ]}
+            >
               <Text style={styles.title}>{title}</Text>
               {message ? <Text style={styles.message}>{message}</Text> : null}
               <TextInput

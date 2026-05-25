@@ -1,3 +1,4 @@
+import PromptModal from "@/components/prompt-modal";
 import {
   borderRadius,
   componentStyles,
@@ -6,23 +7,16 @@ import {
 } from "@/constants/theme";
 import type { Tag, Task } from "@/db/schema";
 import { useAuthContext } from "@/hooks/use-auth-context";
+import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
-import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import PromptModal from "@/components/prompt-modal";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -298,9 +292,23 @@ export default function DbTestScreen() {
   const notes = useDbNotes();
 
   const loading =
-    tasks.loading || projects.loading || tags.loading || taskTags.loading || notes.loading;
-  const ready = tasks.ready && projects.ready && tags.ready && taskTags.ready && notes.ready;
-  const error = tasks.error || projects.error || tags.error || taskTags.error || notes.error;
+    tasks.loading ||
+    projects.loading ||
+    tags.loading ||
+    taskTags.loading ||
+    notes.loading;
+  const ready =
+    tasks.ready &&
+    projects.ready &&
+    tags.ready &&
+    taskTags.ready &&
+    notes.ready;
+  const error =
+    tasks.error ||
+    projects.error ||
+    tags.error ||
+    taskTags.error ||
+    notes.error;
 
   const loadAll = () => {
     Promise.all([
@@ -317,7 +325,13 @@ export default function DbTestScreen() {
     message: string;
     defaultValue: string;
     onConfirm: (value: string) => void;
-  }>({ visible: false, title: "", message: "", defaultValue: "", onConfirm: () => {} });
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+    defaultValue: "",
+    onConfirm: () => {},
+  });
 
   const editTaskTitle = (taskId: string, currentTitle: string) => {
     setPrompt({

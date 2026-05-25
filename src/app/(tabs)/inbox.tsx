@@ -55,6 +55,13 @@ function createStyles(theme: Theme) {
       textAlign: "center",
       paddingVertical: spacing.lg,
     },
+    topSection: {
+      gap: spacing.lg,
+      paddingBottom: spacing.lg,
+    },
+    listContent: {
+      paddingBottom: spacing.lg,
+    },
   });
 }
 
@@ -90,12 +97,10 @@ export default function InboxScreen() {
   return (
     <View style={styles.container}>
       <View
-        style={{
-          paddingTop: insets.top + spacing.lg,
-          // paddingHorizontal: spacing.lg,
-          gap: spacing.lg,
-          paddingBottom: spacing.lg,
-        }}
+        style={[
+          styles.topSection,
+          { paddingTop: insets.top + spacing.lg },
+        ]}
       >
         <View style={styles.headerRow}>
           <Text style={styles.header}>Inbox</Text>
@@ -118,9 +123,7 @@ export default function InboxScreen() {
         data={filteredNotes}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          paddingBottom: spacing.lg,
-        }}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           ready ? <Text style={styles.emptyText}>No notes found</Text> : null
         }
