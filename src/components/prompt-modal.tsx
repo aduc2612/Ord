@@ -74,6 +74,12 @@ function createStyles(theme: Theme) {
       ...typography.labelLarge,
       color: theme.colors.onPrimary,
     },
+    errorText: {
+      ...typography.bodySmall,
+      color: theme.colors.error,
+      marginBottom: spacing.sm,
+      marginLeft: spacing.md,
+    },
   });
 }
 
@@ -81,6 +87,7 @@ export type PromptModalProps = {
   visible: boolean;
   title: string;
   message?: string;
+  placeholder?: string;
   defaultValue?: string;
   cancelLabel?: string;
   confirmLabel?: string;
@@ -92,6 +99,7 @@ export default function PromptModal({
   visible,
   title,
   message,
+  placeholder,
   defaultValue = "",
   cancelLabel = "Cancel",
   confirmLabel = "Save",
@@ -102,11 +110,13 @@ export default function PromptModal({
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
   const [text, setText] = useState(defaultValue);
+  const [showError, setShowError] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible) {
       setText(defaultValue);
+      setShowError(false);
     }
   }, [visible, defaultValue]);
 
@@ -120,9 +130,18 @@ export default function PromptModal({
   }, [visible]);
 
   const handleConfirm = useCallback(() => {
-    onConfirm(text);
+    if (!text.trim()) {
+      setShowError(true);
+      return;
+    }
+    onConfirm(text.trim());
     onCancel();
   }, [onConfirm, onCancel, text]);
+
+  const handleChangeText = useCallback((value: string) => {
+    setText(value);
+    setShowError(false);
+  }, []);
 
   return (
     <Modal
@@ -134,20 +153,28 @@ export default function PromptModal({
       <TouchableWithoutFeedback onPress={onCancel}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
+            <View
+              style={[
+                styles.container,
+                { paddingTop: insets.top + spacing.lg },
+              ]}
+            >
               <Text style={styles.title}>{title}</Text>
               {message ? <Text style={styles.message}>{message}</Text> : null}
               <TextInput
                 ref={inputRef}
                 style={styles.input}
                 value={text}
-                onChangeText={setText}
-                placeholder="Enter text..."
+                onChangeText={handleChangeText}
+                placeholder={placeholder ?? "Enter text..."}
                 placeholderTextColor={theme.colors.onSurfaceVariant}
                 onSubmitEditing={handleConfirm}
                 returnKeyType="done"
                 autoFocus
               />
+              {showError ? (
+                <Text style={styles.errorText}>Please enter a value</Text>
+              ) : null}
               <View style={styles.buttonRow}>
                 <Pressable
                   style={({ pressed }) => [

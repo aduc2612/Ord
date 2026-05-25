@@ -1,6 +1,7 @@
+import SearchBar from "@/components/search-bar";
 import SegmentedControl from "@/components/segmented-control";
+import FabButton from "@/components/fab-button";
 import {
-  borderRadius,
   componentStyles,
   spacing,
   typography,
@@ -15,7 +16,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -102,21 +102,6 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       gap: spacing.sm,
     },
-    searchBar: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      borderRadius: borderRadius.round,
-      paddingHorizontal: spacing.lg,
-      // ...shadows.sm,
-    },
-    searchInput: {
-      flex: 1,
-      ...typography.bodyMedium,
-      color: theme.colors.onSurface,
-      paddingVertical: spacing.md,
-    },
     filterButton: {
       padding: spacing.sm,
     },
@@ -145,20 +130,12 @@ export default function HomeScreen() {
 
         {/* Search Row */}
         <View style={styles.searchRow}>
-          <View style={styles.searchBar}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search tasks"
-              placeholderTextColor={theme.colors.onSurfaceVariant}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <Ionicons
-              name="search"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
-          </View>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search tasks"
+            style={{ flex: 1 }}
+          />
           <Pressable
             style={styles.filterButton}
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
@@ -194,6 +171,7 @@ export default function HomeScreen() {
           ))}
         </View>
       </ScrollView>
+      <FabButton type="note" />
     </View>
   );
 }

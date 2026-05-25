@@ -5,7 +5,7 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 export function useDbTags() {
   const { claims } = useAuthContext();
@@ -35,7 +35,7 @@ export function useDbTags() {
         .select()
         .from(tags)
         .where(eq(tags.userId, userId))
-        .orderBy(tags.updatedAt);
+        .orderBy(asc(tags.createdAt));
       setTagList(result as Tag[]);
       setReady(true);
       setError(null);
@@ -56,7 +56,7 @@ export function useDbTags() {
       .select()
       .from(tags)
       .where(eq(tags.userId, userId))
-      .orderBy(tags.updatedAt);
+      .orderBy(asc(tags.createdAt));
 
     db.watch(
       query,
@@ -78,29 +78,33 @@ export function useDbTags() {
     return () => abortController.abort();
   }, [userId, clearState]);
 
-  const insertTag = useCallback(async () => {
-    if (!userId) {
-      Alert.alert("Error", "No user ID available");
-      return;
-    }
-    setLoading(true);
-    try {
-      const id = Crypto.randomUUID();
-      const now = Date.now();
-      await db.insert(tags).values({
-        id,
-        userId,
-        title: `Tag ${tagCountRef.current + 1}`,
-        updatedAt: now,
-      });
-      await loadTags();
-    } catch (e) {
-      console.error("insertTag error:", e);
-      Alert.alert("Error", "Failed to insert tag");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, loadTags]);
+  const insertTag = useCallback(
+    async (title?: string) => {
+      if (!userId) {
+        Alert.alert("Error", "No user ID available");
+        return;
+      }
+      setLoading(true);
+      try {
+        const id = Crypto.randomUUID();
+        const now = Date.now();
+        await db.insert(tags).values({
+          id,
+          userId,
+          title: title ?? `Tag ${tagCountRef.current + 1}`,
+          createdAt: now,
+          updatedAt: now,
+        });
+        await loadTags();
+      } catch (e) {
+        console.error("insertTag error:", e);
+        Alert.alert("Error", "Failed to insert tag");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, loadTags],
+  );
 
   const updateTag = useCallback(
     async (tagId: string, updates: Partial<Pick<Tag, "title">>) => {

@@ -68,7 +68,9 @@ export default function ListsScreen() {
             key={item.id}
             style={styles.listItem}
             onPress={() => {
-              // TODO: Navigate to respective list screen
+              if (item.id === "inbox") {
+                router.push("/(tabs)/inbox");
+              }
             }}
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >

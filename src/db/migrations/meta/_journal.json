@@ -8,6 +8,27 @@
       "when": 1747883119000,
       "tag": "0001_initial_schema.sql",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "1",
+      "when": 1748608513000,
+      "tag": "0002_remove_inbox_add_notes.sql",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "1",
+      "when": 1748609600000,
+      "tag": "0003_add_notes_updated_at.sql",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "1",
+      "when": 1748143828000,
+      "tag": "0004_add_created_at_columns.sql",
+      "breakpoints": true
     }
   ]
 }
