@@ -3,33 +3,37 @@
 ## Supabase Auth in Expo
 
 ### 1. Folder placement must match tsconfig paths
+
 AGENTS.md architecture folders (`components/`, `hooks/`, `lib/`, `providers/`, `constants/`) must live inside `src/`. The tsconfig `@/*` alias maps to `./src/*`, so `@/lib/supabase` resolves to `src/lib/supabase.ts`. If you put them at root level, imports break.
 
 ### 2. Auth state changes must be handled synchronously
+
 When `onAuthStateChange` fires, use the `session` parameter directly instead of calling `getClaims()`:
 
 ```tsx
 // ❌ Broken: async getClaims() introduces a race condition
 supabase.auth.onAuthStateChange(async (_event, _session) => {
-  const { data } = await supabase.auth.getClaims()
-  setClaims(data?.claims ?? null)
-})
+  const { data } = await supabase.auth.getClaims();
+  setClaims(data?.claims ?? null);
+});
 
 // ✅ Correct: use session synchronously
 supabase.auth.onAuthStateChange((_event, session) => {
   if (session?.user) {
-    setClaims({ sub: session.user.id })
+    setClaims({ sub: session.user.id });
   } else {
-    setClaims(null)
+    setClaims(null);
   }
-})
+});
 ```
 
 The async `getClaims()` call causes two problems:
+
 - **Sign-in delay:** Navigation doesn't react immediately because the async gap leaves `claims` at its old value
 - **Sign-out not triggering:** `getClaims()` fails (errors) when there's no session, so `setClaims(null)` never fires
 
 ### 3. `Stack.Screen name` references route groups, not screens inside them
+
 In Expo Router's `Stack.Protected`, reference route groups by their directory name only:
 
 ```tsx
@@ -43,6 +47,7 @@ In Expo Router's `Stack.Protected`, reference route groups by their directory na
 The group's `_layout.tsx` handles which screen to display inside it.
 
 ### 4. Use `AuthSession.makeRedirectUri()` for OAuth redirects
+
 Custom scheme URLs like `ord://google-auth` don't work reliably with `WebBrowser.openAuthSessionAsync` on native. Use `expo-auth-session`:
 
 ```tsx
@@ -58,25 +63,7 @@ This generates a proper redirect URI that works across platforms.
 
 ## PowerSync + Supabase Sync
 
-### 5. `uploadData` must always call `transaction.complete()`
-
-If `uploadData` throws an error before `transaction.complete()`, the CRUD transaction stays in the queue and **blocks ALL subsequent uploads** for every table. Always catch errors and call `complete()`:
-
-```ts
-// ❌ Broken: throw blocks the entire queue
-for (const op of transaction.crud) {
-  try { /* supabase call */ }
-  catch (error) { throw error; } // queue stuck forever
-}
-await transaction.complete();
-
-// ✅ Correct: log and continue, always complete
-for (const op of transaction.crud) {
-  try { /* supabase call */ }
-  catch (error) { console.error(error); continue; }
-}
-await transaction.complete();
-```
+### 5. throw error for non-permanent PowerSync upload errors — PowerSync docs recommend blocking the queue for transient errors rather than silently dropping data; the SDK handles retries automatically
 
 ### 6. `db.watch()` is reactive — don't manually re-query after mutations
 
@@ -108,3 +95,13 @@ ALTER TABLE projects ALTER COLUMN updated_at TYPE BIGINT;
 ALTER TABLE tags ALTER COLUMN updated_at TYPE BIGINT;
 ALTER TABLE task_tags ALTER COLUMN updated_at TYPE BIGINT;
 ```
+
+### 10. Database schema changes must be deployed to BOTH PowerSync AND Supabase
+
+Every time you change the database schema, three places need updating:
+
+1. **App code** — Drizzle schema (`db/schema.ts`), PowerSync schema (`lib/powersync-db.ts`), and queries
+2. **Supabase** — Run the corresponding migration SQL in the Supabase SQL editor
+3. **PowerSync** — Deploy the sync rules to PowerSync Console (if adding/dropping tables or columns that affect sync)
+
+If you only update the app code, the local SQLite DB and Supabase Postgres DB will diverge, causing sync failures. Always run the Supabase migration SQL and redeploy PowerSync sync rules after a schema change.

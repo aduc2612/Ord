@@ -4,7 +4,7 @@ import {
   spacing,
   typography,
 } from "@/constants/theme";
-import type { Note, Tag, Task } from "@/db/schema";
+import type { Tag, Task } from "@/db/schema";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
@@ -308,7 +308,6 @@ export default function DbTestScreen() {
       projects.loadProjects(),
       tags.loadTags(),
       taskTags.loadTaskTags(),
-      notes.loadNotes(),
     ]);
   };
 

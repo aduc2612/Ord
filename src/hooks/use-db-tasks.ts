@@ -5,7 +5,7 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 type Category = "next_action" | "waiting_for" | "someday";
 
@@ -37,7 +37,7 @@ export function useDbTasks() {
         .select()
         .from(tasks)
         .where(eq(tasks.userId, userId))
-        .orderBy(tasks.updatedAt);
+        .orderBy(asc(tasks.createdAt));
       setTaskList(result as Task[]);
       setReady(true);
       setError(null);
@@ -58,7 +58,7 @@ export function useDbTasks() {
       .select()
       .from(tasks)
       .where(eq(tasks.userId, userId))
-      .orderBy(tasks.updatedAt);
+      .orderBy(asc(tasks.createdAt));
 
     db.watch(
       query,
@@ -99,6 +99,7 @@ export function useDbTasks() {
           projectId: null,
           dueDate: null,
           completedAt: null,
+          createdAt: now,
           updatedAt: now,
         });
         await loadTasks();

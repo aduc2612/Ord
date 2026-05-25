@@ -70,8 +70,8 @@ export const connector: PowerSyncBackendConnector = {
           );
           continue;
         }
-        console.error("[PowerSync] Upload error, skipping:", id, error);
-        continue;
+        console.error("[PowerSync] Upload error, retrying:", id, error);
+        throw error;
       }
     }
 

@@ -5,7 +5,7 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 export function useDbTags() {
   const { claims } = useAuthContext();
@@ -35,7 +35,7 @@ export function useDbTags() {
         .select()
         .from(tags)
         .where(eq(tags.userId, userId))
-        .orderBy(tags.updatedAt);
+        .orderBy(asc(tags.createdAt));
       setTagList(result as Tag[]);
       setReady(true);
       setError(null);
@@ -56,7 +56,7 @@ export function useDbTags() {
       .select()
       .from(tags)
       .where(eq(tags.userId, userId))
-      .orderBy(tags.updatedAt);
+      .orderBy(asc(tags.createdAt));
 
     db.watch(
       query,
@@ -91,6 +91,7 @@ export function useDbTags() {
         id,
         userId,
         title: `Tag ${tagCountRef.current + 1}`,
+        createdAt: now,
         updatedAt: now,
       });
       await loadTags();

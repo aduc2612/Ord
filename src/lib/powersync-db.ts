@@ -22,6 +22,7 @@ const powerSyncSchema = new Schema({
     project_id: column.text,
     due_date: column.integer,
     completed_at: column.integer,
+    created_at: column.integer,
     updated_at: column.integer,
   }),
   projects: new Table({
@@ -30,12 +31,14 @@ const powerSyncSchema = new Schema({
     title: column.text,
     description: column.text,
     is_active: column.integer,
+    created_at: column.integer,
     updated_at: column.integer,
   }),
   tags: new Table({
     id: column.text,
     user_id: column.text,
     title: column.text,
+    created_at: column.integer,
     updated_at: column.integer,
   }),
   task_tags: new Table({
@@ -43,12 +46,14 @@ const powerSyncSchema = new Schema({
     user_id: column.text,
     task_id: column.text,
     tag_id: column.text,
+    created_at: column.integer,
     updated_at: column.integer,
   }),
   notes: new Table({
     id: column.text,
     user_id: column.text,
     title: column.text,
+    created_at: column.integer,
     updated_at: column.integer,
   }),
 })

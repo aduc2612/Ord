@@ -1,10 +1,12 @@
 import SearchBar from "@/components/search-bar";
 import { borderRadius, spacing, typography } from "@/constants/theme";
+import type { Note } from "@/db/schema";
 import { useDbNotes } from "@/hooks/use-db-notes";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function createStyles(theme: Theme) {
@@ -13,14 +15,11 @@ function createStyles(theme: Theme) {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    scrollContent: {
-      padding: spacing.lg,
-      gap: spacing.lg,
-    },
     headerRow: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
+      paddingHorizontal: spacing.lg,
     },
     header: {
       ...typography.headlineLarge,
@@ -34,13 +33,15 @@ function createStyles(theme: Theme) {
       ...typography.labelLarge,
       color: theme.colors.primary,
     },
-    noteList: {
-      gap: spacing.sm,
+    searchWrapper: {
+      paddingHorizontal: spacing.lg,
     },
     noteItem: {
       backgroundColor: theme.colors.surface,
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
+      marginHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
     },
     noteText: {
       ...typography.bodyMedium,
@@ -62,46 +63,72 @@ export default function InboxScreen() {
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + spacing.lg },
-        ]}
-      >
-        <View style={styles.headerRow}>
-          <Text style={styles.header}>Inbox</Text>
-          <Pressable
-            style={styles.processButton}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={styles.processButtonText}>Process</Text>
-          </Pressable>
-        </View>
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return noteList;
+    const query = searchQuery.toLowerCase().trim();
+    return noteList.filter((note) =>
+      note.title.toLowerCase().includes(query),
+    );
+  }, [noteList, searchQuery]);
 
+  const renderItem = ({ item }: { item: Note }) => (
+    <Pressable
+      style={styles.noteItem}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
+      <Text style={styles.noteText}>{item.title}</Text>
+    </Pressable>
+  );
+
+  const ListHeader = (
+    <View style={{ gap: spacing.lg, paddingBottom: spacing.lg }}>
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>Inbox</Text>
+        <Pressable
+          style={styles.processButton}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={styles.processButtonText}>Process</Text>
+        </Pressable>
+      </View>
+      <View style={styles.searchWrapper}>
         <SearchBar
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder="Search notes"
         />
+      </View>
+    </View>
+  );
 
-        <View style={styles.noteList}>
-          {ready && noteList.length === 0 ? (
-            <Text style={styles.emptyText}>No notes yet</Text>
-          ) : (
-            noteList.map((note) => (
-              <Pressable
-                key={note.id}
-                style={styles.noteItem}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.noteText}>{note.title}</Text>
-              </Pressable>
-            ))
-          )}
-        </View>
-      </ScrollView>
+  if (!ready) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top + spacing.lg },
+        ]}
+      >
+        {ListHeader}
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlashList
+        data={filteredNotes}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{
+          paddingTop: insets.top + spacing.lg,
+          paddingBottom: spacing.lg,
+        }}
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No notes yet</Text>
+        }
+      />
     </View>
   );
 }

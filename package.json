@@ -19,6 +19,7 @@
     "@react-navigation/elements": "^2.9.10",
     "@react-navigation/native": "^7.1.33",
     "@react-oauth/google": "^0.13.5",
+    "@shopify/flash-list": "2.0.2",
     "@supabase/supabase-js": "^2.105.4",
     "babel-preset-expo": "~55.0.8",
     "drizzle-orm": "^0.45.2",

@@ -5,7 +5,7 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 export function useDbNotes() {
   const { claims } = useAuthContext();
@@ -25,25 +25,6 @@ export function useDbNotes() {
     setReady(false);
   }, []);
 
-  const loadNotes = useCallback(async () => {
-    if (!userId) {
-      clearState();
-      return;
-    }
-    try {
-      const result = await db
-        .select()
-        .from(notes)
-        .where(eq(notes.userId, userId));
-      setNoteList(result as Note[]);
-      setReady(true);
-      setError(null);
-    } catch (e) {
-      console.error("loadNotes error:", e);
-      Alert.alert("Error", "Failed to load notes");
-    }
-  }, [userId, clearState]);
-
   useEffect(() => {
     if (!userId) {
       clearState();
@@ -54,7 +35,8 @@ export function useDbNotes() {
     const query = db
       .select()
       .from(notes)
-      .where(eq(notes.userId, userId));
+      .where(eq(notes.userId, userId))
+      .orderBy(asc(notes.createdAt));
 
     db.watch(
       query,
@@ -84,11 +66,13 @@ export function useDbNotes() {
     setLoading(true);
     try {
       const id = Crypto.randomUUID();
+      const now = Date.now();
       await db.insert(notes).values({
         id,
         userId,
         title: `Note ${noteCountRef.current + 1}`,
-        updatedAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
       });
     } catch (e) {
       console.error("insertNote error:", e);
@@ -159,7 +143,6 @@ export function useDbNotes() {
     loading,
     ready,
     error,
-    loadNotes,
     insertNote,
     updateNote,
     deleteNote,

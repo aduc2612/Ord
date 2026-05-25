@@ -5,7 +5,7 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 export function useDbProjects() {
   const { claims } = useAuthContext();
@@ -35,7 +35,7 @@ export function useDbProjects() {
         .select()
         .from(projects)
         .where(eq(projects.userId, userId))
-        .orderBy(projects.updatedAt);
+        .orderBy(asc(projects.createdAt));
       setProjectList(result as Project[]);
       setReady(true);
       setError(null);
@@ -56,7 +56,7 @@ export function useDbProjects() {
       .select()
       .from(projects)
       .where(eq(projects.userId, userId))
-      .orderBy(projects.updatedAt);
+      .orderBy(asc(projects.createdAt));
 
     db.watch(
       query,
@@ -93,6 +93,7 @@ export function useDbProjects() {
         title: `Project ${projectCountRef.current + 1}`,
         description: `Description for project ${projectCountRef.current + 1}`,
         isActive: true,
+        createdAt: now,
         updatedAt: now,
       });
       await loadProjects();
