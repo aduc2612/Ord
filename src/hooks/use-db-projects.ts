@@ -136,7 +136,10 @@ export function useDbProjects() {
 
   const toggleProject = useCallback(
     async (projectId: string, isActive: boolean) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -159,7 +162,10 @@ export function useDbProjects() {
 
   const deleteProject = useCallback(
     async (projectId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -177,7 +183,10 @@ export function useDbProjects() {
   );
 
   const deleteAllProjects = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(projects).where(eq(projects.userId, userId));

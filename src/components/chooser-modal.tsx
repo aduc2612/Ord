@@ -165,16 +165,18 @@ export default function ChooserModal({
 
   const noneSelected = selectedIds.length === 0;
 
+  const modalBodyStyle = useMemo(
+    () => ({ paddingTop: insets.top + spacing.lg }),
+    [insets.top],
+  );
+
   if (!visible) return null;
 
   return (
     <>
       <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
         <View
-          style={[
-            styles.container,
-            { paddingTop: insets.top + spacing.lg },
-          ]}
+          style={[styles.container, modalBodyStyle]}
         >
           <View style={styles.header}>
             <Pressable

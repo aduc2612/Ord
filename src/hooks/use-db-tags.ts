@@ -131,7 +131,10 @@ export function useDbTags() {
 
   const deleteTag = useCallback(
     async (tagId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -149,7 +152,10 @@ export function useDbTags() {
   );
 
   const deleteAllTags = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(tags).where(eq(tags.userId, userId));

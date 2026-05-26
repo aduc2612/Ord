@@ -112,7 +112,10 @@ export function useDbNotes() {
 
   const deleteNote = useCallback(
     async (noteId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -129,7 +132,10 @@ export function useDbNotes() {
   );
 
   const deleteAllNotes = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(notes).where(eq(notes.userId, userId));

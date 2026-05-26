@@ -107,7 +107,10 @@ export function useDbTaskTags() {
 
   const removeTagFromTask = useCallback(
     async (taskId: string, tagId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -131,7 +134,10 @@ export function useDbTaskTags() {
   );
 
   const deleteAllTaskTags = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(taskTags).where(eq(taskTags.userId, userId));

@@ -49,7 +49,7 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
 });
 
 export const initializeBackgroundTask = async (
-  innerAppMountedPromise: Promise<void>
+  innerAppMountedPromise: Promise<void>,
 ) => {
   await innerAppMountedPromise;
 
@@ -64,33 +64,32 @@ export const initializeBackgroundTask = async (
           await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
         if (isTaskRegistered) {
           console.log(
-            "[Background Sync] App is active. Unregistering background task."
+            "[Background Sync] App is active. Unregistering background task.",
           );
           try {
             await BackgroundTask.unregisterTaskAsync(BACKGROUND_SYNC_TASK);
-          } catch {
+          } catch (err) {
             console.log(
-              "[Background Sync] Task already unregistered, skipping."
+              "[Background Sync] Task already unregistered, skipping.",
+              err,
             );
           }
         }
-      } else if (
-        nextAppState === "background" ||
-        nextAppState === "inactive"
-      ) {
+      } else if (nextAppState === "background" || nextAppState === "inactive") {
         const isTaskRegistered =
           await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
         if (!isTaskRegistered) {
           console.log(
-            "[Background Sync] App is backgrounded. Registering background task."
+            "[Background Sync] App is backgrounded. Registering background task.",
           );
           try {
             await BackgroundTask.registerTaskAsync(BACKGROUND_SYNC_TASK, {
               minimumInterval: MINIMUM_INTERVAL,
             });
-          } catch {
+          } catch (err) {
             console.log(
-              "[Background Sync] Task already registered, skipping."
+              "[Background Sync] Task already registered, skipping.",
+              err,
             );
           }
         }

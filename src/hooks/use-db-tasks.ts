@@ -113,7 +113,6 @@ export function useDbTasks() {
       } catch (e) {
         console.error("insertTask error:", e);
         Toast.show({ type: "error", text1: "Failed to insert task" });
-        throw e;
       } finally {
         setLoading(false);
       }
@@ -151,7 +150,10 @@ export function useDbTasks() {
 
   const completeTask = useCallback(
     async (taskId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -174,7 +176,10 @@ export function useDbTasks() {
 
   const deleteTask = useCallback(
     async (taskId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -192,7 +197,10 @@ export function useDbTasks() {
   );
 
   const deleteAllTasks = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(tasks).where(eq(tasks.userId, userId));

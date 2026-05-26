@@ -45,6 +45,13 @@ function formatDate(date: Date): string {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    keyboardAvoiding: {
+      flex: 1,
+    },
     scrollContent: {
       flexGrow: 1,
       paddingHorizontal: spacing.lg,
@@ -179,7 +186,7 @@ export default function ClarifyScreen() {
   );
   const totalNotes = parseInt(totalStr ?? "0", 10);
   const currentIndex = totalNotes - queue.length - 1;
-  const progress = totalNotes > 0 ? currentIndex / totalNotes : 0;
+  const progress = totalNotes > 0 ? Math.min((currentIndex + 1) / totalNotes, 1) : 0;
 
   const currentNote = useMemo(
     () => noteList.find((n) => n.id === noteId),
@@ -368,17 +375,19 @@ export default function ClarifyScreen() {
     secondaryAction === "delegate" || secondaryAction === "defer";
   const showDoneHelper = secondaryAction === "done_2min";
 
+  const scrollContentStyle = useMemo(
+    () => [styles.scrollContent, { paddingTop: insets.top }],
+    [styles.scrollContent, insets.top],
+  );
+
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.keyboardAvoiding}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingTop: insets.top },
-          ]}
+          contentContainerStyle={scrollContentStyle}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.headerRow}>
