@@ -4,7 +4,7 @@ import { db } from "@/lib/powersync-db";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { eq, and, asc } from "drizzle-orm";
 
 export function useDbTaskTags() {
@@ -38,7 +38,7 @@ export function useDbTaskTags() {
       setError(null);
     } catch (e) {
       console.error("loadTaskTags error:", e);
-      Alert.alert("Error", "Failed to load task tags");
+      Toast.show({ type: "error", text1: "Failed to load task tags" });
     }
   }, [userId, clearState]);
 
@@ -78,7 +78,7 @@ export function useDbTaskTags() {
   const addTagToTask = useCallback(
     async (taskId: string, tagId: string) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -96,7 +96,8 @@ export function useDbTaskTags() {
         await loadTaskTags();
       } catch (e) {
         console.error("addTagToTask error:", e);
-        Alert.alert("Error", "Failed to add tag to task");
+        Toast.show({ type: "error", text1: "Failed to add tag to task" });
+        throw e;
       } finally {
         setLoading(false);
       }
@@ -106,7 +107,10 @@ export function useDbTaskTags() {
 
   const removeTagFromTask = useCallback(
     async (taskId: string, tagId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -121,7 +125,7 @@ export function useDbTaskTags() {
         await loadTaskTags();
       } catch (e) {
         console.error("removeTagFromTask error:", e);
-        Alert.alert("Error", "Failed to remove tag from task");
+        Toast.show({ type: "error", text1: "Failed to remove tag from task" });
       } finally {
         setLoading(false);
       }
@@ -130,14 +134,17 @@ export function useDbTaskTags() {
   );
 
   const deleteAllTaskTags = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(taskTags).where(eq(taskTags.userId, userId));
       await loadTaskTags();
     } catch (e) {
       console.error("deleteAllTaskTags error:", e);
-      Alert.alert("Error", "Failed to delete all task tags");
+      Toast.show({ type: "error", text1: "Failed to delete all task tags" });
     } finally {
       setLoading(false);
     }

@@ -87,7 +87,6 @@ function createStyles(theme: Theme) {
       backgroundColor: theme.colors.surface,
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
-      ...theme.shadows.sm,
     },
     resultTitle: {
       ...typography.titleMedium,
@@ -442,7 +441,7 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={() => tasks.insertTask("next_action")}
+              onPress={() => tasks.insertTask({ category: "next_action" })}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Next</Text>
@@ -455,7 +454,7 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={() => tasks.insertTask("waiting_for")}
+              onPress={() => tasks.insertTask({ category: "waiting_for" })}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Waiting</Text>
@@ -468,7 +467,7 @@ export default function DbTestScreen() {
                     pressed || loading ? theme.interaction.pressedOpacity : 1,
                 },
               ]}
-              onPress={() => tasks.insertTask("someday")}
+              onPress={() => tasks.insertTask({ category: "someday" })}
               disabled={loading}
             >
               <Text style={styles.buttonText}>+ Someday</Text>

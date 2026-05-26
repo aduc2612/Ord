@@ -4,7 +4,7 @@ import { db } from "@/lib/powersync-db";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { eq, and, asc } from "drizzle-orm";
 
 export function useDbTags() {
@@ -41,7 +41,7 @@ export function useDbTags() {
       setError(null);
     } catch (e) {
       console.error("loadTags error:", e);
-      Alert.alert("Error", "Failed to load tags");
+      Toast.show({ type: "error", text1: "Failed to load tags" });
     }
   }, [userId, clearState]);
 
@@ -81,7 +81,7 @@ export function useDbTags() {
   const insertTag = useCallback(
     async (title?: string) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -98,7 +98,7 @@ export function useDbTags() {
         await loadTags();
       } catch (e) {
         console.error("insertTag error:", e);
-        Alert.alert("Error", "Failed to insert tag");
+        Toast.show({ type: "error", text1: "Failed to insert tag" });
       } finally {
         setLoading(false);
       }
@@ -109,7 +109,7 @@ export function useDbTags() {
   const updateTag = useCallback(
     async (tagId: string, updates: Partial<Pick<Tag, "title">>) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -121,7 +121,7 @@ export function useDbTags() {
         await loadTags();
       } catch (e) {
         console.error("updateTag error:", e);
-        Alert.alert("Error", "Failed to update tag");
+        Toast.show({ type: "error", text1: "Failed to update tag" });
       } finally {
         setLoading(false);
       }
@@ -131,7 +131,10 @@ export function useDbTags() {
 
   const deleteTag = useCallback(
     async (tagId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -140,7 +143,7 @@ export function useDbTags() {
         await loadTags();
       } catch (e) {
         console.error("deleteTag error:", e);
-        Alert.alert("Error", "Failed to delete tag");
+        Toast.show({ type: "error", text1: "Failed to delete tag" });
       } finally {
         setLoading(false);
       }
@@ -149,14 +152,17 @@ export function useDbTags() {
   );
 
   const deleteAllTags = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(tags).where(eq(tags.userId, userId));
       await loadTags();
     } catch (e) {
       console.error("deleteAllTags error:", e);
-      Alert.alert("Error", "Failed to delete all tags");
+      Toast.show({ type: "error", text1: "Failed to delete all tags" });
     } finally {
       setLoading(false);
     }

@@ -6,10 +6,11 @@ import { useDbNotes } from "@/hooks/use-db-notes";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { FlashList } from "@shopify/flash-list";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -70,6 +71,7 @@ export default function InboxScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
   useFocusEffect(
@@ -80,11 +82,38 @@ export default function InboxScreen() {
     }, []),
   );
 
+  const sortedNotes = useMemo(
+    () => [...noteList].sort((a, b) => a.createdAt - b.createdAt),
+    [noteList],
+  );
+
   const filteredNotes = useMemo(() => {
-    if (!searchQuery.trim()) return noteList;
+    if (!searchQuery.trim()) return sortedNotes;
     const query = searchQuery.toLowerCase().trim();
-    return noteList.filter((note) => note.title.toLowerCase().includes(query));
-  }, [noteList, searchQuery]);
+    return sortedNotes.filter((note) =>
+      note.title.toLowerCase().includes(query),
+    );
+  }, [sortedNotes, searchQuery]);
+
+  const handleProcess = useCallback(() => {
+    const available = sortedNotes;
+    if (available.length === 0) {
+      Toast.show({ type: "error", text1: "No notes to process" });
+      return;
+    }
+    const queue = available
+      .slice(1)
+      .map((n) => n.id)
+      .join(",");
+    router.push({
+      pathname: "/(tabs)/clarify",
+      params: {
+        noteId: available[0].id,
+        queue,
+        totalNotes: String(available.length),
+      },
+    });
+  }, [sortedNotes, router]);
 
   const renderItem = ({ item }: { item: Note }) => (
     <Pressable
@@ -107,6 +136,7 @@ export default function InboxScreen() {
           <Pressable
             style={styles.processButton}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            onPress={handleProcess}
           >
             <Text style={styles.processButtonText}>Process</Text>
           </Pressable>

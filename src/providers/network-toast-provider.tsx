@@ -29,6 +29,12 @@ function createStyles(theme: Theme) {
     toastOnlineText: {
       color: theme.colors.onSuccess,
     },
+    toastErrorContainer: {
+      backgroundColor: theme.colors.error,
+    },
+    toastErrorText: {
+      color: theme.colors.onError,
+    },
   });
 }
 
@@ -50,6 +56,13 @@ function toastConfig(theme: Theme) {
     online: (props: BaseToastProps) => (
       <View style={[styles.base, styles.toastOnlineContainer]}>
         <Text style={[styles.text, styles.toastOnlineText]}>
+          {props.text1}
+        </Text>
+      </View>
+    ),
+    error: (props: BaseToastProps) => (
+      <View style={[styles.base, styles.toastErrorContainer]}>
+        <Text style={[styles.text, styles.toastErrorText]}>
           {props.text1}
         </Text>
       </View>

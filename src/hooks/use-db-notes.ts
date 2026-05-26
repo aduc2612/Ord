@@ -4,7 +4,7 @@ import { db } from "@/lib/powersync-db";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { eq, and, asc } from "drizzle-orm";
 
 export function useDbNotes() {
@@ -61,7 +61,7 @@ export function useDbNotes() {
   const insertNote = useCallback(
     async (title?: string) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -77,7 +77,7 @@ export function useDbNotes() {
         });
       } catch (e) {
         console.error("insertNote error:", e);
-        Alert.alert("Error", "Failed to insert note");
+        Toast.show({ type: "error", text1: "Failed to insert note" });
       } finally {
         setLoading(false);
       }
@@ -91,7 +91,7 @@ export function useDbNotes() {
       updates: Partial<Pick<Note, "title">>,
     ) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -102,7 +102,7 @@ export function useDbNotes() {
           .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
       } catch (e) {
         console.error("updateNote error:", e);
-        Alert.alert("Error", "Failed to update note");
+        Toast.show({ type: "error", text1: "Failed to update note" });
       } finally {
         setLoading(false);
       }
@@ -112,7 +112,10 @@ export function useDbNotes() {
 
   const deleteNote = useCallback(
     async (noteId: string) => {
-      if (!userId) return;
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
       setLoading(true);
       try {
         await db
@@ -120,7 +123,7 @@ export function useDbNotes() {
           .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
       } catch (e) {
         console.error("deleteNote error:", e);
-        Alert.alert("Error", "Failed to delete note");
+        Toast.show({ type: "error", text1: "Failed to delete note" });
       } finally {
         setLoading(false);
       }
@@ -129,13 +132,16 @@ export function useDbNotes() {
   );
 
   const deleteAllNotes = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      Toast.show({ type: "error", text1: "No user ID available" });
+      return;
+    }
     setLoading(true);
     try {
       await db.delete(notes).where(eq(notes.userId, userId));
     } catch (e) {
       console.error("deleteAllNotes error:", e);
-      Alert.alert("Error", "Failed to delete all notes");
+      Toast.show({ type: "error", text1: "Failed to delete all notes" });
     } finally {
       setLoading(false);
     }

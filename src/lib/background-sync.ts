@@ -6,6 +6,8 @@ import { connector, powerSyncDb } from "@/lib/powersync";
 
 const BACKGROUND_SYNC_TASK = "ord-background-powersync-task";
 const MINIMUM_INTERVAL = 15;
+let lastProcessedTime = 0;
+const DEBOUNCE_MS = 200;
 
 TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
   try {
@@ -47,34 +49,53 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
 });
 
 export const initializeBackgroundTask = async (
-  innerAppMountedPromise: Promise<void>
+  innerAppMountedPromise: Promise<void>,
 ) => {
   await innerAppMountedPromise;
 
   AppState.addEventListener("change", async (nextAppState) => {
-    if (nextAppState === "active") {
-      const isTaskRegistered =
-        await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
-      if (isTaskRegistered) {
-        console.log(
-          "[Background Sync] App is active. Unregistering background task."
-        );
-        await BackgroundTask.unregisterTaskAsync(BACKGROUND_SYNC_TASK);
+    const now = Date.now();
+    if (now - lastProcessedTime < DEBOUNCE_MS) return;
+    lastProcessedTime = now;
+
+    try {
+      if (nextAppState === "active") {
+        const isTaskRegistered =
+          await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
+        if (isTaskRegistered) {
+          console.log(
+            "[Background Sync] App is active. Unregistering background task.",
+          );
+          try {
+            await BackgroundTask.unregisterTaskAsync(BACKGROUND_SYNC_TASK);
+          } catch (err) {
+            console.log(
+              "[Background Sync] Task already unregistered, skipping.",
+              err,
+            );
+          }
+        }
+      } else if (nextAppState === "background" || nextAppState === "inactive") {
+        const isTaskRegistered =
+          await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
+        if (!isTaskRegistered) {
+          console.log(
+            "[Background Sync] App is backgrounded. Registering background task.",
+          );
+          try {
+            await BackgroundTask.registerTaskAsync(BACKGROUND_SYNC_TASK, {
+              minimumInterval: MINIMUM_INTERVAL,
+            });
+          } catch (err) {
+            console.log(
+              "[Background Sync] Task already registered, skipping.",
+              err,
+            );
+          }
+        }
       }
-    } else if (
-      nextAppState === "background" ||
-      nextAppState === "inactive"
-    ) {
-      const isTaskRegistered =
-        await TaskManager.isTaskRegisteredAsync(BACKGROUND_SYNC_TASK);
-      if (!isTaskRegistered) {
-        console.log(
-          "[Background Sync] App is backgrounded. Registering background task."
-        );
-        await BackgroundTask.registerTaskAsync(BACKGROUND_SYNC_TASK, {
-          minimumInterval: MINIMUM_INTERVAL,
-        });
-      }
+    } catch (err) {
+      console.error("[Background Sync] Handler error:", err);
     }
   });
 
