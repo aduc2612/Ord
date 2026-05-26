@@ -1,3 +1,4 @@
+import { fetch } from 'expo/fetch'
 import { createClient, type SupportedStorage } from '@supabase/supabase-js'
 import * as SecureStore from 'expo-secure-store'
 import { Platform } from 'react-native'
@@ -29,6 +30,9 @@ export const supabase = createClient(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
+    },
+    global: {
+      fetch: fetch as unknown as typeof globalThis.fetch,
     },
   }
 )

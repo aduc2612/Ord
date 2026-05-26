@@ -1,8 +1,10 @@
+import { initializeBackgroundTask } from "@/lib/background-sync";
 import { SplashScreenController } from "@/components/splash-screen-controller";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import AuthProvider from "@/providers/auth-provider";
 import { PowerSyncProvider } from "@/providers/PowerSyncProvider";
 import { Stack } from "expo-router";
+import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 function RootNavigator() {
@@ -21,6 +23,13 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    const appMounted = Promise.resolve();
+    initializeBackgroundTask(appMounted).catch((err) => {
+      console.error("[Background Sync] Init error:", err);
+    });
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AuthProvider>

@@ -24,9 +24,8 @@ The app includes:
 - TypeScript
 - Expo Router
 - Zustand
-- Expo SQLite (local database)
 - Drizzle ORM (schema + migrations)
-- PowerSync (offline-first sync)
+- PowerSync (offline-first sync) + OP-Sqlite (local database)
 - Supabase (Postgres backend + Auth)
 
 Do not introduce new major libraries unless there is a strong reason.
