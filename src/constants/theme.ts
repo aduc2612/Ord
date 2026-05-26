@@ -22,6 +22,9 @@ export const colors = {
     errorContainer: "#F9DEDC",
     onErrorContainer: "#410E0B",
 
+    success: "#4CAF50",
+    onSuccess: "#FFFFFF",
+
     background: "#F7F7F7",
     onBackground: "#1C1C1C",
 
@@ -58,6 +61,9 @@ export const colors = {
     onError: "#601410",
     errorContainer: "#8B1A16",
     onErrorContainer: "#F9DEDC",
+
+    success: "#81C784",
+    onSuccess: "#000000",
 
     background: "#121212",
     onBackground: "#E6E6E6",

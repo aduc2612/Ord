@@ -3,6 +3,7 @@ import { SplashScreenController } from "@/components/splash-screen-controller";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import AuthProvider from "@/providers/auth-provider";
 import { PowerSyncProvider } from "@/providers/PowerSyncProvider";
+import NetworkToastProvider from "@/providers/network-toast-provider";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -34,8 +35,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <PowerSyncProvider>
-          <SplashScreenController />
-          <RootNavigator />
+          <NetworkToastProvider>
+            <SplashScreenController />
+            <RootNavigator />
+          </NetworkToastProvider>
         </PowerSyncProvider>
       </AuthProvider>
     </SafeAreaProvider>
