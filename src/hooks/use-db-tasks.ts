@@ -4,7 +4,7 @@ import { db } from "@/lib/powersync-db";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { eq, and, asc } from "drizzle-orm";
 
 type Category = "next_action" | "waiting_for" | "someday";
@@ -43,7 +43,7 @@ export function useDbTasks() {
       setError(null);
     } catch (e) {
       console.error("loadTasks error:", e);
-      Alert.alert("Error", "Failed to load tasks");
+      Toast.show({ type: "error", text1: "Failed to load tasks" });
     }
   }, [userId, clearState]);
 
@@ -81,9 +81,15 @@ export function useDbTasks() {
   }, [userId, clearState]);
 
   const insertTask = useCallback(
-    async (category?: Category) => {
+    async (params?: {
+      category?: Category;
+      title?: string;
+      description?: string;
+      projectId?: string | null;
+      dueDate?: number | null;
+    }) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -93,19 +99,21 @@ export function useDbTasks() {
         await db.insert(tasks).values({
           id,
           userId,
-          title: `Task ${taskCountRef.current + 1}`,
-          description: `Description for task ${taskCountRef.current + 1}`,
-          category: category ?? "next_action",
-          projectId: null,
-          dueDate: null,
+          title: params?.title ?? `Task ${taskCountRef.current + 1}`,
+          description: params?.description ?? null,
+          category: params?.category ?? "next_action",
+          projectId: params?.projectId ?? null,
+          dueDate: params?.dueDate ?? null,
           completedAt: null,
           createdAt: now,
           updatedAt: now,
         });
         await loadTasks();
+        return id;
       } catch (e) {
         console.error("insertTask error:", e);
-        Alert.alert("Error", "Failed to insert task");
+        Toast.show({ type: "error", text1: "Failed to insert task" });
+        throw e;
       } finally {
         setLoading(false);
       }
@@ -121,7 +129,7 @@ export function useDbTasks() {
       >,
     ) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -133,7 +141,7 @@ export function useDbTasks() {
         await loadTasks();
       } catch (e) {
         console.error("updateTask error:", e);
-        Alert.alert("Error", "Failed to update task");
+        Toast.show({ type: "error", text1: "Failed to update task" });
       } finally {
         setLoading(false);
       }
@@ -156,7 +164,7 @@ export function useDbTasks() {
         await loadTasks();
       } catch (e) {
         console.error("completeTask error:", e);
-        Alert.alert("Error", "Failed to complete task");
+        Toast.show({ type: "error", text1: "Failed to complete task" });
       } finally {
         setLoading(false);
       }
@@ -175,7 +183,7 @@ export function useDbTasks() {
         await loadTasks();
       } catch (e) {
         console.error("deleteTask error:", e);
-        Alert.alert("Error", "Failed to delete task");
+        Toast.show({ type: "error", text1: "Failed to delete task" });
       } finally {
         setLoading(false);
       }
@@ -191,7 +199,7 @@ export function useDbTasks() {
       await loadTasks();
     } catch (e) {
       console.error("deleteAllTasks error:", e);
-      Alert.alert("Error", "Failed to delete all tasks");
+      Toast.show({ type: "error", text1: "Failed to delete all tasks" });
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import { db } from "@/lib/powersync-db";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { eq, and, asc } from "drizzle-orm";
 
 export function useDbProjects() {
@@ -41,7 +41,7 @@ export function useDbProjects() {
       setError(null);
     } catch (e) {
       console.error("loadProjects error:", e);
-      Alert.alert("Error", "Failed to load projects");
+      Toast.show({ type: "error", text1: "Failed to load projects" });
     }
   }, [userId, clearState]);
 
@@ -81,7 +81,7 @@ export function useDbProjects() {
   const insertProject = useCallback(
     async (title?: string) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -100,7 +100,7 @@ export function useDbProjects() {
         await loadProjects();
       } catch (e) {
         console.error("insertProject error:", e);
-        Alert.alert("Error", "Failed to insert project");
+        Toast.show({ type: "error", text1: "Failed to insert project" });
       } finally {
         setLoading(false);
       }
@@ -114,7 +114,7 @@ export function useDbProjects() {
       updates: Partial<Pick<Project, "title" | "description" | "isActive">>,
     ) => {
       if (!userId) {
-        Alert.alert("Error", "No user ID available");
+        Toast.show({ type: "error", text1: "No user ID available" });
         return;
       }
       setLoading(true);
@@ -126,7 +126,7 @@ export function useDbProjects() {
         await loadProjects();
       } catch (e) {
         console.error("updateProject error:", e);
-        Alert.alert("Error", "Failed to update project");
+        Toast.show({ type: "error", text1: "Failed to update project" });
       } finally {
         setLoading(false);
       }
@@ -149,7 +149,7 @@ export function useDbProjects() {
         await loadProjects();
       } catch (e) {
         console.error("toggleProject error:", e);
-        Alert.alert("Error", "Failed to toggle project");
+        Toast.show({ type: "error", text1: "Failed to toggle project" });
       } finally {
         setLoading(false);
       }
@@ -168,7 +168,7 @@ export function useDbProjects() {
         await loadProjects();
       } catch (e) {
         console.error("deleteProject error:", e);
-        Alert.alert("Error", "Failed to delete project");
+        Toast.show({ type: "error", text1: "Failed to delete project" });
       } finally {
         setLoading(false);
       }
@@ -184,7 +184,7 @@ export function useDbProjects() {
       await loadProjects();
     } catch (e) {
       console.error("deleteAllProjects error:", e);
-      Alert.alert("Error", "Failed to delete all projects");
+      Toast.show({ type: "error", text1: "Failed to delete all projects" });
     } finally {
       setLoading(false);
     }

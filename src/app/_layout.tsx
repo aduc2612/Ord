@@ -1,9 +1,9 @@
-import { initializeBackgroundTask } from "@/lib/background-sync";
 import { SplashScreenController } from "@/components/splash-screen-controller";
 import { useAuthContext } from "@/hooks/use-auth-context";
+import { initializeBackgroundTask } from "@/lib/background-sync";
 import AuthProvider from "@/providers/auth-provider";
-import { PowerSyncProvider } from "@/providers/PowerSyncProvider";
 import NetworkToastProvider from "@/providers/network-toast-provider";
+import { PowerSyncProvider } from "@/providers/PowerSyncProvider";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -12,7 +12,12 @@ function RootNavigator() {
   const { isLoggedIn } = useAuthContext();
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        animation: "fade", // Options: 'fade', 'flip', 'slide_from_bottom', 'none'
+        animationDuration: 200,
+      }}
+    >
       <Stack.Protected guard={isLoggedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack.Protected>
