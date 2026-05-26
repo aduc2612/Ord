@@ -17,6 +17,18 @@ function createStyles(theme: Theme) {
     text: {
       ...theme.typography.bodyMedium,
     },
+    toastOfflineContainer: {
+      backgroundColor: theme.colors.error,
+    },
+    toastOfflineText: {
+      color: theme.colors.onError,
+    },
+    toastOnlineContainer: {
+      backgroundColor: theme.colors.success,
+    },
+    toastOnlineText: {
+      color: theme.colors.onSuccess,
+    },
   });
 }
 
@@ -26,18 +38,18 @@ function toastConfig(theme: Theme) {
   return {
     offline: (props: BaseToastProps) => (
       <View
-        style={[styles.base, { backgroundColor: theme.colors.error }]}
+        style={[styles.base, styles.toastOfflineContainer]}
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
       >
-        <Text style={[styles.text, { color: theme.colors.onError }]}>
+        <Text style={[styles.text, styles.toastOfflineText]}>
           {props.text1}
         </Text>
       </View>
     ),
     online: (props: BaseToastProps) => (
-      <View style={[styles.base, { backgroundColor: theme.colors.success }]}>
-        <Text style={[styles.text, { color: theme.colors.onSuccess }]}>
+      <View style={[styles.base, styles.toastOnlineContainer]}>
+        <Text style={[styles.text, styles.toastOnlineText]}>
           {props.text1}
         </Text>
       </View>
