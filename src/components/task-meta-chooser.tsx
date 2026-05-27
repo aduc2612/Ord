@@ -1,0 +1,130 @@
+import { borderRadius, spacing, typography } from "@/constants/theme";
+import type { Theme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+function formatDate(date: Date): string {
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+export interface TaskMetaChooserProps {
+  selectedTagIds: string[];
+  selectedProjectId: string | null;
+  dueDate: Date | null;
+  onTagPress: () => void;
+  onProjectPress: () => void;
+  onDueDatePress: () => void;
+}
+
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    detailRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.sm,
+      minHeight: 48,
+    },
+    detailLabel: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
+    },
+    detailValue: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurfaceVariant,
+      marginRight: spacing.sm,
+    },
+    detailValueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+  });
+}
+
+export default function TaskMetaChooser({
+  selectedTagIds,
+  selectedProjectId,
+  dueDate,
+  onTagPress,
+  onProjectPress,
+  onDueDatePress,
+}: TaskMetaChooserProps) {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
+  return (
+    <>
+      <Pressable
+        style={styles.detailRow}
+        onPress={onTagPress}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.detailLabel}>Tag</Text>
+        <View style={styles.detailValueRow}>
+          <Text style={styles.detailValue}>
+            {selectedTagIds.length > 0
+              ? `${selectedTagIds.length} selected`
+              : "None"}
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={theme.colors.onSurfaceVariant}
+          />
+        </View>
+      </Pressable>
+      <Pressable
+        style={styles.detailRow}
+        onPress={onProjectPress}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.detailLabel}>Project</Text>
+        <View style={styles.detailValueRow}>
+          <Text style={styles.detailValue}>
+            {selectedProjectId ? "Selected" : "None"}
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={theme.colors.onSurfaceVariant}
+          />
+        </View>
+      </Pressable>
+      <Pressable
+        style={styles.detailRow}
+        onPress={onDueDatePress}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.detailLabel}>Due date</Text>
+        <View style={styles.detailValueRow}>
+          <Text style={styles.detailValue}>
+            {dueDate ? formatDate(dueDate) : "None"}
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={theme.colors.onSurfaceVariant}
+          />
+        </View>
+      </Pressable>
+    </>
+  );
+}
