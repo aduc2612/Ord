@@ -240,6 +240,7 @@ export default function TaskDetailsSheet({
       ]);
 
       hasChangesRef.current = false;
+      initialTagIdsRef.current = isSomeday ? [] : [...selectedTagIds];
     } catch {
       Toast.show({ type: "error", text1: "Failed to save changes" });
     }
