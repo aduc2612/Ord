@@ -5,11 +5,11 @@ import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { BottomSheet } from "@expo/ui/community/bottom-sheet";
+import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useMemo, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type ChooserType = "tag" | "project";
 
@@ -24,8 +24,8 @@ export type ChooserModalProps = {
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      flex: 1,
       backgroundColor: theme.colors.background,
+      paddingTop: spacing.lg,
     },
     header: {
       flexDirection: "row",
@@ -89,7 +89,6 @@ function createStyles(theme: Theme) {
       paddingHorizontal: spacing.lg,
       paddingBottom: spacing.md,
     },
-
   });
 }
 
@@ -102,7 +101,6 @@ export default function ChooserModal({
 }: ChooserModalProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const insets = useSafeAreaInsets();
   const { tagList, insertTag } = useDbTags();
   const { projectList, insertProject } = useDbProjects();
   const [showPrompt, setShowPrompt] = useState(false);
@@ -113,9 +111,7 @@ export default function ChooserModal({
   const filteredItems = useMemo(() => {
     if (!searchQuery.trim()) return items;
     const query = searchQuery.toLowerCase().trim();
-    return items.filter((item) =>
-      item.title.toLowerCase().includes(query),
-    );
+    return items.filter((item) => item.title.toLowerCase().includes(query));
   }, [items, searchQuery]);
 
   const handleSelect = useCallback(
@@ -158,26 +154,24 @@ export default function ChooserModal({
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={styles.itemLabel}>{item.title}</Text>
-        {isSelected ? <Ionicons name="checkmark" size={22} color={theme.colors.primary} /> : null}
+        {isSelected ? (
+          <Ionicons name="checkmark" size={22} color={theme.colors.primary} />
+        ) : null}
       </Pressable>
     );
   };
 
   const noneSelected = selectedIds.length === 0;
 
-  const modalBodyStyle = useMemo(
-    () => ({ paddingTop: insets.top + spacing.lg }),
-    [insets.top],
-  );
-
-  if (!visible) return null;
-
   return (
     <>
-      <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-        <View
-          style={[styles.container, modalBodyStyle]}
-        >
+      <BottomSheet
+        index={visible ? 0 : -1}
+        onDismiss={onClose}
+        // snapPoints={["50%", "90%"]}
+        enablePanDownToClose
+      >
+        <View style={styles.container}>
           <View style={styles.header}>
             <Pressable
               style={styles.newButton}
@@ -216,12 +210,18 @@ export default function ChooserModal({
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Text style={styles.itemLabel}>None</Text>
-                {noneSelected ? <Ionicons name="checkmark" size={22} color={theme.colors.primary} /> : null}
+                {noneSelected ? (
+                  <Ionicons
+                    name="checkmark"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                ) : null}
               </Pressable>
             }
           />
         </View>
-      </Modal>
+      </BottomSheet>
       <PromptModal
         visible={showPrompt}
         title={type === "tag" ? "New Tag" : "New Project"}

@@ -1,10 +1,10 @@
-import { borderRadius, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BottomSheet } from "@expo/ui/community/bottom-sheet";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export type DropdownOption = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -25,18 +25,9 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "center",
     },
-    overlay: {
-      flex: 1,
-      // backgroundColor: "rgba(0,0,0,0.4)",
-    },
     menu: {
-      position: "absolute",
-      right: spacing.lg,
       backgroundColor: theme.colors.surface,
-      borderRadius: borderRadius.lg,
-      minWidth: 200,
       paddingVertical: spacing.sm,
-      ...theme.shadows.lg,
     },
     menuItem: {
       flexDirection: "row",
@@ -62,7 +53,6 @@ function createStyles(theme: Theme) {
 export default function DropdownMenu({ options }: DropdownMenuProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
 
   const close = useCallback(() => {
@@ -93,16 +83,12 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
         />
       </Pressable>
 
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={close}
+      <BottomSheet
+        index={visible ? 0 : -1}
+        onDismiss={close}
+        enablePanDownToClose
       >
-        <Pressable style={styles.overlay} onPress={close}>
-          <View />
-        </Pressable>
-        <View style={[styles.menu, { top: insets.top + 48 }]}>
+        <View style={styles.menu}>
           {options.map((option, index) => (
             <Pressable
               key={index}
@@ -134,7 +120,7 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
             </Pressable>
           ))}
         </View>
-      </Modal>
+      </BottomSheet>
     </>
   );
 }

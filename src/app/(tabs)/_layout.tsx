@@ -8,7 +8,6 @@ export default function TabsLayout() {
       <Tabs.Screen name="lists" options={{ headerShown: false }} />
       <Tabs.Screen name="inbox" options={{ headerShown: false }} />
       <Tabs.Screen name="clarify" options={{ headerShown: false }} />
-      <Tabs.Screen name="task-details" options={{ headerShown: false }} />
     </Tabs>
   );
 }

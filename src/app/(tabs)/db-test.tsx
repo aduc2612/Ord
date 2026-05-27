@@ -14,7 +14,7 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { useRouter } from "expo-router";
+import TaskDetailsSheet from "@/components/task-details-sheet";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -282,7 +282,6 @@ export default function DbTestScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { claims } = useAuthContext();
   const userId = claims?.sub as string | undefined;
 
@@ -334,11 +333,10 @@ export default function DbTestScreen() {
     onConfirm: () => {},
   });
 
+  const [sheetTaskId, setSheetTaskId] = useState<string | null>(null);
+
   const editTaskTitle = (taskId: string) => {
-    router.push({
-      pathname: "/(tabs)/task-details",
-      params: { taskId },
-    });
+    setSheetTaskId(taskId);
   };
 
   const editProjectTitle = (projectId: string, currentTitle: string) => {
@@ -804,6 +802,13 @@ export default function DbTestScreen() {
         onConfirm={prompt.onConfirm}
         onCancel={() => setPrompt((p) => ({ ...p, visible: false }))}
       />
+      {sheetTaskId ? (
+        <TaskDetailsSheet
+          visible={!!sheetTaskId}
+          taskId={sheetTaskId}
+          onDismiss={() => setSheetTaskId(null)}
+        />
+      ) : null}
     </View>
   );
 }
