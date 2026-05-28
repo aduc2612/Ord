@@ -1,37 +1,22 @@
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    overlay: {
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      justifyContent: "flex-start",
-      alignItems: "center",
-    },
     container: {
-      backgroundColor: theme.colors.surface,
-      borderBottomLeftRadius: borderRadius.xl,
-      borderBottomRightRadius: borderRadius.xl,
+      backgroundColor: theme.colors.background,
       padding: spacing.lg,
       width: "100%",
       ...theme.shadows.lg,
     },
     title: {
       ...typography.titleMedium,
-      color: theme.colors.onSurface,
+      color: theme.colors.onBackground,
       marginBottom: spacing.xs,
     },
     message: {
@@ -42,7 +27,7 @@ function createStyles(theme: Theme) {
     input: {
       ...typography.bodyMedium,
       color: theme.colors.onSurface,
-      backgroundColor: theme.colors.surfaceVariant,
+      backgroundColor: theme.colors.surface,
       borderRadius: borderRadius.lg,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
@@ -108,17 +93,18 @@ export default function PromptModal({
 }: PromptModalProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const insets = useSafeAreaInsets();
   const [text, setText] = useState(defaultValue);
   const [showError, setShowError] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (visible) {
       setText(defaultValue);
       setShowError(false);
     }
   }, [visible, defaultValue]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (visible) {
@@ -135,8 +121,7 @@ export default function PromptModal({
       return;
     }
     onConfirm(text.trim());
-    onCancel();
-  }, [onConfirm, onCancel, text]);
+  }, [onConfirm, text]);
 
   const handleChangeText = useCallback((value: string) => {
     setText(value);
@@ -144,61 +129,50 @@ export default function PromptModal({
   }, []);
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCancel}
+    <BottomSheet
+      index={visible ? 0 : -1}
+      onDismiss={onCancel}
+      enablePanDownToClose
     >
-      <TouchableWithoutFeedback onPress={onCancel}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            <View
-              style={[
-                styles.container,
-                { paddingTop: insets.top + spacing.lg },
-              ]}
-            >
-              <Text style={styles.title}>{title}</Text>
-              {message ? <Text style={styles.message}>{message}</Text> : null}
-              <TextInput
-                ref={inputRef}
-                style={styles.input}
-                value={text}
-                onChangeText={handleChangeText}
-                placeholder={placeholder ?? "Enter text..."}
-                placeholderTextColor={theme.colors.onSurfaceVariant}
-                onSubmitEditing={handleConfirm}
-                returnKeyType="done"
-                autoFocus
-              />
-              {showError ? (
-                <Text style={styles.errorText}>Please enter a value</Text>
-              ) : null}
-              <View style={styles.buttonRow}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.cancelButton,
-                    { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
-                  ]}
-                  onPress={onCancel}
-                >
-                  <Text style={styles.cancelText}>{cancelLabel}</Text>
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.confirmButton,
-                    { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
-                  ]}
-                  onPress={handleConfirm}
-                >
-                  <Text style={styles.confirmText}>{confirmLabel}</Text>
-                </Pressable>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
+      <View style={styles.container}>
+        <Text style={styles.title}>{title}</Text>
+        {message ? <Text style={styles.message}>{message}</Text> : null}
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          value={text}
+          onChangeText={handleChangeText}
+          placeholder={placeholder ?? "Enter text..."}
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          onSubmitEditing={handleConfirm}
+          returnKeyType="done"
+          autoFocus
+        />
+        {showError ? (
+          <Text style={styles.errorText}>Please enter a value</Text>
+        ) : null}
+        <View style={styles.buttonRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.cancelButton,
+              { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
+            ]}
+            onPress={onCancel}
+          >
+            <Text style={styles.cancelText}>{cancelLabel}</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.confirmButton,
+              { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
+            ]}
+            onPress={handleConfirm}
+          >
+            <Text style={styles.confirmText}>{confirmLabel}</Text>
+          </Pressable>
         </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      </View>
+      <Toast />
+    </BottomSheet>
   );
 }

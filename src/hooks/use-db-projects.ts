@@ -17,7 +17,9 @@ export function useDbProjects() {
   const [error, setError] = useState<Error | string | null>(null);
 
   const projectCountRef = useRef(projectList.length);
-  projectCountRef.current = projectList.length;
+  useEffect(() => {
+    projectCountRef.current = projectList.length;
+  }, [projectList.length]);
 
   const clearState = useCallback(() => {
     setProjectList([]);
@@ -45,6 +47,7 @@ export function useDbProjects() {
     }
   }, [userId, clearState]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
       clearState();
@@ -77,6 +80,7 @@ export function useDbProjects() {
 
     return () => abortController.abort();
   }, [userId, clearState]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const insertProject = useCallback(
     async (title?: string) => {

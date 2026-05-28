@@ -19,7 +19,9 @@ export function useDbTasks() {
   const [error, setError] = useState<Error | string | null>(null);
 
   const taskCountRef = useRef(taskList.length);
-  taskCountRef.current = taskList.length;
+  useEffect(() => {
+    taskCountRef.current = taskList.length;
+  }, [taskList.length]);
 
   const clearState = useCallback(() => {
     setTaskList([]);
@@ -47,6 +49,7 @@ export function useDbTasks() {
     }
   }, [userId, clearState]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
       clearState();
@@ -79,6 +82,7 @@ export function useDbTasks() {
 
     return () => abortController.abort();
   }, [userId, clearState]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const insertTask = useCallback(
     async (params?: {

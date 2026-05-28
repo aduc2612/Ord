@@ -14,6 +14,7 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import TaskDetailsSheet from "@/components/task-details-sheet";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -212,7 +213,7 @@ function TaskItem({
   styles: ReturnType<typeof createStyles>;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
-  onEdit: (id: string, title: string) => void;
+  onEdit: (id: string) => void;
 }) {
   const isCompleted = task.completedAt != null;
   const taskTags = tags.filter((t) => t.id != null);
@@ -252,7 +253,7 @@ function TaskItem({
           ) : null}
           <Pressable
             style={styles.editSmallButton}
-            onPress={() => onEdit(task.id, task.title)}
+            onPress={() => onEdit(task.id)}
           >
             <Text style={styles.editSmallButtonText}>Edit</Text>
           </Pressable>
@@ -332,18 +333,10 @@ export default function DbTestScreen() {
     onConfirm: () => {},
   });
 
-  const editTaskTitle = (taskId: string, currentTitle: string) => {
-    setPrompt({
-      visible: true,
-      title: "Edit Task",
-      message: "Enter a new title for this task:",
-      defaultValue: currentTitle,
-      onConfirm: (newTitle) => {
-        if (newTitle.trim()) {
-          tasks.updateTask(taskId, { title: newTitle.trim() });
-        }
-      },
-    });
+  const [sheetTaskId, setSheetTaskId] = useState<string | null>(null);
+
+  const editTaskTitle = (taskId: string) => {
+    setSheetTaskId(taskId);
   };
 
   const editProjectTitle = (projectId: string, currentTitle: string) => {
@@ -809,6 +802,13 @@ export default function DbTestScreen() {
         onConfirm={prompt.onConfirm}
         onCancel={() => setPrompt((p) => ({ ...p, visible: false }))}
       />
+      {sheetTaskId ? (
+        <TaskDetailsSheet
+          visible={!!sheetTaskId}
+          taskId={sheetTaskId}
+          onDismiss={() => setSheetTaskId(null)}
+        />
+      ) : null}
     </View>
   );
 }
