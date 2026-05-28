@@ -1,3 +1,4 @@
+import ClarifySheet from "@/components/clarify-sheet";
 import FabButton from "@/components/fab-button";
 import SearchBar from "@/components/search-bar";
 import { borderRadius, spacing, typography } from "@/constants/theme";
@@ -6,7 +7,7 @@ import { useDbNotes } from "@/hooks/use-db-notes";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { FlashList } from "@shopify/flash-list";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -71,8 +72,11 @@ export default function InboxScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showClarify, setShowClarify] = useState(false);
+  const [clarifyNoteId, setClarifyNoteId] = useState("");
+  const [clarifyQueue, setClarifyQueue] = useState<string[]>([]);
+  const [clarifyTotal, setClarifyTotal] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -101,19 +105,27 @@ export default function InboxScreen() {
       Toast.show({ type: "error", text1: "No notes to process" });
       return;
     }
-    const queue = available
-      .slice(1)
-      .map((n) => n.id)
-      .join(",");
-    router.push({
-      pathname: "/(tabs)/clarify",
-      params: {
-        noteId: available[0].id,
-        queue,
-        totalNotes: String(available.length),
-      },
-    });
-  }, [sortedNotes, router]);
+    setClarifyNoteId(available[0].id);
+    setClarifyQueue(available.slice(1).map((n) => n.id));
+    setClarifyTotal(available.length);
+    setShowClarify(true);
+  }, [sortedNotes]);
+
+  const handleClarifyDismiss = useCallback(() => {
+    setShowClarify(false);
+  }, []);
+
+  const handleClarifyProcessed = useCallback(
+    (nextId: string | null, remainingQueue: string[]) => {
+      if (nextId) {
+        setClarifyNoteId(nextId);
+        setClarifyQueue(remainingQueue);
+      } else {
+        setShowClarify(false);
+      }
+    },
+    [],
+  );
 
   const renderItem = ({ item }: { item: Note }) => (
     <Pressable
@@ -159,6 +171,14 @@ export default function InboxScreen() {
         }
       />
       <FabButton type="note" />
+      <ClarifySheet
+        visible={showClarify}
+        noteId={clarifyNoteId}
+        noteQueue={clarifyQueue}
+        totalNotes={clarifyTotal}
+        onDismiss={handleClarifyDismiss}
+        onProcessed={handleClarifyProcessed}
+      />
     </View>
   );
 }

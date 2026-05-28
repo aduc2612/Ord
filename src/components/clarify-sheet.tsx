@@ -7,14 +7,13 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -23,9 +22,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -111,20 +108,25 @@ function createStyles(theme: Theme) {
 type PrimaryAction = "" | "trash" | "someday" | "actionable";
 type SecondaryAction = "" | "done_2min" | "delegate" | "defer";
 
-export default function ClarifyScreen() {
-  const {
-    noteId,
-    queue: queueStr,
-    totalNotes: totalStr,
-  } = useLocalSearchParams<{
-    noteId: string;
-    queue: string;
-    totalNotes: string;
-  }>();
-  const router = useRouter();
+export type ClarifySheetProps = {
+  visible: boolean;
+  noteId: string;
+  noteQueue: string[];
+  totalNotes: number;
+  onDismiss: () => void;
+  onProcessed: (nextId: string | null, remainingQueue: string[]) => void;
+};
+
+export default function ClarifySheet({
+  visible,
+  noteId,
+  noteQueue,
+  totalNotes,
+  onDismiss,
+  onProcessed,
+}: ClarifySheetProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const insets = useSafeAreaInsets();
   const { noteList, deleteNote } = useDbNotes();
   const { insertTask } = useDbTasks();
   const { addTagToTask } = useDbTaskTags();
@@ -141,12 +143,7 @@ export default function ClarifyScreen() {
   const [showProjectChooser, setShowProjectChooser] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const queue = useMemo(
-    () => (queueStr ?? "").split(",").filter(Boolean),
-    [queueStr],
-  );
-  const totalNotes = parseInt(totalStr ?? "0", 10);
-  const currentIndex = totalNotes - queue.length - 1;
+  const currentIndex = totalNotes - noteQueue.length - 1;
   const progress =
     totalNotes > 0 ? Math.min((currentIndex + 1) / totalNotes, 1) : 0;
 
@@ -166,8 +163,8 @@ export default function ClarifyScreen() {
   }, [noteId]);
 
   const handleClose = useCallback(() => {
-    router.back();
-  }, [router]);
+    onDismiss();
+  }, [onDismiss]);
 
   const handleNext = useCallback(async () => {
     if (!primaryAction) {
@@ -262,20 +259,10 @@ export default function ClarifyScreen() {
       }
     }
 
-    const queueArr = (queueStr ?? "").split(",").filter(Boolean);
-    if (queueArr.length > 0) {
-      const nextId = queueArr[0];
-      const newQueue = queueArr.slice(1).join(",");
-      router.replace({
-        pathname: "/(tabs)/clarify",
-        params: {
-          noteId: nextId,
-          queue: newQueue,
-          totalNotes: totalStr,
-        },
-      });
+    if (noteQueue.length > 0) {
+      onProcessed(noteQueue[0], noteQueue.slice(1));
     } else {
-      router.back();
+      onDismiss();
     }
   }, [
     primaryAction,
@@ -288,9 +275,9 @@ export default function ClarifyScreen() {
     selectedProjectId,
     selectedTagIds,
     dueDate,
-    queueStr,
-    totalStr,
-    router,
+    noteQueue,
+    onProcessed,
+    onDismiss,
   ]);
 
   const handleChangeActionText = useCallback((text: string) => {
@@ -341,19 +328,15 @@ export default function ClarifyScreen() {
     secondaryAction === "delegate" || secondaryAction === "defer";
   const showDoneHelper = secondaryAction === "done_2min";
 
-  const scrollContentStyle = useMemo(
-    () => [styles.scrollContent, { paddingTop: insets.top }],
-    [styles.scrollContent, insets.top],
-  );
-
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoiding}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+    <BottomSheet
+      index={visible ? 0 : -1}
+      onDismiss={onDismiss}
+      enablePanDownToClose
+    >
+      <View style={styles.container}>
         <ScrollView
-          contentContainerStyle={scrollContentStyle}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.headerRow}>
@@ -444,31 +427,30 @@ export default function ClarifyScreen() {
             </>
           ) : null}
         </ScrollView>
-      </KeyboardAvoidingView>
-
-      <ChooserModal
-        type="tag"
-        visible={showTagChooser}
-        selectedIds={selectedTagIds}
-        onClose={() => setShowTagChooser(false)}
-        onSelect={handleTagSelect}
-      />
-      <ChooserModal
-        type="project"
-        visible={showProjectChooser}
-        selectedIds={selectedProjectId ? [selectedProjectId] : []}
-        onClose={() => setShowProjectChooser(false)}
-        onSelect={handleProjectSelect}
-      />
-      {showDatePicker ? (
-        <DateTimePicker
-          value={dueDate ?? new Date()}
-          mode="date"
-          display={Platform.OS === "ios" ? "inline" : "default"}
-          onValueChange={handleDateValueChange}
-          onDismiss={handleDatePickerDismiss}
+        <ChooserModal
+          type="tag"
+          visible={showTagChooser}
+          selectedIds={selectedTagIds}
+          onClose={() => setShowTagChooser(false)}
+          onSelect={handleTagSelect}
         />
-      ) : null}
-    </View>
+        <ChooserModal
+          type="project"
+          visible={showProjectChooser}
+          selectedIds={selectedProjectId ? [selectedProjectId] : []}
+          onClose={() => setShowProjectChooser(false)}
+          onSelect={handleProjectSelect}
+        />
+        {showDatePicker ? (
+          <DateTimePicker
+            value={dueDate ?? new Date()}
+            mode="date"
+            display={Platform.OS === "ios" ? "inline" : "default"}
+            onValueChange={handleDateValueChange}
+            onDismiss={handleDatePickerDismiss}
+          />
+        ) : null}
+      </View>
+    </BottomSheet>
   );
 }
