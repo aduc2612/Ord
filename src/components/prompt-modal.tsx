@@ -97,12 +97,14 @@ export default function PromptModal({
   const [showError, setShowError] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (visible) {
       setText(defaultValue);
       setShowError(false);
     }
   }, [visible, defaultValue]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (visible) {

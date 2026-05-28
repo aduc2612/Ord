@@ -17,7 +17,9 @@ export function useDbTags() {
   const [error, setError] = useState<Error | string | null>(null);
 
   const tagCountRef = useRef(tagList.length);
-  tagCountRef.current = tagList.length;
+  useEffect(() => {
+    tagCountRef.current = tagList.length;
+  }, [tagList.length]);
 
   const clearState = useCallback(() => {
     setTagList([]);
@@ -45,6 +47,7 @@ export function useDbTags() {
     }
   }, [userId, clearState]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
       clearState();
@@ -77,6 +80,7 @@ export function useDbTags() {
 
     return () => abortController.abort();
   }, [userId, clearState]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const insertTag = useCallback(
     async (title?: string) => {

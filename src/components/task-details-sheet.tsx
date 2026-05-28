@@ -265,6 +265,7 @@ export default function TaskDetailsSheet({
     removeTagFromTask,
   ]);
 
+  // eslint-disable-next-line react-hooks/refs -- Keep saveRef in sync with latest saveChanges for imperative use
   saveRef.current = saveChanges;
 
   const handleClose = useCallback(() => {

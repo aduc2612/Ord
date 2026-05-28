@@ -103,7 +103,7 @@ export default function ThemeExample() {
           <Text style={styles.sectionTitle}>Card Component</Text>
           <View style={styles.card}>
             <Text style={styles.cardText}>
-              This is a card with the app's clean aesthetic
+              {"This is a card with the app\u2019s clean aesthetic"}
             </Text>
             <Text style={styles.cardSubtext}>
               Minimal shadows, clean borders

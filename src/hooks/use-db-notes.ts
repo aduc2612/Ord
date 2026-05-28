@@ -17,7 +17,9 @@ export function useDbNotes() {
   const [error, setError] = useState<Error | string | null>(null);
 
   const noteCountRef = useRef(noteList.length);
-  noteCountRef.current = noteList.length;
+  useEffect(() => {
+    noteCountRef.current = noteList.length;
+  }, [noteList.length]);
 
   const clearState = useCallback(() => {
     setNoteList([]);
@@ -25,6 +27,7 @@ export function useDbNotes() {
     setReady(false);
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
       clearState();
@@ -57,6 +60,7 @@ export function useDbNotes() {
 
     return () => abortController.abort();
   }, [userId, clearState]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const insertNote = useCallback(
     async (title?: string) => {

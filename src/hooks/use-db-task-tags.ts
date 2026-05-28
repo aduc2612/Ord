@@ -42,6 +42,7 @@ export function useDbTaskTags() {
     }
   }, [userId, clearState]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
       clearState();
@@ -74,6 +75,7 @@ export function useDbTaskTags() {
 
     return () => abortController.abort();
   }, [userId, clearState]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const addTagToTask = useCallback(
     async (taskId: string, tagId: string) => {

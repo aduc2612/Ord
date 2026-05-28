@@ -7,10 +7,12 @@ import {
 import { SignInWithIdTokenCredentials } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
-import "react-native-get-random-values";
-
 export default function GoogleSignInButton() {
-  const [nonce, setNonce] = useState("");
+  const [nonce] = useState(() => {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "");
+  });
   const [sha256Nonce, setSha256Nonce] = useState("");
 
   async function onGoogleButtonSuccess(
@@ -36,12 +38,6 @@ export default function GoogleSignInButton() {
   }
 
   useEffect(() => {
-    function generateNonce(): string {
-      const bytes = new Uint8Array(16);
-      window.crypto.getRandomValues(bytes);
-      return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "");
-    }
-
     async function generateSha256Nonce(n: string): Promise<string> {
       const buffer = await window.crypto.subtle.digest(
         "sha-256",
@@ -51,13 +47,10 @@ export default function GoogleSignInButton() {
       return arr.map((b) => b.toString(16).padStart(2, "0")).join("");
     }
 
-    const n = generateNonce();
-    setNonce(n);
-
-    generateSha256Nonce(n).then((sha256) => {
+    generateSha256Nonce(nonce).then((sha256) => {
       setSha256Nonce(sha256);
     });
-  }, []);
+  }, [nonce]);
 
   if (!sha256Nonce) return null;
 
