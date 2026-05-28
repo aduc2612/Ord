@@ -10,7 +10,7 @@ import Toast from "react-native-toast-message";
 export type DropdownOption = {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  onPress: () => void;
+  onPress: () => void | Promise<void>;
   destructive?: boolean;
 };
 
@@ -61,9 +61,14 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
   }, []);
 
   const handleSelect = useCallback(
-    (option: DropdownOption) => {
-      option.onPress();
-      close();
+    async (option: DropdownOption) => {
+      try {
+        await option.onPress();
+      } catch (err) {
+        console.error("Dropdown option error:", err);
+      } finally {
+        close();
+      }
     },
     [close],
   );
@@ -101,7 +106,7 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
             >
               <View style={styles.menuItemIcon}>
                 <Ionicons
-                  name={option.icon as any}
+                  name={option.icon}
                   size={20}
                   color={
                     option.destructive

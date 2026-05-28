@@ -121,8 +121,7 @@ export default function PromptModal({
       return;
     }
     onConfirm(text.trim());
-    onCancel();
-  }, [onConfirm, onCancel, text]);
+  }, [onConfirm, text]);
 
   const handleChangeText = useCallback((value: string) => {
     setText(value);

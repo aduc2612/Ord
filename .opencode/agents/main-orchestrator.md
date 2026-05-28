@@ -52,7 +52,7 @@ For each domain identified, dispatch a separate `scout` or `explore` subagent to
 
 #### Stage 3 - Plan
 
-Write the plan of action _yourself_. Do not delegate planning to subagents — you are the smarter model. The plan must be structured, sequenced, and aware of dependencies between steps. When you need more information, don't be afraid to ask the user. After completing the plan, inform the user and ask them for permission to continue.
+Write the plan of action _yourself_. Do not delegate planning to subagents — you are the smarter model. The plan must be structured, sequenced, and aware of dependencies between steps. When you need more information, ask the user. After completing the plan, inform the user and ask them for permission to continue.
 
 #### Stage 4 - Execution
 

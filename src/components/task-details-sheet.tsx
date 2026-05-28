@@ -109,6 +109,12 @@ function createStyles(theme: Theme) {
       color: theme.colors.error,
       marginLeft: spacing.md,
     },
+    notFoundContainer: {
+      padding: spacing.lg,
+    },
+    descriptionSpacer: {
+      height: spacing.md,
+    },
   });
 }
 
@@ -268,9 +274,12 @@ export default function TaskDetailsSheet({
   // eslint-disable-next-line react-hooks/refs -- Keep saveRef in sync with latest saveChanges for imperative use
   saveRef.current = saveChanges;
 
-  const handleClose = useCallback(() => {
-    saveChanges();
-    onDismiss();
+  const handleClose = useCallback(async () => {
+    try {
+      await saveChanges();
+    } finally {
+      onDismiss();
+    }
   }, [saveChanges, onDismiss]);
 
   const handleMarkComplete = useCallback(async () => {
@@ -305,7 +314,7 @@ export default function TaskDetailsSheet({
       enablePanDownToClose
     >
       {!task ? (
-        <View style={{ padding: spacing.lg }}>
+        <View style={styles.notFoundContainer}>
           <Text style={styles.headerTitle}>Task not found</Text>
         </View>
       ) : (
@@ -354,7 +363,7 @@ export default function TaskDetailsSheet({
                 placeholderTextColor={theme.colors.onSurfaceVariant}
               />
 
-              <View style={{ height: spacing.md }} />
+              <View style={styles.descriptionSpacer} />
 
               {category !== "someday" ? (
                 <>
