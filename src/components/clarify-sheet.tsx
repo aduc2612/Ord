@@ -22,6 +22,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 function createStyles(theme: Theme) {
@@ -127,6 +128,7 @@ export default function ClarifySheet({
 }: ClarifySheetProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
+  const insets = useSafeAreaInsets();
   const { noteList, deleteNote } = useDbNotes();
   const { insertTask } = useDbTasks();
   const { addTagToTask } = useDbTaskTags();
@@ -336,7 +338,10 @@ export default function ClarifySheet({
     >
       <View style={styles.container}>
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: spacing.lg },
+          ]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.headerRow}>
