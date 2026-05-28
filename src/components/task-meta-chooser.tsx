@@ -29,6 +29,7 @@ export interface TaskMetaChooserProps {
   onTagPress: () => void;
   onProjectPress: () => void;
   onDueDatePress: () => void;
+  onClearDueDate?: () => void;
 }
 
 function createStyles(theme: Theme) {
@@ -66,6 +67,7 @@ export default function TaskMetaChooser({
   onTagPress,
   onProjectPress,
   onDueDatePress,
+  onClearDueDate,
 }: TaskMetaChooserProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
@@ -108,23 +110,48 @@ export default function TaskMetaChooser({
           />
         </View>
       </Pressable>
-      <Pressable
-        style={styles.detailRow}
-        onPress={onDueDatePress}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
+      <View style={styles.detailRow}>
         <Text style={styles.detailLabel}>Due date</Text>
         <View style={styles.detailValueRow}>
-          <Text style={styles.detailValue}>
-            {dueDate ? formatDate(dueDate) : "None"}
-          </Text>
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color={theme.colors.onSurfaceVariant}
-          />
+          <Pressable
+            onPress={onDueDatePress}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <View style={styles.detailValueRow}>
+              <Text style={styles.detailValue}>
+                {dueDate ? formatDate(dueDate) : "None"}
+              </Text>
+              {!dueDate ? (
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              ) : null}
+            </View>
+          </Pressable>
+          {dueDate ? (
+            <View style={styles.detailValueRow}>
+              <Pressable
+                onPress={onClearDueDate}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="close-circle"
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </Pressable>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.onSurfaceVariant}
+                style={{ marginLeft: spacing.sm }}
+              />
+            </View>
+          ) : null}
         </View>
-      </Pressable>
+      </View>
     </>
   );
 }

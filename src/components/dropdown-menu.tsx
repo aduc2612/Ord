@@ -1,9 +1,9 @@
 import { spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export type DropdownOption = {

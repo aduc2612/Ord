@@ -8,9 +8,8 @@ import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { BottomSheet } from "@expo/ui/community/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
-  DateTimePickerEvent,
+  DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -143,7 +142,6 @@ export default function TaskDetailsSheet({
   const hasChangesRef = useRef(false);
   const saveRef = useRef<() => Promise<void>>(async () => {});
   const lastInitializedTaskIdRef = useRef<string | null>(null);
-  const initialTagIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (!task) return;
@@ -155,7 +153,6 @@ export default function TaskDetailsSheet({
     const tagIds = taskTagList
       .filter((tt) => tt.taskId === taskId)
       .map((tt) => tt.tagId);
-    initialTagIdsRef.current = tagIds;
     setTitle(task.title);
     setDescription(task.description ?? "");
     setCategory(task.category);
@@ -201,16 +198,23 @@ export default function TaskDetailsSheet({
     setShowDatePicker(true);
   }, []);
 
-  const handleDatePickerChange = useCallback(
-    (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const handleDatePickerValueChange = useCallback(
+    (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
+      setDueDate(selectedDate);
       setShowDatePicker(false);
-      if (event.type === "set" && selectedDate) {
-        setDueDate(selectedDate);
-        hasChangesRef.current = true;
-      }
+      hasChangesRef.current = true;
     },
     [],
   );
+
+  const handleDatePickerDismiss = useCallback(() => {
+    setShowDatePicker(false);
+  }, []);
+
+  const handleClearDueDate = useCallback(() => {
+    setDueDate(null);
+    hasChangesRef.current = true;
+  }, []);
 
   const saveChanges = useCallback(async () => {
     if (!hasChangesRef.current || !task) return;
@@ -218,13 +222,15 @@ export default function TaskDetailsSheet({
     try {
       const isSomeday = category === "someday";
 
-      const initialTagIdsForTask = initialTagIdsRef.current;
+      const currentDbTagIds = taskTagList
+        .filter((tt) => tt.taskId === taskId)
+        .map((tt) => tt.tagId);
       const toRemove = isSomeday
-        ? initialTagIdsForTask
-        : initialTagIdsForTask.filter((id) => !selectedTagIds.includes(id));
+        ? currentDbTagIds
+        : currentDbTagIds.filter((id) => !selectedTagIds.includes(id));
       const toAdd = isSomeday
         ? []
-        : selectedTagIds.filter((id) => !initialTagIdsForTask.includes(id));
+        : selectedTagIds.filter((id) => !currentDbTagIds.includes(id));
 
       await updateTask(task.id, {
         title,
@@ -240,12 +246,13 @@ export default function TaskDetailsSheet({
       ]);
 
       hasChangesRef.current = false;
-      initialTagIdsRef.current = isSomeday ? [] : [...selectedTagIds];
     } catch {
       Toast.show({ type: "error", text1: "Failed to save changes" });
     }
   }, [
     task,
+    taskId,
+    taskTagList,
     title,
     description,
     category,
@@ -389,6 +396,7 @@ export default function TaskDetailsSheet({
                   onTagPress={handleTagPress}
                   onProjectPress={handleProjectPress}
                   onDueDatePress={handleDueDatePress}
+                  onClearDueDate={handleClearDueDate}
                 />
               ) : null}
             </ScrollView>
@@ -413,7 +421,8 @@ export default function TaskDetailsSheet({
               value={dueDate ?? new Date()}
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
-              onChange={handleDatePickerChange}
+              onValueChange={handleDatePickerValueChange}
+              onDismiss={handleDatePickerDismiss}
             />
           ) : null}
         </>

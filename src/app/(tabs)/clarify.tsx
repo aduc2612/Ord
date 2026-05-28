@@ -8,7 +8,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
-  DateTimePickerEvent,
+  DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -350,17 +350,16 @@ export default function ClarifyScreen() {
     setSecondaryAction(value as SecondaryAction);
   }, []);
 
-  const handleDateChange = useCallback(
-    (_event: DateTimePickerEvent, selectedDate?: Date) => {
-      if (Platform.OS === "android") {
-        setShowDatePicker(false);
-      }
-      if (selectedDate) {
-        setDueDate(selectedDate);
-      }
+  const handleDateValueChange = useCallback(
+    (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
+      setDueDate(selectedDate);
     },
     [],
   );
+
+  const handleDatePickerDismiss = useCallback(() => {
+    setShowDatePicker(false);
+  }, []);
 
   const handleTagSelect = useCallback((ids: string[]) => {
     setSelectedTagIds(ids);
@@ -543,7 +542,8 @@ export default function ClarifyScreen() {
           value={dueDate ?? new Date()}
           mode="date"
           display={Platform.OS === "ios" ? "inline" : "default"}
-          onChange={handleDateChange}
+          onValueChange={handleDateValueChange}
+          onDismiss={handleDatePickerDismiss}
         />
       ) : null}
     </View>
