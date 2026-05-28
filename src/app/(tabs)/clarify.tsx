@@ -186,7 +186,8 @@ export default function ClarifyScreen() {
   );
   const totalNotes = parseInt(totalStr ?? "0", 10);
   const currentIndex = totalNotes - queue.length - 1;
-  const progress = totalNotes > 0 ? Math.min((currentIndex + 1) / totalNotes, 1) : 0;
+  const progress =
+    totalNotes > 0 ? Math.min((currentIndex + 1) / totalNotes, 1) : 0;
 
   const currentNote = useMemo(
     () => noteList.find((n) => n.id === noteId),
@@ -353,6 +354,7 @@ export default function ClarifyScreen() {
   const handleDateValueChange = useCallback(
     (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
       setDueDate(selectedDate);
+      setShowDatePicker(false);
     },
     [],
   );

@@ -26,7 +26,7 @@ function createStyles(theme: Theme) {
       justifyContent: "center",
     },
     menu: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.background,
       paddingVertical: spacing.sm,
     },
     menuItem: {
@@ -38,7 +38,7 @@ function createStyles(theme: Theme) {
     },
     menuItemLabel: {
       ...typography.bodyMedium,
-      color: theme.colors.onSurface,
+      color: theme.colors.onBackground,
     },
     menuItemLabelDestructive: {
       color: theme.colors.error,

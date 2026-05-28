@@ -1,27 +1,21 @@
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { BottomSheet } from "@expo/ui/community/bottom-sheet";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.background,
       padding: spacing.lg,
       width: "100%",
       ...theme.shadows.lg,
     },
     title: {
       ...typography.titleMedium,
-      color: theme.colors.onSurface,
+      color: theme.colors.onBackground,
       marginBottom: spacing.xs,
     },
     message: {
@@ -32,7 +26,7 @@ function createStyles(theme: Theme) {
     input: {
       ...typography.bodyMedium,
       color: theme.colors.onSurface,
-      backgroundColor: theme.colors.surfaceVariant,
+      backgroundColor: theme.colors.surface,
       borderRadius: borderRadius.lg,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
@@ -133,7 +127,11 @@ export default function PromptModal({
   }, []);
 
   return (
-    <BottomSheet index={visible ? 0 : -1} onDismiss={onCancel} enablePanDownToClose>
+    <BottomSheet
+      index={visible ? 0 : -1}
+      onDismiss={onCancel}
+      enablePanDownToClose
+    >
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
         {message ? <Text style={styles.message}>{message}</Text> : null}

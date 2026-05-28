@@ -25,8 +25,8 @@ export const colors = {
     success: "#4CAF50",
     onSuccess: "#FFFFFF",
 
-    background: "#F7F7F7",
-    onBackground: "#1C1C1C",
+    background: "#f4f3f8",
+    onBackground: "#1a1a1c",
 
     surface: "#FFFFFF",
     onSurface: "#1C1C1C",

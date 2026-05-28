@@ -38,6 +38,7 @@ function createStyles(theme: Theme) {
     scrollContent: {
       flexGrow: 1,
       paddingHorizontal: spacing.lg,
+      backgroundColor: theme.colors.background,
     },
     headerRow: {
       flexDirection: "row",
