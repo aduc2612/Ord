@@ -1,5 +1,6 @@
 import ChooserModal from "@/components/chooser-modal";
 import SegmentedControl from "@/components/segmented-control";
+import TaskMetaChooser from "@/components/task-meta-chooser";
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
@@ -25,23 +26,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-function formatDate(date: Date): string {
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-}
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -120,29 +104,6 @@ function createStyles(theme: Theme) {
       fontStyle: "italic",
       textAlign: "center",
       paddingVertical: spacing.sm,
-    },
-    detailRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      backgroundColor: theme.colors.surface,
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      marginBottom: spacing.sm,
-      minHeight: 48,
-    },
-    detailLabel: {
-      ...typography.bodyMedium,
-      color: theme.colors.onSurface,
-    },
-    detailValue: {
-      ...typography.bodyMedium,
-      color: theme.colors.onSurfaceVariant,
-      marginRight: spacing.sm,
-    },
-    detailValueRow: {
-      flexDirection: "row",
-      alignItems: "center",
     },
   });
 }
@@ -371,6 +332,10 @@ export default function ClarifyScreen() {
     setSelectedProjectId(ids.length > 0 ? ids[0] : null);
   }, []);
 
+  const handleClearDueDate = useCallback(() => {
+    setDueDate(null);
+  }, []);
+
   const showSecondSection = primaryAction === "actionable";
   const showDetailSection =
     secondaryAction === "delegate" || secondaryAction === "defer";
@@ -467,59 +432,15 @@ export default function ClarifyScreen() {
           {showDetailSection ? (
             <>
               <View style={styles.sectionGap} />
-              <Pressable
-                style={styles.detailRow}
-                onPress={() => setShowTagChooser(true)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.detailLabel}>Tag</Text>
-                <View style={styles.detailValueRow}>
-                  <Text style={styles.detailValue}>
-                    {selectedTagIds.length > 0
-                      ? `${selectedTagIds.length} selected`
-                      : "None"}
-                  </Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-              </Pressable>
-              <Pressable
-                style={styles.detailRow}
-                onPress={() => setShowProjectChooser(true)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.detailLabel}>Project</Text>
-                <View style={styles.detailValueRow}>
-                  <Text style={styles.detailValue}>
-                    {selectedProjectId ? "Selected" : "None"}
-                  </Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-              </Pressable>
-              <Pressable
-                style={styles.detailRow}
-                onPress={() => setShowDatePicker(true)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.detailLabel}>Due date</Text>
-                <View style={styles.detailValueRow}>
-                  <Text style={styles.detailValue}>
-                    {dueDate ? formatDate(dueDate) : "None"}
-                  </Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-              </Pressable>
+              <TaskMetaChooser
+                selectedTagIds={selectedTagIds}
+                selectedProjectId={selectedProjectId}
+                dueDate={dueDate}
+                onTagPress={() => setShowTagChooser(true)}
+                onProjectPress={() => setShowProjectChooser(true)}
+                onDueDatePress={() => setShowDatePicker(true)}
+                onClearDueDate={handleClearDueDate}
+              />
             </>
           ) : null}
         </ScrollView>
