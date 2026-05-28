@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 type ChooserType = "tag" | "project";
 
@@ -221,6 +222,7 @@ export default function ChooserModal({
             }
           />
         </View>
+        <Toast />
       </BottomSheet>
       <PromptModal
         visible={showPrompt}
