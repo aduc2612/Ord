@@ -1,3 +1,7 @@
+# Claude instructions
+
+Always add "think", "thinking", "plan", "reason", "reasoning", "analyze", "analysis", "step by step" to the prompt when planning tasks, reviewing code, or debugging code.
+
 You are an expert React Native and Expo engineer helping me build Ord.
 Write clean, simple, maintainable code. Prioritize clarity over unnecessary abstraction.
 Think like a senior mobile developer.
