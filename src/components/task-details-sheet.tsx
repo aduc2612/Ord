@@ -7,7 +7,10 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
+import {
+  BottomSheet,
+  type BottomSheetMethods,
+} from "@expo/ui/community/bottom-sheet";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
@@ -125,6 +128,8 @@ export default function TaskDetailsSheet({
 }: TaskDetailsSheetProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
+  const sheetRef = useRef<BottomSheetMethods>(null);
+
   const { taskList, updateTask, completeTask, deleteTask } = useDbTasks();
   const { addTagToTask, removeTagFromTask, taskTagList } = useDbTaskTags();
 
@@ -147,11 +152,10 @@ export default function TaskDetailsSheet({
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const hasChangesRef = useRef(false);
-  const saveRef = useRef<() => Promise<void>>(async () => {});
   const lastInitializedTaskIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!task) return;
+    if (!task || !visible) return;
 
     if (lastInitializedTaskIdRef.current === taskId) return;
 
@@ -166,7 +170,7 @@ export default function TaskDetailsSheet({
     setSelectedTagIds(tagIds);
     setSelectedProjectId(task.projectId ?? null);
     setDueDate(task.dueDate ? new Date(task.dueDate) : null);
-  }, [task, taskTagList, taskId]);
+  }, [task, taskTagList, taskId, visible]);
 
   const handleTitleChange = useCallback((text: string) => {
     setTitle(text);
@@ -271,29 +275,52 @@ export default function TaskDetailsSheet({
     removeTagFromTask,
   ]);
 
-  // eslint-disable-next-line react-hooks/refs -- Keep saveRef in sync with latest saveChanges for imperative use
-  saveRef.current = saveChanges;
+  const handleDone = useCallback(async () => {
+    await saveChanges();
 
-  const handleClose = useCallback(async () => {
-    try {
-      await saveChanges();
-    } finally {
+    sheetRef.current?.close();
+
+    setTimeout(() => {
       onDismiss();
-    }
+    }, 300);
   }, [saveChanges, onDismiss]);
+
+  const handleClose = useCallback(() => {
+    sheetRef.current?.close();
+
+    setTimeout(() => {
+      onDismiss();
+    }, 300);
+  }, [onDismiss]);
 
   const handleMarkComplete = useCallback(async () => {
     if (!task) return;
-    await completeTask(task.id);
-    Toast.show({ type: "success", text1: "Task completed" });
-    onDismiss();
-  }, [task, completeTask, onDismiss]);
+
+    await saveChanges();
+
+    sheetRef.current?.close();
+
+    setTimeout(async () => {
+      onDismiss();
+
+      await completeTask(task.id);
+
+      Toast.show({ type: "success", text1: "Task completed" });
+    }, 300);
+  }, [task, saveChanges, completeTask, onDismiss]);
 
   const handleDelete = useCallback(async () => {
     if (!task) return;
-    await deleteTask(task.id);
-    Toast.show({ type: "success", text1: "Task deleted" });
-    onDismiss();
+
+    sheetRef.current?.close();
+
+    setTimeout(async () => {
+      onDismiss();
+
+      await deleteTask(task.id);
+
+      Toast.show({ type: "success", text1: "Task deleted" });
+    }, 300);
   }, [task, deleteTask, onDismiss]);
 
   const scrollContentStyle = useMemo(
@@ -306,13 +333,19 @@ export default function TaskDetailsSheet({
     [descHeight],
   );
 
+  if (!visible) {
+    return null;
+  }
+
   return (
-    <BottomSheet
-      index={visible ? 0 : -1}
-      onDismiss={onDismiss}
-      // snapPoints={["50%", "90%"]}
-      enablePanDownToClose
-    >
+    <>
+      <BottomSheet
+        ref={sheetRef}
+        key={taskId}
+        index={0}
+        enablePanDownToClose
+        onDismiss={handleClose}
+      >
       {!task ? (
         <View style={styles.notFoundContainer}>
           <Text style={styles.headerTitle}>Task not found</Text>
@@ -346,7 +379,7 @@ export default function TaskDetailsSheet({
                 <Text style={styles.headerTitle}>Edit Task</Text>
                 <Pressable
                   style={styles.headerDoneButton}
-                  onPress={handleClose}
+                  onPress={handleDone}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <Text style={styles.headerDoneText}>Done</Text>
@@ -439,5 +472,6 @@ export default function TaskDetailsSheet({
         </>
       )}
     </BottomSheet>
+    </>
   );
 }
