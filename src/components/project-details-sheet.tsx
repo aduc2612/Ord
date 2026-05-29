@@ -10,7 +10,6 @@ import {
   BottomSheet,
   type BottomSheetMethods,
 } from "@expo/ui/community/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -58,12 +57,6 @@ function createStyles(theme: Theme) {
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.md,
     },
-    iconButton: {
-      minWidth: 48,
-      minHeight: 48,
-      alignItems: "center",
-      justifyContent: "center",
-    },
     descriptionSpacer: {
       height: spacing.md,
     },
@@ -99,6 +92,18 @@ function createStyles(theme: Theme) {
     notFoundText: {
       ...typography.titleMedium,
       color: theme.colors.onBackground,
+    },
+    headerDoneButton: {
+      minHeight: 48,
+      minWidth: 48,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: spacing.sm,
+    },
+    headerDoneText: {
+      ...typography.labelLarge,
+      color: theme.colors.primary,
+      fontWeight: "600",
     },
   });
 }
@@ -171,7 +176,7 @@ export default function ProjectDetailsSheet({
     hasChangesRef.current = false;
   }, [project, title, description, updateProject]);
 
-  const handleClose = useCallback(async () => {
+  const handleDone = useCallback(async () => {
     await saveChanges();
 
     sheetRef.current?.close();
@@ -180,6 +185,14 @@ export default function ProjectDetailsSheet({
       onDismiss();
     }, 300);
   }, [saveChanges, onDismiss]);
+
+  const handleClose = useCallback(() => {
+    sheetRef.current?.close();
+
+    setTimeout(() => {
+      onDismiss();
+    }, 300);
+  }, [onDismiss]);
 
   const handleArchiveToggle = useCallback(async () => {
     if (!project) return;
@@ -278,25 +291,11 @@ export default function ProjectDetailsSheet({
                 <Text style={styles.headerTitle}>Edit Project</Text>
 
                 <Pressable
-                  style={({ pressed }) => [
-                    styles.iconButton,
-                    pressed && {
-                      opacity: theme.interaction.pressedOpacity,
-                    },
-                  ]}
-                  onPress={() => {}}
-                  hitSlop={{
-                    top: 8,
-                    bottom: 8,
-                    left: 8,
-                    right: 8,
-                  }}
+                  style={styles.headerDoneButton}
+                  onPress={handleDone}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons
-                    name="filter"
-                    size={22}
-                    color={theme.colors.onSurfaceVariant}
-                  />
+                  <Text style={styles.headerDoneText}>Done</Text>
                 </Pressable>
               </View>
 
