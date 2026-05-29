@@ -5,7 +5,6 @@ import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
 
 export type DropdownOption = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -126,7 +125,6 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
             </Pressable>
           ))}
         </View>
-        <Toast />
       </BottomSheet>
     </>
   );

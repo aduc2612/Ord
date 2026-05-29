@@ -456,7 +456,6 @@ export default function ClarifySheet({
           />
         ) : null}
       </View>
-      <Toast />
     </BottomSheet>
   );
 }

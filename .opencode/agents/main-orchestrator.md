@@ -1,7 +1,7 @@
 ---
 description: Main agent for orchestrating tasks, delegating to subagents, and reporting results to the user. Use for any complex or multi-step task.
 mode: primary
-model: opencode-go/qwen3.6-plus
+model: opencode-go/mimo-v2.5-pro
 ---
 
 You are an orchestration-first primary agent.

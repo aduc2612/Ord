@@ -1,6 +1,8 @@
+import FabButton from "@/components/fab-button";
 import SearchBar from "@/components/search-bar";
 import SegmentedControl from "@/components/segmented-control";
-import FabButton from "@/components/fab-button";
+import TaskDetailsSheet from "@/components/task-details-sheet";
+import TaskItem from "@/components/task-item";
 import {
   componentStyles,
   spacing,
@@ -77,25 +79,6 @@ function createStyles(theme: Theme) {
     taskListContainer: {
       gap: spacing.sm,
     },
-    taskItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      borderRadius: componentStyles.card.borderRadius,
-      padding: spacing.lg,
-      gap: spacing.sm,
-      // ...shadows.sm,
-    },
-    taskDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: theme.colors.onSurface,
-    },
-    taskText: {
-      ...typography.bodyMedium,
-      color: theme.colors.onSurface,
-    },
     searchRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -113,6 +96,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("due_today");
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const currentTasks = fillerTasks[selectedSegment] ?? [];
 
@@ -162,14 +146,20 @@ export default function HomeScreen() {
         {/* Task List */}
         <View style={styles.taskListContainer}>
           {currentTasks.map((task) => (
-            <View key={task} style={styles.taskItem}>
-              <View style={styles.taskDot} />
-              <Text style={styles.taskText}>{task}</Text>
-            </View>
+            <TaskItem
+              key={task}
+              title={task}
+              onPress={() => setSelectedTaskId(task)}
+            />
           ))}
         </View>
       </ScrollView>
       <FabButton type="note" />
+      <TaskDetailsSheet
+        visible={selectedTaskId !== null}
+        taskId={selectedTaskId ?? ""}
+        onDismiss={() => setSelectedTaskId(null)}
+      />
     </View>
   );
 }
