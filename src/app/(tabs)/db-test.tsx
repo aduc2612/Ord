@@ -1,4 +1,6 @@
+import ProjectDetailsSheet from "@/components/project-details-sheet";
 import PromptModal from "@/components/prompt-modal";
+import TaskDetailsSheet from "@/components/task-details-sheet";
 import {
   borderRadius,
   componentStyles,
@@ -14,7 +16,6 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import TaskDetailsSheet from "@/components/task-details-sheet";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -334,23 +335,10 @@ export default function DbTestScreen() {
   });
 
   const [sheetTaskId, setSheetTaskId] = useState<string | null>(null);
+  const [sheetProjectId, setSheetProjectId] = useState<string | null>(null);
 
   const editTaskTitle = (taskId: string) => {
     setSheetTaskId(taskId);
-  };
-
-  const editProjectTitle = (projectId: string, currentTitle: string) => {
-    setPrompt({
-      visible: true,
-      title: "Edit Project",
-      message: "Enter a new title for this project:",
-      defaultValue: currentTitle,
-      onConfirm: (newTitle) => {
-        if (newTitle.trim()) {
-          projects.updateProject(projectId, { title: newTitle.trim() });
-        }
-      },
-    });
   };
 
   const editNoteTitle = (noteId: string, currentTitle: string) => {
@@ -632,9 +620,7 @@ export default function DbTestScreen() {
                   <View style={styles.taskActions}>
                     <Pressable
                       style={styles.editSmallButton}
-                      onPress={() =>
-                        editProjectTitle(project.id, project.title)
-                      }
+                      onPress={() => setSheetProjectId(project.id)}
                     >
                       <Text style={styles.editSmallButtonText}>Edit</Text>
                     </Pressable>
@@ -807,6 +793,20 @@ export default function DbTestScreen() {
           visible={!!sheetTaskId}
           taskId={sheetTaskId}
           onDismiss={() => setSheetTaskId(null)}
+        />
+      ) : null}
+      {sheetProjectId ? (
+        // <ProjectDetailsSheet
+        //   visible={!!sheetProjectId}
+        //   projectId={sheetProjectId}
+        //   onDismiss={() => setSheetProjectId(null)}
+        // />
+        <ProjectDetailsSheet
+          visible={sheetProjectId !== null}
+          projectId={sheetProjectId ?? ""}
+          onDismiss={() => {
+            setSheetProjectId(null);
+          }}
         />
       ) : null}
     </View>

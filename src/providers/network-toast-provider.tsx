@@ -35,6 +35,15 @@ function createStyles(theme: Theme) {
     toastErrorText: {
       color: theme.colors.onError,
     },
+    // FIX: Added missing success toast styles. Calls to
+    // Toast.show({ type: "success" }) were silently swallowed because
+    // "success" had no entry in the config, so the library rendered nothing.
+    toastSuccessContainer: {
+      backgroundColor: theme.colors.success,
+    },
+    toastSuccessText: {
+      color: theme.colors.onSuccess,
+    },
   });
 }
 
@@ -55,14 +64,19 @@ function toastConfig(theme: Theme) {
     ),
     online: (props: BaseToastProps) => (
       <View style={[styles.base, styles.toastOnlineContainer]}>
-        <Text style={[styles.text, styles.toastOnlineText]}>
-          {props.text1}
-        </Text>
+        <Text style={[styles.text, styles.toastOnlineText]}>{props.text1}</Text>
       </View>
     ),
     error: (props: BaseToastProps) => (
       <View style={[styles.base, styles.toastErrorContainer]}>
-        <Text style={[styles.text, styles.toastErrorText]}>
+        <Text style={[styles.text, styles.toastErrorText]}>{props.text1}</Text>
+      </View>
+    ),
+    // FIX: "success" type was missing — any Toast.show({ type: "success" })
+    // call in the app was silently ignored.
+    success: (props: BaseToastProps) => (
+      <View style={[styles.base, styles.toastSuccessContainer]}>
+        <Text style={[styles.text, styles.toastSuccessText]}>
           {props.text1}
         </Text>
       </View>

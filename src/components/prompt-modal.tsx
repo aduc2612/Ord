@@ -4,7 +4,6 @@ import { useTheme } from "@/hooks/use-theme";
 import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import Toast from "react-native-toast-message";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -172,7 +171,6 @@ export default function PromptModal({
           </Pressable>
         </View>
       </View>
-      <Toast />
     </BottomSheet>
   );
 }
