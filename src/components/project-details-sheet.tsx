@@ -1,8 +1,12 @@
 import DropdownMenu from "@/components/dropdown-menu";
+import FilterBottomSheet, {
+  type FilterSelections,
+} from "@/components/filter-bottom-sheet";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import { useDbProjects } from "@/hooks/use-db-projects";
+import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
@@ -10,6 +14,7 @@ import {
   BottomSheet,
   type BottomSheetMethods,
 } from "@expo/ui/community/bottom-sheet";
+import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -105,6 +110,28 @@ function createStyles(theme: Theme) {
       color: theme.colors.primary,
       fontWeight: "600",
     },
+    filterRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      minHeight: 48,
+    },
+    filterLabel: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
+    },
+    filterValue: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurfaceVariant,
+      marginRight: spacing.sm,
+    },
+    filterValueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
   });
 }
 
@@ -121,6 +148,7 @@ export default function ProjectDetailsSheet({
   const { projectList, updateProject, deleteProject } = useDbProjects();
 
   const { taskList } = useDbTasks();
+  const { taskTagList } = useDbTaskTags();
 
   const project = useMemo(
     () => projectList.find((p) => p.id === projectId),
@@ -136,6 +164,27 @@ export default function ProjectDetailsSheet({
   const [description, setDescription] = useState("");
   const [descHeight, setDescHeight] = useState(0);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [filters, setFilters] = useState<FilterSelections>({
+    category: null,
+    tags: [],
+    projectId: null,
+  });
+
+  const filteredTasks = useMemo(() => {
+    return projectTasks.filter((task) => {
+      if (filters.category && task.category !== filters.category) return false;
+      if (filters.tags.length > 0) {
+        const hasAllTags = filters.tags.every((tagId) =>
+          taskTagList.some((tt) => tt.taskId === task.id && tt.tagId === tagId),
+        );
+        if (!hasAllTags) return false;
+      }
+      return true;
+    });
+  }, [projectTasks, filters, taskTagList]);
+
+  const filterCount = (filters.category ? 1 : 0) + filters.tags.length;
 
   const hasChangesRef = useRef(false);
   const lastInitializedRef = useRef<string | null>(null);
@@ -331,11 +380,31 @@ export default function ProjectDetailsSheet({
 
               <Text style={styles.sectionHeader}>Tasks</Text>
 
+              <Pressable
+                style={styles.filterRow}
+                onPress={() => setFilterVisible(true)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.filterLabel}>Filter</Text>
+                <View style={styles.filterValueRow}>
+                  <Text style={styles.filterValue}>
+                    {filterCount > 0 ? `${filterCount} selected` : "None"}
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                </View>
+              </Pressable>
+
               {projectTasks.length === 0 ? (
                 <Text style={styles.emptyState}>No tasks in this project</Text>
+              ) : filteredTasks.length === 0 ? (
+                <Text style={styles.emptyState}>No tasks found</Text>
               ) : (
                 <FlashList
-                  data={projectTasks}
+                  data={filteredTasks}
                   renderItem={({ item }) => (
                     <TaskItem
                       title={item.title}
@@ -349,6 +418,17 @@ export default function ProjectDetailsSheet({
           </KeyboardAvoidingView>
         )}
       </BottomSheet>
+
+      <FilterBottomSheet
+        visible={filterVisible}
+        onDismiss={() => setFilterVisible(false)}
+        onApply={(sel) => {
+          setFilters(sel);
+          setFilterVisible(false);
+        }}
+        availableFilters={["category", "tag"]}
+        initialSelections={filters}
+      />
 
       {selectedTaskId ? (
         <TaskDetailsSheet

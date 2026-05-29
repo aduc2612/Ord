@@ -23,6 +23,7 @@ function createStyles(theme: Theme) {
       padding: spacing.lg,
       gap: spacing.sm,
       minHeight: 48,
+      marginBottom: spacing.sm,
     },
     dot: {
       width: 10,
