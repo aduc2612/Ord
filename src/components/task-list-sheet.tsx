@@ -11,6 +11,7 @@ import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
+import { LegendList } from "@legendapp/list/react-native";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   forwardRef,
@@ -20,7 +21,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -50,28 +51,8 @@ function createStyles(theme: Theme) {
       gap: spacing.md,
       paddingBottom: spacing.md,
     },
-    headerRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    headerTitle: {
-      ...typography.titleMedium,
-      color: theme.colors.onBackground,
-    },
-    doneButton: {
-      minHeight: 48,
-      minWidth: 48,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    doneButtonText: {
-      ...typography.labelLarge,
-      color: theme.colors.primary,
-      fontWeight: "600",
-    },
     searchRow: {
-      paddingTop: spacing.xxxl,
+      paddingTop: spacing.xxxxl,
       flexDirection: "row",
       alignItems: "center",
       gap: spacing.sm,
@@ -79,9 +60,21 @@ function createStyles(theme: Theme) {
     filterButton: {
       padding: spacing.sm,
     },
+    searchBarFill: {
+      flex: 1,
+    },
     listContent: {
       paddingHorizontal: spacing.lg,
       paddingBottom: spacing.xxl,
+    },
+    listContainer: {
+      backgroundColor: theme.colors.background,
+    },
+    emptyStateContainer: {
+      flex: 1,
+      justifyContent: "flex-start",
+      alignItems: "center",
+      backgroundColor: theme.colors.background,
     },
     emptyState: {
       ...typography.bodyMedium,
@@ -245,24 +238,13 @@ const TaskListSheet = forwardRef<TaskListSheetHandle, TaskListSheetProps>(
           onDidDismiss={onDismiss}
           header={
             <View style={styles.stickyHeader}>
-              {/* <View style={styles.headerRow}>
-                <Text style={styles.headerTitle}>Tasks</Text>
-                <Pressable
-                  style={styles.doneButton}
-                  onPress={() => sheetRef.current?.dismiss()}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.doneButtonText}>Done</Text>
-                </Pressable>
-              </View> */}
-
               {/* Search Row */}
               <View style={styles.searchRow}>
                 <SearchBar
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholder="Search tasks"
-                  style={{ flex: 1 }}
+                  style={styles.searchBarFill}
                 />
                 <Pressable
                   style={styles.filterButton}
@@ -291,15 +273,16 @@ const TaskListSheet = forwardRef<TaskListSheetHandle, TaskListSheetProps>(
           }
         >
           {searchedTasks.length === 0 ? (
-            <View style={{ flex: 1, justifyContent: "center" }}>
+            <View style={styles.emptyStateContainer}>
               <Text style={styles.emptyState}>No tasks found</Text>
             </View>
           ) : (
-            <FlatList
+            <LegendList
               data={searchedTasks}
               renderItem={renderItem}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
+              style={styles.listContainer}
             />
           )}
         </TrueSheet>

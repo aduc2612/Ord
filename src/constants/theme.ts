@@ -169,6 +169,7 @@ export const spacing = {
   xl: 24,
   xxl: 32,
   xxxl: 40,
+  xxxxl: 48,
 };
 
 // Border radius scale
