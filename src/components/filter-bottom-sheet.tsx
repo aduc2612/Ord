@@ -11,7 +11,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -129,7 +128,6 @@ export default function FilterBottomSheet({
 }: FilterBottomSheetProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const insets = useSafeAreaInsets();
   const { tagList } = useDbTags();
   const { projectList } = useDbProjects();
 
@@ -149,6 +147,7 @@ export default function FilterBottomSheet({
   useEffect(() => {
     if (visible) {
       const init = initialSelections ?? DEFAULT_SELECTIONS;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- draft state doesn't affect dependencies, safe reset pattern
       setDraftCategory(init.category);
       setDraftTags([...init.tags]);
       setDraftProjectId(init.projectId);

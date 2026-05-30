@@ -164,6 +164,7 @@ export default function TasksScreen() {
         (p: Project) => p.title === initialFilters.project,
       );
       if (project) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- setFilters doesn't affect dependencies, safe one-time resolution
         setFilters((prev: FilterSelections) => {
           if (prev.projectId === project.id) return prev;
           return { ...prev, projectId: project.id };
@@ -175,7 +176,7 @@ export default function TasksScreen() {
   // ── Filtering ──────────────────────────────────────────────────────────────
 
   const filteredTasks = useMemo(() => {
-    const now = Date.now();
+    const now = Date.now(); // eslint-disable-line react-hooks/purity -- overdue must reflect current time
 
     return taskList.filter((task: Task) => {
       // Skip completed tasks

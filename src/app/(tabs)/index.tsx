@@ -108,7 +108,7 @@ export default function HomeScreen() {
         (t) =>
           t.completedAt === null &&
           t.dueDate !== null &&
-          t.dueDate < Date.now(),
+          t.dueDate < Date.now(), // eslint-disable-line react-hooks/purity -- overdue must reflect current time
       ).length,
     [taskList],
   );
