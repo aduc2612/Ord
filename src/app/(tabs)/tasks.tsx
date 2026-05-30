@@ -1,0 +1,307 @@
+import FilterBottomSheet, {
+  type FilterSelections,
+} from "@/components/filter-bottom-sheet";
+import SearchBar from "@/components/search-bar";
+import TaskDetailsSheet from "@/components/task-details-sheet";
+import TaskItem from "@/components/task-item";
+import { borderRadius, spacing, typography } from "@/constants/theme";
+import type { Project, Task, TaskTag } from "@/db/schema";
+import { useDbProjects } from "@/hooks/use-db-projects";
+import { useDbTaskTags } from "@/hooks/use-db-task-tags";
+import { useDbTasks } from "@/hooks/use-db-tasks";
+import type { Theme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
+import { Ionicons } from "@expo/vector-icons";
+import { FlashList } from "@shopify/flash-list";
+import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type TaskFilters = {
+  category: string | null;
+  tags: string[];
+  project: string | null;
+  overdue: boolean | null;
+};
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const DEFAULT_FILTERS: TaskFilters = {
+  category: null,
+  tags: [],
+  project: null,
+  overdue: null,
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function parseFilters(filtersStr: string | undefined): TaskFilters {
+  if (!filtersStr) return DEFAULT_FILTERS;
+  try {
+    const parsed = JSON.parse(filtersStr);
+    return {
+      category: parsed.category ?? null,
+      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+      project: parsed.project ?? null,
+      overdue: typeof parsed.overdue === "boolean" ? parsed.overdue : null,
+    };
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      ...typography.headlineLarge,
+      color: theme.colors.onBackground,
+    },
+    headerWrapper: {
+      paddingHorizontal: spacing.lg,
+    },
+    topSection: {
+      gap: spacing.lg,
+      marginBottom: spacing.lg,
+    },
+    searchWrapper: {
+      paddingHorizontal: spacing.lg,
+    },
+    filterRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderRadius: borderRadius.lg,
+      marginHorizontal: spacing.lg,
+      padding: spacing.lg,
+      minHeight: 48,
+    },
+    filterLabel: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
+    },
+    filterValue: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurfaceVariant,
+      marginRight: spacing.sm,
+    },
+    filterValueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    taskItemWrapper: {
+      paddingHorizontal: spacing.lg,
+    },
+    emptyText: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: "center",
+      paddingVertical: spacing.xl,
+    },
+  });
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export default function TasksScreen() {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ filters?: string }>();
+
+  // Parse initial filters from URL params
+  const initialFilters = useMemo(
+    () => parseFilters(params.filters),
+    [params.filters],
+  );
+
+  // ── State ──────────────────────────────────────────────────────────────────
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<FilterSelections>({
+    category: initialFilters.category,
+    tags: initialFilters.tags,
+    projectId: null,
+  });
+  const [overdueFilter, setOverdueFilter] = useState<boolean | null>(
+    initialFilters.overdue,
+  );
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  // ── Data hooks ─────────────────────────────────────────────────────────────
+
+  const { taskList } = useDbTasks();
+  const { taskTagList } = useDbTaskTags();
+  const { projectList } = useDbProjects();
+
+  // Resolve project name from URL params to project ID
+  useEffect(() => {
+    if (initialFilters.project && projectList.length > 0) {
+      const project = projectList.find(
+        (p: Project) => p.title === initialFilters.project,
+      );
+      if (project) {
+        setFilters((prev: FilterSelections) => {
+          if (prev.projectId === project.id) return prev;
+          return { ...prev, projectId: project.id };
+        });
+      }
+    }
+  }, [initialFilters.project, projectList]);
+
+  // ── Filtering ──────────────────────────────────────────────────────────────
+
+  const filteredTasks = useMemo(() => {
+    const now = Date.now();
+
+    return taskList.filter((task: Task) => {
+      // Skip completed tasks
+      if (task.completedAt !== null) return false;
+
+      // Category filter
+      if (filters.category && task.category !== filters.category) return false;
+
+      // Tags filter (task must have ALL selected tags)
+      if (filters.tags.length > 0) {
+        const hasAllTags = filters.tags.every((tagId: string) =>
+          taskTagList.some(
+            (tt: TaskTag) => tt.taskId === task.id && tt.tagId === tagId,
+          ),
+        );
+        if (!hasAllTags) return false;
+      }
+
+      // Project filter
+      if (filters.projectId && task.projectId !== filters.projectId)
+        return false;
+
+      // Overdue filter
+      if (overdueFilter !== null) {
+        const isOverdue =
+          task.dueDate !== null &&
+          task.completedAt === null &&
+          task.dueDate < now;
+        if (overdueFilter !== isOverdue) return false;
+      }
+
+      // Search filter (match on title)
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        if (!task.title.toLowerCase().includes(query)) return false;
+      }
+
+      return true;
+    });
+  }, [taskList, filters, taskTagList, overdueFilter, searchQuery]);
+
+  // ── Derived ────────────────────────────────────────────────────────────────
+
+  const filterCount = useMemo(() => {
+    return (
+      (filters.category ? 1 : 0) +
+      filters.tags.length +
+      (filters.projectId ? 1 : 0) +
+      (overdueFilter !== null ? 1 : 0)
+    );
+  }, [filters, overdueFilter]);
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
+  const handleFilterApply = useCallback((sel: FilterSelections) => {
+    setFilters(sel);
+    setFilterVisible(false);
+  }, []);
+
+  const handleTaskPress = useCallback((taskId: string) => {
+    setSelectedTaskId(taskId);
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Task }) => (
+      <View style={styles.taskItemWrapper}>
+        <TaskItem title={item.title} onPress={() => handleTaskPress(item.id)} />
+      </View>
+    ),
+    [handleTaskPress, styles.taskItemWrapper],
+  );
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  return (
+    <View style={styles.container}>
+      {/* Fixed header area: title + search + filter */}
+      <View
+        style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
+      >
+        <View style={styles.headerWrapper}>
+          <Text style={styles.header}>Tasks</Text>
+        </View>
+
+        <View style={styles.searchWrapper}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search tasks"
+          />
+        </View>
+
+        <Pressable
+          style={styles.filterRow}
+          onPress={() => setFilterVisible(true)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={styles.filterLabel}>Filter</Text>
+          <View style={styles.filterValueRow}>
+            <Text style={styles.filterValue}>
+              {filterCount > 0 ? `${filterCount} selected` : "None"}
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </View>
+        </Pressable>
+      </View>
+
+      {/* Scrollable task list */}
+      <FlashList
+        data={filteredTasks}
+        renderItem={renderItem}
+        keyExtractor={(item: Task) => item.id}
+        contentContainerStyle={{ paddingBottom: spacing.lg }}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No tasks found</Text>
+        }
+      />
+
+      {/* Filter bottom sheet */}
+      <FilterBottomSheet
+        visible={filterVisible}
+        onDismiss={() => setFilterVisible(false)}
+        onApply={handleFilterApply}
+        availableFilters={["category", "tag", "project"]}
+        initialSelections={filters}
+      />
+
+      {/* Task details sheet */}
+      {selectedTaskId ? (
+        <TaskDetailsSheet
+          visible={true}
+          taskId={selectedTaskId}
+          onDismiss={() => setSelectedTaskId(null)}
+        />
+      ) : null}
+    </View>
+  );
+}
