@@ -101,7 +101,6 @@ export function useDbProjects() {
           createdAt: now,
           updatedAt: now,
         });
-        await loadProjects();
       } catch (e) {
         console.error("insertProject error:", e);
         Toast.show({ type: "error", text1: "Failed to insert project" });
@@ -109,7 +108,7 @@ export function useDbProjects() {
         setLoading(false);
       }
     },
-    [userId, loadProjects],
+    [userId],
   );
 
   const updateProject = useCallback(
@@ -127,7 +126,6 @@ export function useDbProjects() {
           .update(projects)
           .set({ ...updates, updatedAt: Date.now() })
           .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
-        await loadProjects();
       } catch (e) {
         console.error("updateProject error:", e);
         Toast.show({ type: "error", text1: "Failed to update project" });
@@ -135,7 +133,7 @@ export function useDbProjects() {
         setLoading(false);
       }
     },
-    [userId, loadProjects],
+    [userId],
   );
 
   const toggleProject = useCallback(
@@ -153,7 +151,6 @@ export function useDbProjects() {
             updatedAt: Date.now(),
           })
           .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
-        await loadProjects();
       } catch (e) {
         console.error("toggleProject error:", e);
         Toast.show({ type: "error", text1: "Failed to toggle project" });
@@ -161,7 +158,7 @@ export function useDbProjects() {
         setLoading(false);
       }
     },
-    [userId, loadProjects],
+    [userId],
   );
 
   const deleteProject = useCallback(
@@ -175,7 +172,6 @@ export function useDbProjects() {
         await db
           .delete(projects)
           .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
-        await loadProjects();
       } catch (e) {
         console.error("deleteProject error:", e);
         Toast.show({ type: "error", text1: "Failed to delete project" });
@@ -183,7 +179,7 @@ export function useDbProjects() {
         setLoading(false);
       }
     },
-    [userId, loadProjects],
+    [userId],
   );
 
   const deleteAllProjects = useCallback(async () => {
@@ -194,14 +190,13 @@ export function useDbProjects() {
     setLoading(true);
     try {
       await db.delete(projects).where(eq(projects.userId, userId));
-      await loadProjects();
     } catch (e) {
       console.error("deleteAllProjects error:", e);
       Toast.show({ type: "error", text1: "Failed to delete all projects" });
     } finally {
       setLoading(false);
     }
-  }, [userId, loadProjects]);
+  }, [userId]);
 
   return {
     projectList,

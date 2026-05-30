@@ -10,20 +10,19 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchClaims = async () => {
-      setIsLoading(true)
-
-      const { data, error } = await supabase.auth.getClaims()
-
+    const fetchSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
       if (error) {
-        console.error('Error fetching claims:', error)
+        console.error('Error fetching session:', error)
       }
-
-      setClaims(data?.claims ?? null)
-      setIsLoading(false)
+      if (session?.user) {
+        setClaims({ sub: session.user.id })
+      } else {
+        setClaims(null)
+      }
     }
 
-    fetchClaims()
+    fetchSession()
 
     const {
       data: { subscription },
@@ -33,7 +32,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       } else {
         setClaims(null)
       }
-      setIsLoading(false)
     })
 
     return () => {
@@ -50,8 +48,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         setIsLoading(false)
         return
       }
-
-      setIsLoading(true)
 
       try {
         const { data, error } = await supabase

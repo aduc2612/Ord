@@ -14,7 +14,7 @@ function RootNavigator() {
   return (
     <Stack
       screenOptions={{
-        animation: "fade", // Options: 'fade', 'flip', 'slide_from_bottom', 'none'
+        animation: "fade",
         animationDuration: 200,
       }}
     >
@@ -30,10 +30,13 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useEffect(() => {
-    const appMounted = Promise.resolve();
-    initializeBackgroundTask(appMounted).catch((err) => {
+    let cleanup: (() => void) | undefined;
+    initializeBackgroundTask().then((fn) => {
+      cleanup = fn;
+    }).catch((err) => {
       console.error("[Background Sync] Init error:", err);
     });
+    return () => { cleanup?.(); };
   }, []);
 
   return (

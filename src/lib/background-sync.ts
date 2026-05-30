@@ -48,12 +48,8 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
   return BackgroundTask.BackgroundTaskResult.Success;
 });
 
-export const initializeBackgroundTask = async (
-  innerAppMountedPromise: Promise<void>,
-) => {
-  await innerAppMountedPromise;
-
-  AppState.addEventListener("change", async (nextAppState) => {
+export const initializeBackgroundTask = async (): Promise<() => void> => {
+  const subscription = AppState.addEventListener("change", async (nextAppState) => {
     const now = Date.now();
     if (now - lastProcessedTime < DEBOUNCE_MS) return;
     lastProcessedTime = now;
@@ -109,4 +105,8 @@ export const initializeBackgroundTask = async (
       });
     }
   }
+
+  return () => {
+    subscription.remove();
+  };
 };

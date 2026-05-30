@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+// TODO: Replace placeholder counts with real data from hooks
 const listItems = [
   { id: "inbox", label: "Inbox", count: 15 },
   { id: "projects", label: "Projects", count: 15 },

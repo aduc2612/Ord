@@ -1,7 +1,7 @@
 import { useTheme } from "@/hooks/use-theme";
 import type { Theme } from "@/hooks/use-theme";
 import { supabase } from "@/lib/supabase";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 import { spacing, borderRadius, typography, shadows } from "@/constants/theme";
 
 async function onSignOutButtonPress() {
@@ -35,8 +35,8 @@ export default function SignOutButton() {
   const styles = createStyles(theme);
 
   return (
-    <TouchableOpacity style={styles.button} onPress={onSignOutButtonPress} hitSlop={{ top: 2, bottom: 2 }}>
+    <Pressable style={styles.button} onPress={onSignOutButtonPress} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
       <Text style={styles.text}>Sign out</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

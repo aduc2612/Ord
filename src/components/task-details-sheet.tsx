@@ -210,10 +210,12 @@ export default function TaskDetailsSheet({
   }, []);
 
   const handleDatePickerValueChange = useCallback(
-    (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
-      setDueDate(selectedDate);
+    (_event: DateTimePickerChangeEvent, selectedDate?: Date) => {
+      if (selectedDate) {
+        setDueDate(selectedDate);
+        hasChangesRef.current = true;
+      }
       setShowDatePicker(false);
-      hasChangesRef.current = true;
     },
     [],
   );

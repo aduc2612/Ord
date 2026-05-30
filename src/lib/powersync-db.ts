@@ -3,6 +3,9 @@ import { PowerSyncDatabase, Schema, Table, column } from '@powersync/react-nativ
 import { OPSqliteOpenFactory } from '@powersync/op-sqlite'
 import { tasks, projects, tags, taskTags, notes } from '@/db/schema'
 
+// IMPORTANT: This PowerSync schema must stay in sync with db/schema.ts.
+// Any table/column changes must be reflected in both files.
+
 export const drizzleSchema = {
   tasks,
   projects,
