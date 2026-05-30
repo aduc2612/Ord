@@ -5,6 +5,16 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
+export const projects = sqliteTable("projects", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
 export const tasks = sqliteTable("tasks", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
@@ -16,16 +26,6 @@ export const tasks = sqliteTable("tasks", {
   }),
   dueDate: integer("due_date"),
   completedAt: integer("completed_at"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
-
-export const projects = sqliteTable("projects", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

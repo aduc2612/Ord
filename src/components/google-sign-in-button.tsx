@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Image, Pressable, StyleSheet, Text } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -16,17 +16,20 @@ const redirectUri = AuthSession.makeRedirectUri({
 });
 
 function extractParamsFromUrl(url: string) {
-  const parsedUrl = new URL(url);
-  const hash = parsedUrl.hash.substring(1);
-  const params = new URLSearchParams(hash);
-
+  const hashIndex = url.indexOf("#");
+  const hash = hashIndex !== -1 ? url.substring(hashIndex + 1) : "";
+  const params = new Map<string, string>();
+  for (const pair of hash.split("&")) {
+    const [key, ...rest] = pair.split("=");
+    if (key) params.set(decodeURIComponent(key), decodeURIComponent(rest.join("=")));
+  }
   return {
-    access_token: params.get("access_token"),
-    expires_in: parseInt(params.get("expires_in") || "0"),
-    refresh_token: params.get("refresh_token"),
-    token_type: params.get("token_type"),
-    provider_token: params.get("provider_token"),
-    code: params.get("code"),
+    access_token: params.get("access_token") ?? null,
+    expires_in: parseInt(params.get("expires_in") ?? "0"),
+    refresh_token: params.get("refresh_token") ?? null,
+    token_type: params.get("token_type") ?? null,
+    provider_token: params.get("provider_token") ?? null,
+    code: params.get("code") ?? null,
   };
 }
 
@@ -118,13 +121,13 @@ export default function GoogleSignInButton() {
   }
 
   return (
-    <TouchableOpacity
+    <Pressable
       style={styles.button}
       onPress={onSignInButtonPress}
-      activeOpacity={0.8}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Image source={images.googleLogo} style={styles.icon} />
       <Text style={styles.text}>Continue with Google</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

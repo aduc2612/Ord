@@ -99,7 +99,6 @@ export function useDbTags() {
           createdAt: now,
           updatedAt: now,
         });
-        await loadTags();
       } catch (e) {
         console.error("insertTag error:", e);
         Toast.show({ type: "error", text1: "Failed to insert tag" });
@@ -107,7 +106,7 @@ export function useDbTags() {
         setLoading(false);
       }
     },
-    [userId, loadTags],
+    [userId],
   );
 
   const updateTag = useCallback(
@@ -122,7 +121,6 @@ export function useDbTags() {
           .update(tags)
           .set({ ...updates, updatedAt: Date.now() })
           .where(and(eq(tags.id, tagId), eq(tags.userId, userId)));
-        await loadTags();
       } catch (e) {
         console.error("updateTag error:", e);
         Toast.show({ type: "error", text1: "Failed to update tag" });
@@ -130,7 +128,7 @@ export function useDbTags() {
         setLoading(false);
       }
     },
-    [userId, loadTags],
+    [userId],
   );
 
   const deleteTag = useCallback(
@@ -144,7 +142,6 @@ export function useDbTags() {
         await db
           .delete(tags)
           .where(and(eq(tags.id, tagId), eq(tags.userId, userId)));
-        await loadTags();
       } catch (e) {
         console.error("deleteTag error:", e);
         Toast.show({ type: "error", text1: "Failed to delete tag" });
@@ -152,7 +149,7 @@ export function useDbTags() {
         setLoading(false);
       }
     },
-    [userId, loadTags],
+    [userId],
   );
 
   const deleteAllTags = useCallback(async () => {
@@ -163,14 +160,13 @@ export function useDbTags() {
     setLoading(true);
     try {
       await db.delete(tags).where(eq(tags.userId, userId));
-      await loadTags();
     } catch (e) {
       console.error("deleteAllTags error:", e);
       Toast.show({ type: "error", text1: "Failed to delete all tags" });
     } finally {
       setLoading(false);
     }
-  }, [userId, loadTags]);
+  }, [userId]);
 
   return {
     tagList,

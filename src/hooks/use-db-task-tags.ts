@@ -95,7 +95,6 @@ export function useDbTaskTags() {
           createdAt: now,
           updatedAt: now,
         });
-        await loadTaskTags();
       } catch (e) {
         console.error("addTagToTask error:", e);
         Toast.show({ type: "error", text1: "Failed to add tag to task" });
@@ -104,7 +103,7 @@ export function useDbTaskTags() {
         setLoading(false);
       }
     },
-    [loadTaskTags, userId],
+    [userId],
   );
 
   const removeTagFromTask = useCallback(
@@ -124,7 +123,6 @@ export function useDbTaskTags() {
               eq(taskTags.userId, userId),
             ),
           );
-        await loadTaskTags();
       } catch (e) {
         console.error("removeTagFromTask error:", e);
         Toast.show({ type: "error", text1: "Failed to remove tag from task" });
@@ -132,7 +130,7 @@ export function useDbTaskTags() {
         setLoading(false);
       }
     },
-    [userId, loadTaskTags],
+    [userId],
   );
 
   const deleteAllTaskTags = useCallback(async () => {
@@ -143,14 +141,13 @@ export function useDbTaskTags() {
     setLoading(true);
     try {
       await db.delete(taskTags).where(eq(taskTags.userId, userId));
-      await loadTaskTags();
     } catch (e) {
       console.error("deleteAllTaskTags error:", e);
       Toast.show({ type: "error", text1: "Failed to delete all task tags" });
     } finally {
       setLoading(false);
     }
-  }, [userId, loadTaskTags]);
+  }, [userId]);
 
   return {
     taskTagList,

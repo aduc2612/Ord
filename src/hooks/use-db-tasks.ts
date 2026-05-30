@@ -112,7 +112,6 @@ export function useDbTasks() {
           createdAt: now,
           updatedAt: now,
         });
-        await loadTasks();
         return id;
       } catch (e) {
         console.error("insertTask error:", e);
@@ -121,7 +120,7 @@ export function useDbTasks() {
         setLoading(false);
       }
     },
-    [userId, loadTasks],
+    [userId],
   );
 
   const updateTask = useCallback(
@@ -141,7 +140,6 @@ export function useDbTasks() {
           .update(tasks)
           .set({ ...updates, updatedAt: Date.now() })
           .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
-        await loadTasks();
       } catch (e) {
         console.error("updateTask error:", e);
         Toast.show({ type: "error", text1: "Failed to update task" });
@@ -149,7 +147,7 @@ export function useDbTasks() {
         setLoading(false);
       }
     },
-    [userId, loadTasks],
+    [userId],
   );
 
   const completeTask = useCallback(
@@ -167,7 +165,6 @@ export function useDbTasks() {
             updatedAt: Date.now(),
           })
           .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
-        await loadTasks();
       } catch (e) {
         console.error("completeTask error:", e);
         Toast.show({ type: "error", text1: "Failed to complete task" });
@@ -175,7 +172,7 @@ export function useDbTasks() {
         setLoading(false);
       }
     },
-    [userId, loadTasks],
+    [userId],
   );
 
   const deleteTask = useCallback(
@@ -189,7 +186,6 @@ export function useDbTasks() {
         await db
           .delete(tasks)
           .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
-        await loadTasks();
       } catch (e) {
         console.error("deleteTask error:", e);
         Toast.show({ type: "error", text1: "Failed to delete task" });
@@ -197,7 +193,7 @@ export function useDbTasks() {
         setLoading(false);
       }
     },
-    [userId, loadTasks],
+    [userId],
   );
 
   const deleteAllTasks = useCallback(async () => {
@@ -208,14 +204,13 @@ export function useDbTasks() {
     setLoading(true);
     try {
       await db.delete(tasks).where(eq(tasks.userId, userId));
-      await loadTasks();
     } catch (e) {
       console.error("deleteAllTasks error:", e);
       Toast.show({ type: "error", text1: "Failed to delete all tasks" });
     } finally {
       setLoading(false);
     }
-  }, [userId, loadTasks]);
+  }, [userId]);
 
   return {
     taskList,

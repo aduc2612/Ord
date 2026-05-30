@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+// TODO: Replace placeholder values with real data from useDbTasks/useDbProjects hooks
 const summaryOptions: { label: string; value: number }[] = [
   { label: "Inbox count", value: 15 },
   { label: "Last reviewed", value: 15 },
@@ -35,6 +36,7 @@ const segmentOptions = [
   { label: "Waiting For", value: "waiting_for" },
 ];
 
+// TODO: Replace with real task data from hooks
 const fillerTasks: Record<string, string[]> = {
   due_today: ["Task 1", "Task 2", "Task 3", "Task 4"],
   next: ["Next Action 1", "Next Action 2"],
