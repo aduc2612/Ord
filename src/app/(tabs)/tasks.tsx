@@ -13,7 +13,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -134,6 +134,19 @@ export default function TasksScreen() {
   });
   const [overdueFilter, setOverdueFilter] = useState<boolean | null>(
     initialFilters.overdue,
+  );
+
+  // Reset internal state every time the screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      setFilters({
+        category: initialFilters.category,
+        tags: initialFilters.tags,
+        projectId: null,
+      });
+      setOverdueFilter(initialFilters.overdue);
+      setSearchQuery("");
+    }, [initialFilters]),
   );
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);

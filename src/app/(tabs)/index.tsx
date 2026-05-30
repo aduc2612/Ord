@@ -3,32 +3,17 @@ import SearchBar from "@/components/search-bar";
 import SegmentedControl from "@/components/segmented-control";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
-import {
-  componentStyles,
-  spacing,
-  typography,
-} from "@/constants/theme";
+import { componentStyles, spacing, typography } from "@/constants/theme";
+import { useDbNotes } from "@/hooks/use-db-notes";
+import { useDbProjects } from "@/hooks/use-db-projects";
+import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-// TODO: Replace placeholder values with real data from useDbTasks/useDbProjects hooks
-const summaryOptions: { label: string; value: number }[] = [
-  { label: "Inbox count", value: 15 },
-  { label: "Last reviewed", value: 15 },
-  { label: "Waiting For", value: 15 },
-  { label: "Projects count", value: 15 },
-  { label: "Overdue", value: 15 },
-];
 
 const segmentOptions = [
   { label: "Due Today", value: "due_today" },
@@ -96,9 +81,75 @@ export default function HomeScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("due_today");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  const { noteList } = useDbNotes();
+  const { taskList } = useDbTasks();
+  const { projectList } = useDbProjects();
+
+  const inboxCount = noteList.length;
+
+  const waitingForCount = useMemo(
+    () =>
+      taskList.filter(
+        (t) => t.category === "waiting_for" && t.completedAt === null,
+      ).length,
+    [taskList],
+  );
+
+  const projectsCount = projectList.length;
+
+  const overdueCount = useMemo(
+    () =>
+      taskList.filter(
+        (t) =>
+          t.completedAt === null &&
+          t.dueDate !== null &&
+          t.dueDate < Date.now(),
+      ).length,
+    [taskList],
+  );
+
+  const summaryRows = useMemo(
+    () => [
+      {
+        label: "Inbox count",
+        value: inboxCount,
+        onPress: () => router.push("/(tabs)/inbox"),
+      },
+      {
+        label: "Waiting For",
+        value: waitingForCount,
+        onPress: () =>
+          router.push({
+            pathname: "/(tabs)/tasks",
+            params: {
+              filters: JSON.stringify({ category: "waiting_for" }),
+            },
+          }),
+      },
+      {
+        label: "Projects count",
+        value: projectsCount,
+        onPress: () => router.push("/(tabs)/lists"),
+      },
+      {
+        label: "Overdue",
+        value: overdueCount,
+        onPress: () =>
+          router.push({
+            pathname: "/(tabs)/tasks",
+            params: {
+              filters: JSON.stringify({ overdue: true }),
+            },
+          }),
+      },
+    ],
+    [inboxCount, waitingForCount, projectsCount, overdueCount, router],
+  );
 
   const currentTasks = fillerTasks[selectedSegment] ?? [];
 
@@ -130,11 +181,19 @@ export default function HomeScreen() {
 
         {/* Summary Statistics Card */}
         <View style={styles.summaryCard}>
-          {summaryOptions.map((item) => (
-            <View key={item.label} style={styles.summaryRow}>
+          {summaryRows.map((item) => (
+            <Pressable
+              key={item.label}
+              style={({ pressed }) => [
+                styles.summaryRow,
+                pressed && { opacity: theme.interaction.pressedOpacity },
+              ]}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={item.onPress}
+            >
               <Text style={styles.summaryLabel}>{item.label}</Text>
               <Text style={styles.summaryValue}>{item.value}</Text>
-            </View>
+            </Pressable>
           ))}
         </View>
 
