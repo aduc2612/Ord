@@ -7,12 +7,13 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
+import NetworkToastProvider from "@/providers/network-toast-provider";
 import { Ionicons } from "@expo/vector-icons";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -36,8 +37,11 @@ function createStyles(theme: Theme) {
     scrollContent: {
       flexGrow: 1,
       paddingHorizontal: spacing.lg,
+      backgroundColor: theme.colors.background,
     },
-    headerRow: {
+    stickyHeader: {
+      paddingTop: spacing.xxxxl,
+      backgroundColor: theme.colors.background,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -108,25 +112,20 @@ function createStyles(theme: Theme) {
 type PrimaryAction = "" | "trash" | "someday" | "actionable";
 type SecondaryAction = "" | "done_2min" | "delegate" | "defer";
 
-export type ClarifySheetProps = {
-  visible: boolean;
-  noteId: string;
-  noteQueue: string[];
-  totalNotes: number;
-  onDismiss: () => void;
-  onProcessed: (nextId: string | null, remainingQueue: string[]) => void;
-};
-
 export default function ClarifySheet({
-  visible,
   noteId,
   noteQueue,
-  totalNotes,
   onDismiss,
   onProcessed,
-}: ClarifySheetProps) {
+}: {
+  noteId: string;
+  noteQueue: string[];
+  onDismiss: () => void;
+  onProcessed: (nextId: string | null, remainingQueue: string[]) => void;
+}) {
   const theme = useTheme();
   const styles = createStyles(theme);
+  const sheetRef = useRef<TrueSheet>(null);
   const { noteList, deleteNote } = useDbNotes();
   const { insertTask } = useDbTasks();
   const { addTagToTask } = useDbTaskTags();
@@ -143,6 +142,7 @@ export default function ClarifySheet({
   const [showProjectChooser, setShowProjectChooser] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  const totalNotes = noteQueue.length + 1;
   const currentIndex = totalNotes - noteQueue.length - 1;
   const progress =
     totalNotes > 0 ? Math.min((currentIndex + 1) / totalNotes, 1) : 0;
@@ -151,22 +151,6 @@ export default function ClarifySheet({
     () => noteList.find((n) => n.id === noteId),
     [noteList, noteId],
   );
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    setPrimaryAction("");
-    setSecondaryAction("");
-    setActionText("");
-    setSelectedTagIds([]);
-    setSelectedProjectId(null);
-    setDueDate(null);
-    setShowDatePicker(false);
-  }, [noteId]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  const handleClose = useCallback(() => {
-    onDismiss();
-  }, [onDismiss]);
 
   const handleNext = useCallback(async () => {
     if (!primaryAction) {
@@ -264,7 +248,7 @@ export default function ClarifySheet({
     if (noteQueue.length > 0) {
       onProcessed(noteQueue[0], noteQueue.slice(1));
     } else {
-      onDismiss();
+      sheetRef.current?.dismiss();
     }
   }, [
     primaryAction,
@@ -279,7 +263,6 @@ export default function ClarifySheet({
     dueDate,
     noteQueue,
     onProcessed,
-    onDismiss,
   ]);
 
   const handleChangeActionText = useCallback((text: string) => {
@@ -331,23 +314,38 @@ export default function ClarifySheet({
   const showDoneHelper = secondaryAction === "done_2min";
 
   return (
-    <BottomSheet
-      index={visible ? 0 : -1}
-      onDismiss={onDismiss}
-      enablePanDownToClose
-    >
-      <View style={styles.container}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: spacing.lg },
-          ]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.headerRow}>
+    <>
+      <TrueSheet
+        ref={sheetRef}
+        name="clarifySheet"
+        detents={[1]}
+        cornerRadius={theme.borderRadius.xxl}
+        grabber
+        scrollable
+        onDidPresent={() => {
+          setPrimaryAction("");
+          setSecondaryAction("");
+          setActionText("");
+          setSelectedTagIds([]);
+          setSelectedProjectId(null);
+          setDueDate(null);
+          setShowDatePicker(false);
+        }}
+        onDidDismiss={() => {
+          setPrimaryAction("");
+          setSecondaryAction("");
+          setActionText("");
+          setSelectedTagIds([]);
+          setSelectedProjectId(null);
+          setDueDate(null);
+          setShowDatePicker(false);
+          onDismiss();
+        }}
+        header={
+          <View style={styles.stickyHeader}>
             <Pressable
               style={styles.headerCloseButton}
-              onPress={handleClose}
+              onPress={() => sheetRef.current?.dismiss()}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons
@@ -371,7 +369,15 @@ export default function ClarifySheet({
               <Text style={styles.headerNextText}>Next</Text>
             </Pressable>
           </View>
-
+        }
+      >
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: spacing.lg },
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.clarifyingText} numberOfLines={1}>
             Clarifying: {currentNote?.title ?? ""}
           </Text>
@@ -432,30 +438,32 @@ export default function ClarifySheet({
             </>
           ) : null}
         </ScrollView>
-        <ChooserModal
-          type="tag"
-          visible={showTagChooser}
-          selectedIds={selectedTagIds}
-          onClose={() => setShowTagChooser(false)}
-          onSelect={handleTagSelect}
+        <NetworkToastProvider></NetworkToastProvider>
+      </TrueSheet>
+
+      <ChooserModal
+        type="tag"
+        visible={showTagChooser}
+        selectedIds={selectedTagIds}
+        onClose={() => setShowTagChooser(false)}
+        onSelect={handleTagSelect}
+      />
+      <ChooserModal
+        type="project"
+        visible={showProjectChooser}
+        selectedIds={selectedProjectId ? [selectedProjectId] : []}
+        onClose={() => setShowProjectChooser(false)}
+        onSelect={handleProjectSelect}
+      />
+      {showDatePicker ? (
+        <DateTimePicker
+          value={dueDate ?? new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "default"}
+          onValueChange={handleDateValueChange}
+          onDismiss={handleDatePickerDismiss}
         />
-        <ChooserModal
-          type="project"
-          visible={showProjectChooser}
-          selectedIds={selectedProjectId ? [selectedProjectId] : []}
-          onClose={() => setShowProjectChooser(false)}
-          onSelect={handleProjectSelect}
-        />
-        {showDatePicker ? (
-          <DateTimePicker
-            value={dueDate ?? new Date()}
-            mode="date"
-            display={Platform.OS === "ios" ? "inline" : "default"}
-            onValueChange={handleDateValueChange}
-            onDismiss={handleDatePickerDismiss}
-          />
-        ) : null}
-      </View>
-    </BottomSheet>
+      ) : null}
+    </>
   );
 }

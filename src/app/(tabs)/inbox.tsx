@@ -1,15 +1,15 @@
 import ClarifySheet from "@/components/clarify-sheet";
 import FabButton from "@/components/fab-button";
 import SearchBar from "@/components/search-bar";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import type { Note } from "@/db/schema";
 import { useDbNotes } from "@/hooks/use-db-notes";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -73,10 +73,8 @@ export default function InboxScreen() {
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
-  const [showClarify, setShowClarify] = useState(false);
   const [clarifyNoteId, setClarifyNoteId] = useState("");
   const [clarifyQueue, setClarifyQueue] = useState<string[]>([]);
-  const [clarifyTotal, setClarifyTotal] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -107,12 +105,12 @@ export default function InboxScreen() {
     }
     setClarifyNoteId(available[0].id);
     setClarifyQueue(available.slice(1).map((n) => n.id));
-    setClarifyTotal(available.length);
-    setShowClarify(true);
+    TrueSheet.present("clarifySheet");
   }, [sortedNotes]);
 
   const handleClarifyDismiss = useCallback(() => {
-    setShowClarify(false);
+    setClarifyNoteId("");
+    setClarifyQueue([]);
   }, []);
 
   const handleClarifyProcessed = useCallback(
@@ -120,8 +118,6 @@ export default function InboxScreen() {
       if (nextId) {
         setClarifyNoteId(nextId);
         setClarifyQueue(remainingQueue);
-      } else {
-        setShowClarify(false);
       }
     },
     [],
@@ -138,10 +134,7 @@ export default function InboxScreen() {
   return (
     <View style={styles.container}>
       <View
-        style={[
-          styles.topSection,
-          { paddingTop: insets.top + spacing.lg },
-        ]}
+        style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
       >
         <View style={styles.headerRow}>
           <Text style={styles.header}>Inbox</Text>
@@ -161,7 +154,7 @@ export default function InboxScreen() {
           />
         </View>
       </View>
-      <FlashList
+      <FlatList
         data={filteredNotes}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
@@ -172,10 +165,8 @@ export default function InboxScreen() {
       />
       <FabButton type="note" />
       <ClarifySheet
-        visible={showClarify}
         noteId={clarifyNoteId}
         noteQueue={clarifyQueue}
-        totalNotes={clarifyTotal}
         onDismiss={handleClarifyDismiss}
         onProcessed={handleClarifyProcessed}
       />
