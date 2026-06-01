@@ -15,6 +15,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
+  Keyboard,
   Platform,
   Pressable,
   ScrollView,
@@ -244,6 +245,18 @@ export default function ClarifySheet({
         return;
       }
     }
+
+    setPrimaryAction("");
+    setSecondaryAction("");
+    setActionText("");
+    setSelectedTagIds([]);
+    setSelectedProjectId(null);
+    setDueDate(null);
+    setShowTagChooser(false);
+    setShowProjectChooser(false);
+    setShowDatePicker(false);
+
+    Keyboard.dismiss();
 
     if (noteQueue.length > 0) {
       onProcessed(noteQueue[0], noteQueue.slice(1));
