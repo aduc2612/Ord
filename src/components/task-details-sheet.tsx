@@ -7,16 +7,12 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import {
-  BottomSheet,
-  type BottomSheetMethods,
-} from "@expo/ui/community/bottom-sheet";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -27,17 +23,8 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
-export type TaskDetailsSheetProps = {
-  visible: boolean;
-  taskId: string;
-  onDismiss: () => void;
-};
-
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    keyboardAvoiding: {
-      flex: 1,
-    },
     scrollContent: {
       flexGrow: 1,
       paddingHorizontal: spacing.lg,
@@ -47,6 +34,8 @@ function createStyles(theme: Theme) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      paddingTop: spacing.xxxxl,
+      paddingHorizontal: spacing.lg,
     },
     headerDoneButton: {
       minHeight: 48,
@@ -122,13 +111,16 @@ function createStyles(theme: Theme) {
 }
 
 export default function TaskDetailsSheet({
-  visible,
   taskId,
   onDismiss,
-}: TaskDetailsSheetProps) {
+}: {
+  taskId: string;
+  onDismiss: () => void;
+}) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const sheetRef = useRef<BottomSheetMethods>(null);
+  const sheetRef = useRef<TrueSheet>(null);
+  const pendingActionRef = useRef<"complete" | "delete" | null>(null);
 
   const { taskList, updateTask, completeTask, deleteTask } = useDbTasks();
   const { addTagToTask, removeTagFromTask, taskTagList } = useDbTaskTags();
@@ -152,25 +144,6 @@ export default function TaskDetailsSheet({
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const hasChangesRef = useRef(false);
-  const lastInitializedTaskIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!task || !visible) return;
-
-    if (lastInitializedTaskIdRef.current === taskId) return;
-
-    lastInitializedTaskIdRef.current = taskId;
-    hasChangesRef.current = false;
-    const tagIds = taskTagList
-      .filter((tt) => tt.taskId === taskId)
-      .map((tt) => tt.tagId);
-    setTitle(task.title);
-    setDescription(task.description ?? "");
-    setCategory(task.category);
-    setSelectedTagIds(tagIds);
-    setSelectedProjectId(task.projectId ?? null);
-    setDueDate(task.dueDate ? new Date(task.dueDate) : null);
-  }, [task, taskTagList, taskId, visible]);
 
   const handleTitleChange = useCallback((text: string) => {
     setTitle(text);
@@ -279,115 +252,108 @@ export default function TaskDetailsSheet({
 
   const handleDone = useCallback(async () => {
     await saveChanges();
-
-    sheetRef.current?.close();
-
-    setTimeout(() => {
-      onDismiss();
-    }, 300);
-  }, [saveChanges, onDismiss]);
-
-  const handleClose = useCallback(() => {
-    sheetRef.current?.close();
-
-    setTimeout(() => {
-      onDismiss();
-    }, 300);
-  }, [onDismiss]);
+    sheetRef.current?.dismiss();
+  }, [saveChanges]);
 
   const handleMarkComplete = useCallback(async () => {
     if (!task) return;
-
     await saveChanges();
+    pendingActionRef.current = "complete";
+    sheetRef.current?.dismiss();
+  }, [task, saveChanges]);
 
-    sheetRef.current?.close();
-
-    setTimeout(async () => {
-      onDismiss();
-
-      await completeTask(task.id);
-
-      Toast.show({ type: "success", text1: "Task completed" });
-    }, 300);
-  }, [task, saveChanges, completeTask, onDismiss]);
-
-  const handleDelete = useCallback(async () => {
+  const handleDelete = useCallback(() => {
     if (!task) return;
-
-    sheetRef.current?.close();
-
-    setTimeout(async () => {
-      onDismiss();
-
-      await deleteTask(task.id);
-
-      Toast.show({ type: "success", text1: "Task deleted" });
-    }, 300);
-  }, [task, deleteTask, onDismiss]);
-
-  const scrollContentStyle = useMemo(
-    () => styles.scrollContent,
-    [styles.scrollContent],
-  );
+    pendingActionRef.current = "delete";
+    sheetRef.current?.dismiss();
+  }, [task]);
 
   const descriptionMinHeight = useMemo(
     () => Math.max(48, descHeight),
     [descHeight],
   );
 
-  if (!visible) {
-    return null;
-  }
-
   return (
     <>
-      <BottomSheet
+      <TrueSheet
         ref={sheetRef}
-        key={taskId}
-        index={0}
-        enablePanDownToClose
-        onDismiss={handleClose}
+        name="taskDetailsSheet"
+        detents={[1]}
+        cornerRadius={theme.borderRadius.xxl}
+        grabber
+        scrollable
+        onDidPresent={() => {
+          if (!task) return;
+          hasChangesRef.current = false;
+          const tagIds = taskTagList
+            .filter((tt) => tt.taskId === taskId)
+            .map((tt) => tt.tagId);
+          setTitle(task.title);
+          setDescription(task.description ?? "");
+          setCategory(task.category);
+          setSelectedTagIds(tagIds);
+          setSelectedProjectId(task.projectId ?? null);
+          setDueDate(task.dueDate ? new Date(task.dueDate) : null);
+        }}
+        onDidDismiss={() => {
+          setTitle("");
+          setDescription("");
+          setCategory("next_action");
+          setSelectedTagIds([]);
+          setSelectedProjectId(null);
+          setDueDate(null);
+          setShowDatePicker(false);
+          const action = pendingActionRef.current;
+          pendingActionRef.current = null;
+          onDismiss();
+          if (action === "complete" && task) {
+            completeTask(task.id).then(() => {
+              Toast.show({ type: "success", text1: "Task completed" });
+            });
+          } else if (action === "delete" && task) {
+            deleteTask(task.id).then(() => {
+              Toast.show({ type: "success", text1: "Task deleted" });
+            });
+          }
+        }}
+        header={
+          <View style={styles.headerRow}>
+            <DropdownMenu
+              options={[
+                {
+                  icon: "checkmark-circle",
+                  label: "Mark Complete",
+                  onPress: handleMarkComplete,
+                },
+                {
+                  icon: "trash",
+                  label: "Delete Task",
+                  destructive: true,
+                  onPress: handleDelete,
+                },
+              ]}
+            />
+            <Text style={styles.headerTitle}>Edit Task</Text>
+            <Pressable
+              style={styles.headerDoneButton}
+              onPress={handleDone}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.headerDoneText}>Done</Text>
+            </Pressable>
+          </View>
+        }
       >
-      {!task ? (
-        <View style={styles.notFoundContainer}>
-          <Text style={styles.headerTitle}>Task not found</Text>
-        </View>
-      ) : (
-        <>
-          <KeyboardAvoidingView
-            style={styles.keyboardAvoiding}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
+        {!task ? (
+          <View style={styles.notFoundContainer}>
+            <Text style={styles.headerTitle}>Task not found</Text>
+          </View>
+        ) : (
+          <>
             <ScrollView
-              contentContainerStyle={scrollContentStyle}
+              contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
             >
-              <View style={styles.headerRow}>
-                <DropdownMenu
-                  options={[
-                    {
-                      icon: "checkmark-circle",
-                      label: "Mark Complete",
-                      onPress: handleMarkComplete,
-                    },
-                    {
-                      icon: "trash",
-                      label: "Delete Task",
-                      destructive: true,
-                      onPress: handleDelete,
-                    },
-                  ]}
-                />
-                <Text style={styles.headerTitle}>Edit Task</Text>
-                <Pressable
-                  style={styles.headerDoneButton}
-                  onPress={handleDone}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.headerDoneText}>Done</Text>
-                </Pressable>
-              </View>
-
               <View style={styles.sectionGap} />
 
               <TextInput
@@ -446,34 +412,33 @@ export default function TaskDetailsSheet({
                 />
               ) : null}
             </ScrollView>
-          </KeyboardAvoidingView>
+          </>
+        )}
+      </TrueSheet>
 
-          <ChooserModal
-            type="tag"
-            visible={showTagChooser}
-            selectedIds={selectedTagIds}
-            onClose={() => setShowTagChooser(false)}
-            onSelect={handleTagSelect}
-          />
-          <ChooserModal
-            type="project"
-            visible={showProjectChooser}
-            selectedIds={selectedProjectId ? [selectedProjectId] : []}
-            onClose={() => setShowProjectChooser(false)}
-            onSelect={handleProjectSelect}
-          />
-          {showDatePicker ? (
-            <DateTimePicker
-              value={dueDate ?? new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
-              onValueChange={handleDatePickerValueChange}
-              onDismiss={handleDatePickerDismiss}
-            />
-          ) : null}
-        </>
-      )}
-    </BottomSheet>
+      <ChooserModal
+        type="tag"
+        visible={showTagChooser}
+        selectedIds={selectedTagIds}
+        onClose={() => setShowTagChooser(false)}
+        onSelect={handleTagSelect}
+      />
+      <ChooserModal
+        type="project"
+        visible={showProjectChooser}
+        selectedIds={selectedProjectId ? [selectedProjectId] : []}
+        onClose={() => setShowProjectChooser(false)}
+        onSelect={handleProjectSelect}
+      />
+      {showDatePicker ? (
+        <DateTimePicker
+          value={dueDate ?? new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "default"}
+          onValueChange={handleDatePickerValueChange}
+          onDismiss={handleDatePickerDismiss}
+        />
+      ) : null}
     </>
   );
 }

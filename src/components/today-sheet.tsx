@@ -1,6 +1,6 @@
-import FilterBottomSheet, {
+import FilterSheet, {
   type FilterSelections,
-} from "@/components/filter-bottom-sheet";
+} from "@/components/filter-sheet";
 import SearchBar from "@/components/search-bar";
 import SegmentedControl from "@/components/segmented-control";
 import TaskDetailsSheet from "@/components/task-details-sheet";
@@ -181,6 +181,7 @@ export default function TodaySheet() {
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
+    TrueSheet.present("taskDetailsSheet");
   }, []);
 
   const renderItem = useCallback(
@@ -257,7 +258,7 @@ export default function TodaySheet() {
         )}
       </TrueSheet>
 
-      <FilterBottomSheet
+      <FilterSheet
         onApply={(sel) => {
           setFilters(sel);
         }}
@@ -265,13 +266,10 @@ export default function TodaySheet() {
         initialSelections={filters}
       />
 
-      {selectedTaskId ? (
-        <TaskDetailsSheet
-          visible={true}
-          taskId={selectedTaskId}
-          onDismiss={() => setSelectedTaskId(null)}
-        />
-      ) : null}
+      <TaskDetailsSheet
+        taskId={selectedTaskId ?? ""}
+        onDismiss={() => setSelectedTaskId(null)}
+      />
     </>
   );
 }

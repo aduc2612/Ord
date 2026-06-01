@@ -181,7 +181,6 @@ export default function HomeScreen() {
       <FabButton type="note" />
       <TodaySheet />
       <TaskDetailsSheet
-        visible={selectedTaskId !== null}
         taskId={selectedTaskId ?? ""}
         onDismiss={() => setSelectedTaskId(null)}
       />

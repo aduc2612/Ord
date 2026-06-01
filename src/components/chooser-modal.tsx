@@ -7,9 +7,8 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 type ChooserType = "tag" | "project";
 
@@ -198,7 +197,7 @@ export default function ChooserModal({
               placeholder={`Search ${type === "tag" ? "tags" : "projects"}`}
             />
           </View>
-          <FlashList
+          <FlatList
             data={filteredItems}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}

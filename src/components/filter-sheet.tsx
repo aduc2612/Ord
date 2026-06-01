@@ -128,7 +128,7 @@ function createStyles(theme: Theme) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function FilterBottomSheet({
+export default function FilterSheet({
   onApply,
   availableFilters = ["category", "tag", "project"],
   initialSelections,

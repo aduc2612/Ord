@@ -1,6 +1,6 @@
-import FilterBottomSheet, {
+import FilterSheet, {
   type FilterSelections,
-} from "@/components/filter-bottom-sheet";
+} from "@/components/filter-sheet";
 import SearchBar from "@/components/search-bar";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
@@ -254,6 +254,7 @@ export default function TasksScreen() {
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
+    TrueSheet.present("taskDetailsSheet");
   }, []);
 
   const renderItem = useCallback(
@@ -316,20 +317,17 @@ export default function TasksScreen() {
       />
 
       {/* Filter bottom sheet */}
-      <FilterBottomSheet
+      <FilterSheet
         onApply={handleFilterApply}
         availableFilters={["category", "tag", "project"]}
         initialSelections={filters}
       />
 
       {/* Task details sheet */}
-      {selectedTaskId ? (
-        <TaskDetailsSheet
-          visible={true}
-          taskId={selectedTaskId}
-          onDismiss={() => setSelectedTaskId(null)}
-        />
-      ) : null}
+      <TaskDetailsSheet
+        taskId={selectedTaskId ?? ""}
+        onDismiss={() => setSelectedTaskId(null)}
+      />
     </View>
   );
 }

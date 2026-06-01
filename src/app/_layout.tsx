@@ -4,7 +4,6 @@ import { initializeBackgroundTask } from "@/lib/background-sync";
 import AuthProvider from "@/providers/auth-provider";
 import NetworkToastProvider from "@/providers/network-toast-provider";
 import { PowerSyncProvider } from "@/providers/powersync-provider";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -51,10 +50,8 @@ export default function RootLayout() {
         <AuthProvider>
           <PowerSyncProvider>
             <NetworkToastProvider>
-              <BottomSheetModalProvider>
-                <SplashScreenController />
-                <RootNavigator />
-              </BottomSheetModalProvider>
+              <SplashScreenController />
+              <RootNavigator />
             </NetworkToastProvider>
           </PowerSyncProvider>
         </AuthProvider>

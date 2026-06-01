@@ -1,7 +1,7 @@
 import DropdownMenu from "@/components/dropdown-menu";
-import FilterBottomSheet, {
+import FilterSheet, {
   type FilterSelections,
-} from "@/components/filter-bottom-sheet";
+} from "@/components/filter-sheet";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
 import { borderRadius, spacing, typography } from "@/constants/theme";
@@ -284,6 +284,7 @@ export default function ProjectDetailsSheet({
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
+    TrueSheet.present("taskDetailsSheet");
   }, []);
 
   const descriptionMinHeight = useMemo(
@@ -420,7 +421,7 @@ export default function ProjectDetailsSheet({
         )}
       </BottomSheet>
 
-      <FilterBottomSheet
+      <FilterSheet
         onApply={(sel) => {
           setFilters(sel);
         }}
@@ -428,13 +429,10 @@ export default function ProjectDetailsSheet({
         initialSelections={filters}
       />
 
-      {selectedTaskId ? (
-        <TaskDetailsSheet
-          visible={true}
-          taskId={selectedTaskId}
-          onDismiss={() => setSelectedTaskId(null)}
-        />
-      ) : null}
+      <TaskDetailsSheet
+        taskId={selectedTaskId ?? ""}
+        onDismiss={() => setSelectedTaskId(null)}
+      />
     </>
   );
 }

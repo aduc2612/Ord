@@ -1,5 +1,5 @@
-import type { FilterSelections } from "@/components/filter-bottom-sheet";
-import FilterBottomSheet from "@/components/filter-bottom-sheet";
+import type { FilterSelections } from "@/components/filter-sheet";
+import FilterSheet from "@/components/filter-sheet";
 import ProjectDetailsSheet from "@/components/project-details-sheet";
 import PromptModal from "@/components/prompt-modal";
 import TaskDetailsSheet from "@/components/task-details-sheet";
@@ -350,6 +350,7 @@ export default function DbTestScreen() {
 
   const editTaskTitle = (taskId: string) => {
     setSheetTaskId(taskId);
+    TrueSheet.present("taskDetailsSheet");
   };
 
   const editNoteTitle = (noteId: string, currentTitle: string) => {
@@ -878,13 +879,10 @@ export default function DbTestScreen() {
         onConfirm={prompt.onConfirm}
         onCancel={() => setPrompt((p) => ({ ...p, visible: false }))}
       />
-      {sheetTaskId ? (
-        <TaskDetailsSheet
-          visible={!!sheetTaskId}
-          taskId={sheetTaskId}
-          onDismiss={() => setSheetTaskId(null)}
-        />
-      ) : null}
+      <TaskDetailsSheet
+        taskId={sheetTaskId ?? ""}
+        onDismiss={() => setSheetTaskId(null)}
+      />
       {sheetProjectId ? (
         <ProjectDetailsSheet
           visible={sheetProjectId !== null}
@@ -894,7 +892,7 @@ export default function DbTestScreen() {
           }}
         />
       ) : null}
-      <FilterBottomSheet
+      <FilterSheet
         availableFilters={filterSheetConfig}
         initialSelections={appliedFilters ?? undefined}
         onApply={(filters) => {
