@@ -632,7 +632,10 @@ export default function DbTestScreen() {
                   <View style={styles.taskActions}>
                     <Pressable
                       style={styles.editSmallButton}
-                      onPress={() => setSheetProjectId(project.id)}
+                      onPress={() => {
+                        setSheetProjectId(project.id);
+                        TrueSheet.present("projectDetailsSheet");
+                      }}
                     >
                       <Text style={styles.editSmallButtonText}>Edit</Text>
                     </Pressable>
@@ -883,15 +886,12 @@ export default function DbTestScreen() {
         taskId={sheetTaskId ?? ""}
         onDismiss={() => setSheetTaskId(null)}
       />
-      {sheetProjectId ? (
-        <ProjectDetailsSheet
-          visible={sheetProjectId !== null}
-          projectId={sheetProjectId ?? ""}
-          onDismiss={() => {
-            setSheetProjectId(null);
-          }}
-        />
-      ) : null}
+      <ProjectDetailsSheet
+        projectId={sheetProjectId ?? ""}
+        onDismiss={() => {
+          setSheetProjectId(null);
+        }}
+      />
       <FilterSheet
         availableFilters={filterSheetConfig}
         initialSelections={appliedFilters ?? undefined}
