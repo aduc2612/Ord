@@ -181,7 +181,9 @@ export default function TodaySheet() {
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
-    TrueSheet.present("taskDetailsSheet");
+    requestAnimationFrame(() => {
+      TrueSheet.present("taskDetailsSheet");
+    });
   }, []);
 
   const renderItem = useCallback(

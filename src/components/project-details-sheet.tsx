@@ -75,6 +75,7 @@ function createStyles(theme: Theme) {
     taskListContainer: {
       gap: spacing.sm,
       paddingHorizontal: spacing.lg,
+      backgroundColor: theme.colors.background,
     },
     emptyState: {
       ...typography.bodyMedium,
@@ -224,7 +225,9 @@ export default function ProjectDetailsSheet({
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
-    TrueSheet.present("taskDetailsSheet");
+    requestAnimationFrame(() => {
+      TrueSheet.present("taskDetailsSheet");
+    });
   }, []);
 
   const descriptionMinHeight = useMemo(

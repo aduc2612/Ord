@@ -1,6 +1,4 @@
-import FilterSheet, {
-  type FilterSelections,
-} from "@/components/filter-sheet";
+import FilterSheet, { type FilterSelections } from "@/components/filter-sheet";
 import SearchBar from "@/components/search-bar";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
@@ -254,7 +252,9 @@ export default function TasksScreen() {
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
-    TrueSheet.present("taskDetailsSheet");
+    requestAnimationFrame(() => {
+      TrueSheet.present("taskDetailsSheet");
+    });
   }, []);
 
   const renderItem = useCallback(
