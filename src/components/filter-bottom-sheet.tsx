@@ -6,11 +6,15 @@ import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -20,16 +24,6 @@ export type FilterSelections = {
   category: string | null; // single select: "next_action" | "waiting_for" | "someday" | null
   tags: string[]; // multi-select: array of tag ids
   projectId: string | null; // single select: project id | null
-};
-
-export type FilterBottomSheetProps = {
-  visible: boolean;
-  onDismiss: () => void;
-  onApply: (filters: FilterSelections) => void;
-  /** Which filter segments to show. Defaults to all three. */
-  availableFilters?: FilterSegment[];
-  /** Initial selections to pre-populate when the sheet opens. */
-  initialSelections?: FilterSelections;
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -52,14 +46,16 @@ function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
       backgroundColor: theme.colors.background,
-      paddingTop: spacing.lg,
+      flex: 1,
     },
-    header: {
+    stickyHeader: {
+      backgroundColor: theme.colors.background,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: spacing.lg,
       paddingBottom: spacing.md,
+      paddingTop: spacing.xxxxl,
     },
     headerTitle: {
       ...typography.titleMedium,
@@ -120,16 +116,20 @@ function createStyles(theme: Theme) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function FilterBottomSheet({
-  visible,
-  onDismiss,
   onApply,
   availableFilters = ["category", "tag", "project"],
   initialSelections,
-}: FilterBottomSheetProps) {
+}: {
+  onApply: (filters: FilterSelections) => void;
+  availableFilters?: FilterSegment[];
+  initialSelections?: FilterSelections;
+}) {
   const theme = useTheme();
   const styles = createStyles(theme);
   const { tagList } = useDbTags();
   const { projectList } = useDbProjects();
+
+  const sheetRef = useRef<TrueSheet>(null);
 
   // ── Draft state (temporary until "Done") ─────────────────────────────────
   const [draftCategory, setDraftCategory] = useState<string | null>(
@@ -142,18 +142,6 @@ export default function FilterBottomSheet({
   const [activeSegment, setActiveSegment] = useState<FilterSegment>(
     availableFilters[0] ?? "category",
   );
-
-  // Seed draft from initial selections when the sheet opens
-  useEffect(() => {
-    if (visible) {
-      const init = initialSelections ?? DEFAULT_SELECTIONS;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- draft state doesn't affect dependencies, safe reset pattern
-      setDraftCategory(init.category);
-      setDraftTags([...init.tags]);
-      setDraftProjectId(init.projectId);
-      setActiveSegment(availableFilters[0] ?? "category");
-    }
-  }, [visible, initialSelections, availableFilters]);
 
   // ── Derived visibility: Someday hides Tag + Project ──────────────────────
   const isSomeday = draftCategory === "someday";
@@ -213,6 +201,7 @@ export default function FilterBottomSheet({
       tags: isSomeday ? [] : draftTags,
       projectId: isSomeday ? null : draftProjectId,
     });
+    sheetRef.current?.dismiss();
   }, [draftCategory, draftTags, draftProjectId, isSomeday, onApply]);
 
   // ── List data based on active segment ────────────────────────────────────
@@ -334,14 +323,22 @@ export default function FilterBottomSheet({
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <BottomSheet
-      index={visible ? 0 : -1}
-      onDismiss={onDismiss}
-      enablePanDownToClose
-    >
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
+    <TrueSheet
+      ref={sheetRef}
+      name="filterSheet"
+      detents={[0.5, 1]}
+      cornerRadius={theme.borderRadius.xxl}
+      grabber
+      scrollable
+      onDidPresent={() => {
+        const init = initialSelections ?? DEFAULT_SELECTIONS;
+        setDraftCategory(init.category);
+        setDraftTags([...init.tags]);
+        setDraftProjectId(init.projectId);
+        setActiveSegment(availableFilters[0] ?? "category");
+      }}
+      header={
+        <View style={styles.stickyHeader}>
           <Text style={styles.headerTitle}>Filter</Text>
           <Pressable
             style={styles.doneButton}
@@ -351,7 +348,9 @@ export default function FilterBottomSheet({
             <Text style={styles.doneButtonText}>Done</Text>
           </Pressable>
         </View>
-
+      }
+    >
+      <View style={styles.container}>
         {/* Segmented control */}
         {showSegmentedControl ? (
           <View style={styles.segmentWrapper}>
@@ -364,7 +363,7 @@ export default function FilterBottomSheet({
         ) : null}
 
         {/* Content list */}
-        <FlashList
+        <FlatList
           data={listData}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
@@ -387,6 +386,6 @@ export default function FilterBottomSheet({
           }
         />
       </View>
-    </BottomSheet>
+    </TrueSheet>
   );
 }

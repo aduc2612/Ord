@@ -12,10 +12,10 @@ import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -148,7 +148,6 @@ export default function TasksScreen() {
       setSearchQuery("");
     }, [initialFilters]),
   );
-  const [filterVisible, setFilterVisible] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   // ── Data hooks ─────────────────────────────────────────────────────────────
@@ -233,7 +232,6 @@ export default function TasksScreen() {
 
   const handleFilterApply = useCallback((sel: FilterSelections) => {
     setFilters(sel);
-    setFilterVisible(false);
   }, []);
 
   const handleTaskPress = useCallback((taskId: string) => {
@@ -271,7 +269,7 @@ export default function TasksScreen() {
 
         <Pressable
           style={styles.filterRow}
-          onPress={() => setFilterVisible(true)}
+          onPress={() => TrueSheet.present("filterSheet")}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={styles.filterLabel}>Filter</Text>
@@ -289,7 +287,7 @@ export default function TasksScreen() {
       </View>
 
       {/* Scrollable task list */}
-      <FlashList
+      <FlatList
         data={filteredTasks}
         renderItem={renderItem}
         keyExtractor={(item: Task) => item.id}
@@ -301,8 +299,6 @@ export default function TasksScreen() {
 
       {/* Filter bottom sheet */}
       <FilterBottomSheet
-        visible={filterVisible}
-        onDismiss={() => setFilterVisible(false)}
         onApply={handleFilterApply}
         availableFilters={["category", "tag", "project"]}
         initialSelections={filters}

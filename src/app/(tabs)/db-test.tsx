@@ -18,6 +18,7 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -340,7 +341,6 @@ export default function DbTestScreen() {
   const [sheetProjectId, setSheetProjectId] = useState<string | null>(null);
 
   // Filter bottom sheet test state
-  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [filterSheetConfig, setFilterSheetConfig] = useState<
     ("category" | "tag" | "project")[]
   >(["category", "tag", "project"]);
@@ -804,7 +804,7 @@ export default function DbTestScreen() {
               ]}
               onPress={() => {
                 setFilterSheetConfig(["category", "tag", "project"]);
-                setFilterSheetVisible(true);
+                TrueSheet.present("filterSheet");
               }}
             >
               <Text style={styles.buttonText}>All Filters</Text>
@@ -818,7 +818,7 @@ export default function DbTestScreen() {
               ]}
               onPress={() => {
                 setFilterSheetConfig(["category", "tag"]);
-                setFilterSheetVisible(true);
+                TrueSheet.present("filterSheet");
               }}
             >
               <Text style={styles.secondaryButtonText}>Cat + Tag</Text>
@@ -832,7 +832,7 @@ export default function DbTestScreen() {
               ]}
               onPress={() => {
                 setFilterSheetConfig(["tag"]);
-                setFilterSheetVisible(true);
+                TrueSheet.present("filterSheet");
               }}
             >
               <Text style={styles.secondaryButtonText}>Tag Only</Text>
@@ -886,11 +886,6 @@ export default function DbTestScreen() {
         />
       ) : null}
       {sheetProjectId ? (
-        // <ProjectDetailsSheet
-        //   visible={!!sheetProjectId}
-        //   projectId={sheetProjectId}
-        //   onDismiss={() => setSheetProjectId(null)}
-        // />
         <ProjectDetailsSheet
           visible={sheetProjectId !== null}
           projectId={sheetProjectId ?? ""}
@@ -900,13 +895,10 @@ export default function DbTestScreen() {
         />
       ) : null}
       <FilterBottomSheet
-        visible={filterSheetVisible}
         availableFilters={filterSheetConfig}
         initialSelections={appliedFilters ?? undefined}
-        onDismiss={() => setFilterSheetVisible(false)}
         onApply={(filters) => {
           setAppliedFilters(filters);
-          setFilterSheetVisible(false);
         }}
       />
     </View>

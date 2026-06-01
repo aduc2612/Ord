@@ -1,16 +1,15 @@
 import FabButton from "@/components/fab-button";
 import TaskDetailsSheet from "@/components/task-details-sheet";
-import TaskListSheet, {
-  type TaskListSheetHandle,
-} from "@/components/task-list-sheet";
+import TodaySheet from "@/components/today-sheet";
 import { componentStyles, spacing, typography } from "@/constants/theme";
 import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -70,7 +69,6 @@ export default function HomeScreen() {
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const taskListSheetRef = useRef<TaskListSheetHandle>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const { noteList } = useDbNotes();
@@ -172,14 +170,16 @@ export default function HomeScreen() {
             styles.viewTasksButton,
             pressed && { opacity: theme.interaction.pressedOpacity },
           ]}
-          onPress={() => taskListSheetRef.current?.present()}
+          onPress={() => TrueSheet.present("todaySheet")}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={styles.viewTasksButtonText}>View Today&apos;s Tasks</Text>
+          <Text style={styles.viewTasksButtonText}>
+            View Today&apos;s Tasks
+          </Text>
         </Pressable>
       </ScrollView>
       <FabButton type="note" />
-      <TaskListSheet ref={taskListSheetRef} onDismiss={() => {}} />
+      <TodaySheet />
       <TaskDetailsSheet
         visible={selectedTaskId !== null}
         taskId={selectedTaskId ?? ""}

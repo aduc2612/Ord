@@ -15,9 +15,9 @@ import {
   type BottomSheetMethods,
 } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -27,6 +27,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import Toast from "react-native-toast-message";
 
 export type ProjectDetailsSheetProps = {
@@ -164,7 +165,6 @@ export default function ProjectDetailsSheet({
   const [description, setDescription] = useState("");
   const [descHeight, setDescHeight] = useState(0);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [filterVisible, setFilterVisible] = useState(false);
   const [filters, setFilters] = useState<FilterSelections>({
     category: null,
     tags: [],
@@ -382,7 +382,7 @@ export default function ProjectDetailsSheet({
 
               <Pressable
                 style={styles.filterRow}
-                onPress={() => setFilterVisible(true)}
+                onPress={() => TrueSheet.present("filterSheet")}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Text style={styles.filterLabel}>Filter</Text>
@@ -403,7 +403,7 @@ export default function ProjectDetailsSheet({
               ) : filteredTasks.length === 0 ? (
                 <Text style={styles.emptyState}>No tasks found</Text>
               ) : (
-                <FlashList
+                <FlatList
                   data={filteredTasks}
                   renderItem={({ item }) => (
                     <TaskItem
@@ -420,11 +420,8 @@ export default function ProjectDetailsSheet({
       </BottomSheet>
 
       <FilterBottomSheet
-        visible={filterVisible}
-        onDismiss={() => setFilterVisible(false)}
         onApply={(sel) => {
           setFilters(sel);
-          setFilterVisible(false);
         }}
         availableFilters={["category", "tag"]}
         initialSelections={filters}
