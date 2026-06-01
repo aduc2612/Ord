@@ -282,7 +282,7 @@ export default function TaskDetailsSheet({
         cornerRadius={theme.borderRadius.xxl}
         grabber
         scrollable
-        onDidPresent={() => {
+        onWillPresent={() => {
           if (!task) return;
           hasChangesRef.current = false;
           const tagIds = taskTagList

@@ -347,7 +347,7 @@ export default function FilterSheet({
       cornerRadius={theme.borderRadius.xxl}
       grabber
       scrollable
-      onDidPresent={() => {
+      onWillPresent={() => {
         const init = initialSelections ?? DEFAULT_SELECTIONS;
         setDraftCategory(init.category);
         setDraftTags([...init.tags]);

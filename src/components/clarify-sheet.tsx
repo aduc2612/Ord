@@ -322,7 +322,7 @@ export default function ClarifySheet({
         cornerRadius={theme.borderRadius.xxl}
         grabber
         scrollable
-        onDidPresent={() => {
+        onWillPresent={() => {
           setPrimaryAction("");
           setSecondaryAction("");
           setActionText("");
