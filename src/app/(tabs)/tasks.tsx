@@ -14,7 +14,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -134,17 +134,37 @@ export default function TasksScreen() {
     overdue: initialFilters.overdue ?? false,
   });
 
-  // Reset internal state every time the screen gains focus
+  // Keep track of which params string was active the last time we applied
+  // filters. On focus we compare the current params to this value:
+  //   - changed (or undefined on first visit) → new deep-link push from another
+  //     screen; apply the incoming params.
+  //   - same → normal return after navigating away; reset to defaults so stale
+  //     deep-link params don't persist across tab switches.
+  const lastAppliedParamsRef = useRef<string | undefined>(undefined);
+
   useFocusEffect(
     useCallback(() => {
-      setFilters({
-        category: initialFilters.category,
-        tags: initialFilters.tags,
-        projectId: null,
-        overdue: initialFilters.overdue ?? false,
-      });
-      setSearchQuery("");
-    }, [initialFilters]),
+      if (params.filters !== lastAppliedParamsRef.current) {
+        // Params changed: apply them and remember what we applied.
+        lastAppliedParamsRef.current = params.filters;
+        setFilters({
+          category: initialFilters.category,
+          tags: initialFilters.tags,
+          projectId: null,
+          overdue: initialFilters.overdue ?? false,
+        });
+        setSearchQuery("");
+      } else {
+        // Same params as last time → returning from another screen, reset.
+        setFilters({
+          category: null,
+          tags: [],
+          projectId: null,
+          overdue: false,
+        });
+        setSearchQuery("");
+      }
+    }, [params.filters, initialFilters]),
   );
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
