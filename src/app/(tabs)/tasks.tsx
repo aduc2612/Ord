@@ -131,10 +131,8 @@ export default function TasksScreen() {
     category: initialFilters.category,
     tags: initialFilters.tags,
     projectId: null,
+    overdue: initialFilters.overdue ?? false,
   });
-  const [overdueFilter, setOverdueFilter] = useState<boolean | null>(
-    initialFilters.overdue,
-  );
 
   // Reset internal state every time the screen gains focus
   useFocusEffect(
@@ -143,8 +141,8 @@ export default function TasksScreen() {
         category: initialFilters.category,
         tags: initialFilters.tags,
         projectId: null,
+        overdue: initialFilters.overdue ?? false,
       });
-      setOverdueFilter(initialFilters.overdue);
       setSearchQuery("");
     }, [initialFilters]),
   );
@@ -199,12 +197,12 @@ export default function TasksScreen() {
         return false;
 
       // Overdue filter
-      if (overdueFilter !== null) {
+      if (filters.overdue) {
         const isOverdue =
           task.dueDate !== null &&
           task.completedAt === null &&
           task.dueDate < now;
-        if (overdueFilter !== isOverdue) return false;
+        if (!isOverdue) return false;
       }
 
       // Search filter (match on title)
@@ -215,7 +213,7 @@ export default function TasksScreen() {
 
       return true;
     });
-  }, [taskList, filters, taskTagList, overdueFilter, searchQuery]);
+  }, [taskList, filters, taskTagList, searchQuery]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
 
@@ -224,9 +222,9 @@ export default function TasksScreen() {
       (filters.category ? 1 : 0) +
       filters.tags.length +
       (filters.projectId ? 1 : 0) +
-      (overdueFilter !== null ? 1 : 0)
+      (filters.overdue ? 1 : 0)
     );
-  }, [filters, overdueFilter]);
+  }, [filters]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 

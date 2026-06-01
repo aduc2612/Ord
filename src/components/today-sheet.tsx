@@ -84,6 +84,7 @@ export default function TodaySheet() {
     category: null,
     tags: [],
     projectId: null,
+    overdue: false,
   });
 
   // ── Derived data ─────────────────────────────────────────────────────────
@@ -203,7 +204,7 @@ export default function TodaySheet() {
           setSearchQuery("");
           setSelectedSegment("due_today");
           setSelectedTaskId(null);
-          setFilters({ category: null, tags: [], projectId: null });
+          setFilters({ category: null, tags: [], projectId: null, overdue: false });
         }}
         header={
           <View style={styles.stickyHeader}>

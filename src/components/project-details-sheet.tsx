@@ -169,6 +169,7 @@ export default function ProjectDetailsSheet({
     category: null,
     tags: [],
     projectId: null,
+    overdue: false,
   });
 
   const filteredTasks = useMemo(() => {

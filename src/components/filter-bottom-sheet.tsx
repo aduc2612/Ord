@@ -14,7 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,7 @@ export type FilterSelections = {
   category: string | null; // single select: "next_action" | "waiting_for" | "someday" | null
   tags: string[]; // multi-select: array of tag ids
   projectId: string | null; // single select: project id | null
+  overdue: boolean; // true = show overdue only, false = no overdue filter
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -38,6 +39,7 @@ const DEFAULT_SELECTIONS: FilterSelections = {
   category: null,
   tags: [],
   projectId: null,
+  overdue: false,
 };
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
@@ -110,6 +112,17 @@ function createStyles(theme: Theme) {
       ...typography.bodyMedium,
       color: theme.colors.onSurfaceVariant,
     },
+    overdueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    overdueLabel: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
+    },
   });
 }
 
@@ -141,6 +154,9 @@ export default function FilterBottomSheet({
   );
   const [activeSegment, setActiveSegment] = useState<FilterSegment>(
     availableFilters[0] ?? "category",
+  );
+  const [draftOverdue, setDraftOverdue] = useState<boolean>(
+    DEFAULT_SELECTIONS.overdue,
   );
 
   // ── Derived visibility: Someday hides Tag + Project ──────────────────────
@@ -200,9 +216,10 @@ export default function FilterBottomSheet({
       category: draftCategory,
       tags: isSomeday ? [] : draftTags,
       projectId: isSomeday ? null : draftProjectId,
+      overdue: draftOverdue,
     });
     sheetRef.current?.dismiss();
-  }, [draftCategory, draftTags, draftProjectId, isSomeday, onApply]);
+  }, [draftCategory, draftTags, draftProjectId, draftOverdue, isSomeday, onApply]);
 
   // ── List data based on active segment ────────────────────────────────────
 
@@ -335,6 +352,7 @@ export default function FilterBottomSheet({
         setDraftCategory(init.category);
         setDraftTags([...init.tags]);
         setDraftProjectId(init.projectId);
+        setDraftOverdue(init.overdue);
         setActiveSegment(availableFilters[0] ?? "category");
       }}
       header={
@@ -361,6 +379,17 @@ export default function FilterBottomSheet({
             />
           </View>
         ) : null}
+
+        {/* Overdue toggle */}
+        <View style={styles.overdueRow}>
+          <Text style={styles.overdueLabel}>Overdue only</Text>
+          <Switch
+            value={draftOverdue}
+            onValueChange={setDraftOverdue}
+            trackColor={{ false: theme.colors.outlineVariant, true: theme.colors.primary }}
+            thumbColor={theme.colors.surface}
+          />
+        </View>
 
         {/* Content list */}
         <FlatList
