@@ -435,7 +435,7 @@ export default function TaskDetailsSheet({
           value={dueDate ?? new Date()}
           mode="date"
           display={Platform.OS === "ios" ? "inline" : "default"}
-          onValueChange={handleDatePickerValueChange}
+          onValueChange={handleDatePickerValueChange} // should be onValueChange, NOT onChange (deprecated)
           onDismiss={handleDatePickerDismiss}
         />
       ) : null}

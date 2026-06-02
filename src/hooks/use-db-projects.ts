@@ -27,26 +27,6 @@ export function useDbProjects() {
     setReady(false);
   }, []);
 
-  const loadProjects = useCallback(async () => {
-    if (!userId) {
-      clearState();
-      return;
-    }
-    try {
-      const result = await db
-        .select()
-        .from(projects)
-        .where(eq(projects.userId, userId))
-        .orderBy(asc(projects.createdAt));
-      setProjectList(result as Project[]);
-      setReady(true);
-      setError(null);
-    } catch (e) {
-      console.error("loadProjects error:", e);
-      Toast.show({ type: "error", text1: "Failed to load projects" });
-    }
-  }, [userId, clearState]);
-
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
@@ -96,7 +76,9 @@ export function useDbProjects() {
           id,
           userId,
           title: title ?? `Project ${projectCountRef.current + 1}`,
-          description: title ? "" : `Description for project ${projectCountRef.current + 1}`,
+          description: title
+            ? ""
+            : `Description for project ${projectCountRef.current + 1}`,
           isActive: true,
           createdAt: now,
           updatedAt: now,
@@ -203,7 +185,6 @@ export function useDbProjects() {
     loading,
     ready,
     error,
-    loadProjects,
     insertProject,
     updateProject,
     toggleProject,

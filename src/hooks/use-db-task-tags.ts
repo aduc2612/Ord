@@ -22,26 +22,6 @@ export function useDbTaskTags() {
     setReady(false);
   }, []);
 
-  const loadTaskTags = useCallback(async () => {
-    if (!userId) {
-      clearState();
-      return;
-    }
-    try {
-      const result = await db
-        .select()
-        .from(taskTags)
-        .where(eq(taskTags.userId, userId))
-        .orderBy(asc(taskTags.createdAt));
-      setTaskTagList(result as TaskTag[]);
-      setReady(true);
-      setError(null);
-    } catch (e) {
-      console.error("loadTaskTags error:", e);
-      Toast.show({ type: "error", text1: "Failed to load task tags" });
-    }
-  }, [userId, clearState]);
-
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
@@ -98,7 +78,6 @@ export function useDbTaskTags() {
       } catch (e) {
         console.error("addTagToTask error:", e);
         Toast.show({ type: "error", text1: "Failed to add tag to task" });
-        throw e;
       } finally {
         setLoading(false);
       }
@@ -154,7 +133,6 @@ export function useDbTaskTags() {
     loading,
     ready,
     error,
-    loadTaskTags,
     addTagToTask,
     removeTagFromTask,
     deleteAllTaskTags,

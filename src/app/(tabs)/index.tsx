@@ -9,7 +9,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -75,6 +75,12 @@ export default function HomeScreen() {
   const { taskList } = useDbTasks();
   const { projectList } = useDbProjects();
 
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const inboxCount = noteList.length;
 
   const waitingForCount = useMemo(
@@ -90,12 +96,9 @@ export default function HomeScreen() {
   const overdueCount = useMemo(
     () =>
       taskList.filter(
-        (t) =>
-          t.completedAt === null &&
-          t.dueDate !== null &&
-          t.dueDate < Date.now(), // eslint-disable-line react-hooks/purity -- overdue must reflect current time
+        (t) => t.completedAt === null && t.dueDate !== null && t.dueDate < now,
       ).length,
-    [taskList],
+    [taskList, now],
   );
 
   const summaryRows = useMemo(

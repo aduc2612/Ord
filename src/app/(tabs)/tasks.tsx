@@ -188,11 +188,15 @@ export default function TasksScreen() {
     }
   }, [initialFilters.project, projectList]);
 
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   // ── Filtering ──────────────────────────────────────────────────────────────
 
   const filteredTasks = useMemo(() => {
-    const now = Date.now(); // eslint-disable-line react-hooks/purity -- overdue must reflect current time
-
     return taskList.filter((task: Task) => {
       // Skip completed tasks
       if (task.completedAt !== null) return false;
@@ -231,7 +235,7 @@ export default function TasksScreen() {
 
       return true;
     });
-  }, [taskList, filters, taskTagList, searchQuery]);
+  }, [taskList, filters, taskTagList, searchQuery, now]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
 

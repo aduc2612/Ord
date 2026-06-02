@@ -1,18 +1,18 @@
-import { Stack } from 'expo-router'
-import { Image, View, Text, StyleSheet, useColorScheme } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import GoogleSignInButton from '@/components/google-sign-in-button'
-import { images } from '@/constants/images'
-import { typography, spacing } from '@/constants/theme'
-import { useTheme } from '@/hooks/use-theme'
-import type { Theme } from '@/hooks/use-theme'
+import { Stack } from "expo-router";
+import { Image, View, Text, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import GoogleSignInButton from "@/components/google-sign-in-button";
+import { images } from "@/constants/images";
+import { typography, spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
+import type { Theme } from "@/hooks/use-theme";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       padding: spacing.xl,
       gap: spacing.xxxl,
       backgroundColor: theme.colors.background,
@@ -28,7 +28,7 @@ function createStyles(theme: Theme) {
     subtitle: {
       ...typography.bodyLarge,
       color: theme.colors.onSurfaceVariant,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: -spacing.xxl,
       paddingHorizontal: spacing.xxl,
     },
@@ -39,13 +39,13 @@ function createStyles(theme: Theme) {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-  })
+  });
 }
 
 export default function LoginScreen() {
-  const theme = useTheme()
-  const styles = createStyles(theme)
-  const isDark = useColorScheme() === 'dark'
+  const theme = useTheme();
+  const styles = createStyles(theme);
+  const isDark = theme.isDark;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -57,11 +57,13 @@ export default function LoginScreen() {
           resizeMode="contain"
         />
         <Text style={styles.title}>Ord</Text>
-        <Text style={styles.subtitle}>Empty Your Mind. Organize Your Life.</Text>
+        <Text style={styles.subtitle}>
+          Empty Your Mind. Organize Your Life.
+        </Text>
         <View style={styles.buttonWrapper}>
           <GoogleSignInButton />
         </View>
       </View>
     </SafeAreaView>
-  )
+  );
 }

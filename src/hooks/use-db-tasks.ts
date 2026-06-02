@@ -29,26 +29,6 @@ export function useDbTasks() {
     setReady(false);
   }, []);
 
-  const loadTasks = useCallback(async () => {
-    if (!userId) {
-      clearState();
-      return;
-    }
-    try {
-      const result = await db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.userId, userId))
-        .orderBy(asc(tasks.createdAt));
-      setTaskList(result as Task[]);
-      setReady(true);
-      setError(null);
-    } catch (e) {
-      console.error("loadTasks error:", e);
-      Toast.show({ type: "error", text1: "Failed to load tasks" });
-    }
-  }, [userId, clearState]);
-
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
@@ -127,7 +107,10 @@ export function useDbTasks() {
     async (
       taskId: string,
       updates: Partial<
-        Pick<Task, "title" | "description" | "category" | "projectId" | "dueDate">
+        Pick<
+          Task,
+          "title" | "description" | "category" | "projectId" | "dueDate"
+        >
       >,
     ) => {
       if (!userId) {
@@ -217,7 +200,6 @@ export function useDbTasks() {
     loading,
     ready,
     error,
-    loadTasks,
     insertTask,
     updateTask,
     completeTask,

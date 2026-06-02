@@ -27,26 +27,6 @@ export function useDbTags() {
     setReady(false);
   }, []);
 
-  const loadTags = useCallback(async () => {
-    if (!userId) {
-      clearState();
-      return;
-    }
-    try {
-      const result = await db
-        .select()
-        .from(tags)
-        .where(eq(tags.userId, userId))
-        .orderBy(asc(tags.createdAt));
-      setTagList(result as Tag[]);
-      setReady(true);
-      setError(null);
-    } catch (e) {
-      console.error("loadTags error:", e);
-      Toast.show({ type: "error", text1: "Failed to load tags" });
-    }
-  }, [userId, clearState]);
-
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!userId) {
@@ -173,7 +153,6 @@ export function useDbTags() {
     loading,
     ready,
     error,
-    loadTags,
     insertTag,
     updateTag,
     deleteTag,

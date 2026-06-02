@@ -255,6 +255,7 @@ export const createTheme = (isDark: boolean) => {
   const palette = isDark ? colors.dark : colors.light;
 
   return {
+    isDark,
     colors: palette,
     typography,
     spacing,

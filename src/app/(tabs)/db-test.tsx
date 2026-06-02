@@ -314,15 +314,6 @@ export default function DbTestScreen() {
     taskTags.error ||
     notes.error;
 
-  const loadAll = () => {
-    Promise.all([
-      tasks.loadTasks(),
-      projects.loadProjects(),
-      tags.loadTags(),
-      taskTags.loadTaskTags(),
-    ]);
-  };
-
   const [prompt, setPrompt] = useState<{
     title: string;
     message: string;
@@ -396,21 +387,7 @@ export default function DbTestScreen() {
         {/* Global Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Global</Text>
-          <View style={styles.buttonRow}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                {
-                  opacity:
-                    pressed || loading ? theme.interaction.pressedOpacity : 1,
-                },
-              ]}
-              onPress={loadAll}
-              disabled={loading}
-            >
-              <Text style={styles.secondaryButtonText}>Refresh All</Text>
-            </Pressable>
-          </View>
+
           {error ? (
             <Text style={styles.statusText}>
               Error: {typeof error === "string" ? error : error.message}
