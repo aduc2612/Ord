@@ -39,6 +39,7 @@ function createStyles(theme: Theme) {
       justifyContent: "space-between",
       paddingTop: spacing.xxxxl,
       backgroundColor: theme.colors.background,
+      marginBottom: spacing.md,
     },
     headerTitle: {
       ...typography.titleMedium,
@@ -86,6 +87,8 @@ function createStyles(theme: Theme) {
     },
     notFoundContainer: {
       padding: spacing.lg,
+      backgroundColor: theme.colors.background,
+      flex: 1,
     },
     notFoundText: {
       ...typography.titleMedium,
@@ -370,9 +373,13 @@ export default function ProjectDetailsSheet({
             <Text style={styles.notFoundText}>Project not found</Text>
           </View>
         ) : projectTasks.length === 0 ? (
-          <Text style={styles.emptyState}>No tasks in this project</Text>
+          <View style={styles.notFoundContainer}>
+            <Text style={styles.emptyState}>No tasks in this project</Text>
+          </View>
         ) : filteredTasks.length === 0 ? (
-          <Text style={styles.emptyState}>No tasks found</Text>
+          <View style={styles.notFoundContainer}>
+            <Text style={styles.emptyState}>No tasks found</Text>
+          </View>
         ) : (
           <FlatList
             data={filteredTasks}

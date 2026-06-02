@@ -141,7 +141,8 @@ export default function PromptModal({
           styles.container,
           {
             paddingBottom:
-              insets.bottom * (1 - Number(isKeyboardOpen)) + spacing.xl,
+              insets.bottom * (1 - Number(isKeyboardOpen)) + spacing.xxxxl,
+            paddingTop: spacing.xxxxl,
           },
         ]}
       >

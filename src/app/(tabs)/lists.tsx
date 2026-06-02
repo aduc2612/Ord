@@ -71,6 +71,8 @@ export default function ListsScreen() {
             onPress={() => {
               if (item.id === "inbox") {
                 router.push("/(tabs)/inbox");
+              } else if (item.id === "projects") {
+                router.push("/(tabs)/projects");
               }
             }}
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}

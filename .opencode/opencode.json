@@ -12,5 +12,15 @@
     "general": {
       "model": "opencode-go/mimo-v2.5"
     }
+  },
+  "mcp": {
+    "react-native-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@ohah/react-native-mcp-server"
+      ]
+    }
   }
 }
