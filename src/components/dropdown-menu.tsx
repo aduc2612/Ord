@@ -1,10 +1,10 @@
 import { spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useCallback, useRef } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export type DropdownOption = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -14,6 +14,7 @@ export type DropdownOption = {
 };
 
 export type DropdownMenuProps = {
+  name: string;
   options: DropdownOption[];
 };
 
@@ -25,9 +26,27 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       justifyContent: "center",
     },
-    menu: {
-      backgroundColor: theme.colors.background,
-      paddingVertical: spacing.sm,
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.xxxxl,
+      paddingBottom: spacing.md,
+    },
+    headerTitle: {
+      ...typography.titleMedium,
+      color: theme.colors.onBackground,
+    },
+    doneButton: {
+      minHeight: 48,
+      minWidth: 48,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    doneButtonText: {
+      ...typography.labelLarge,
+      color: theme.colors.primary,
     },
     menuItem: {
       flexDirection: "row",
@@ -47,30 +66,26 @@ function createStyles(theme: Theme) {
       width: 24,
       alignItems: "center",
     },
+    menuContent: {
+      paddingVertical: spacing.sm,
+    },
   });
 }
 
-export default function DropdownMenu({ options }: DropdownMenuProps) {
+export default function DropdownMenu({ name, options }: DropdownMenuProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const [visible, setVisible] = useState(false);
+  const sheetRef = useRef<TrueSheet>(null);
 
-  const close = useCallback(() => {
-    setVisible(false);
+  const handleSelect = useCallback(async (option: DropdownOption) => {
+    try {
+      await option.onPress();
+    } catch (err) {
+      console.error("Dropdown option error:", err);
+    } finally {
+      sheetRef.current?.dismiss();
+    }
   }, []);
-
-  const handleSelect = useCallback(
-    async (option: DropdownOption) => {
-      try {
-        await option.onPress();
-      } catch (err) {
-        console.error("Dropdown option error:", err);
-      } finally {
-        close();
-      }
-    },
-    [close],
-  );
 
   return (
     <>
@@ -79,7 +94,7 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
           styles.trigger,
           { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
         ]}
-        onPress={() => setVisible(true)}
+        onPress={() => TrueSheet.present(name)}
       >
         <Ionicons
           name="ellipsis-vertical"
@@ -88,27 +103,41 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
         />
       </Pressable>
 
-      <BottomSheet
-        index={visible ? 0 : -1}
-        onDismiss={close}
-        enablePanDownToClose
-      >
-        <View style={styles.menu}>
-          {options.map((option, index) => (
+      <TrueSheet
+        ref={sheetRef}
+        name={name}
+        detents={["auto"]}
+        cornerRadius={theme.borderRadius.xxl}
+        grabber
+        header={
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}> </Text>
             <Pressable
-              key={index}
+              style={styles.doneButton}
+              onPress={() => sheetRef.current?.dismiss()}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </Pressable>
+          </View>
+        }
+      >
+        <FlatList
+          data={options}
+          renderItem={({ item }) => (
+            <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
                 { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
               ]}
-              onPress={() => handleSelect(option)}
+              onPress={() => handleSelect(item)}
             >
               <View style={styles.menuItemIcon}>
                 <Ionicons
-                  name={option.icon}
+                  name={item.icon}
                   size={20}
                   color={
-                    option.destructive
+                    item.destructive
                       ? theme.colors.error
                       : theme.colors.onSurfaceVariant
                   }
@@ -117,15 +146,17 @@ export default function DropdownMenu({ options }: DropdownMenuProps) {
               <Text
                 style={[
                   styles.menuItemLabel,
-                  option.destructive && styles.menuItemLabelDestructive,
+                  item.destructive && styles.menuItemLabelDestructive,
                 ]}
               >
-                {option.label}
+                {item.label}
               </Text>
             </Pressable>
-          ))}
-        </View>
-      </BottomSheet>
+          )}
+          keyExtractor={(_, index) => String(index)}
+          contentContainerStyle={styles.menuContent}
+        />
+      </TrueSheet>
     </>
   );
 }

@@ -284,6 +284,7 @@ export default function ProjectDetailsSheet({
           <View style={styles.headerContent}>
             <View style={styles.headerRow}>
               <DropdownMenu
+                name="projectDetailsDropdown"
                 options={[
                   {
                     icon:

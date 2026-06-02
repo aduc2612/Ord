@@ -318,6 +318,7 @@ export default function TaskDetailsSheet({
         header={
           <View style={styles.headerRow}>
             <DropdownMenu
+              name="taskDetailsDropdown"
               options={[
                 {
                   icon: "checkmark-circle",
