@@ -139,8 +139,6 @@ export default function ClarifySheet({
     null,
   );
   const [dueDate, setDueDate] = useState<Date | null>(null);
-  const [showTagChooser, setShowTagChooser] = useState(false);
-  const [showProjectChooser, setShowProjectChooser] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const totalNotes = noteQueue.length + 1;
@@ -252,8 +250,6 @@ export default function ClarifySheet({
     setSelectedTagIds([]);
     setSelectedProjectId(null);
     setDueDate(null);
-    setShowTagChooser(false);
-    setShowProjectChooser(false);
     setShowDatePicker(false);
 
     Keyboard.dismiss();
@@ -443,8 +439,8 @@ export default function ClarifySheet({
                 selectedTagIds={selectedTagIds}
                 selectedProjectId={selectedProjectId}
                 dueDate={dueDate}
-                onTagPress={() => setShowTagChooser(true)}
-                onProjectPress={() => setShowProjectChooser(true)}
+                onTagPress={() => TrueSheet.present("chooserTag")}
+                onProjectPress={() => TrueSheet.present("chooserProject")}
                 onDueDatePress={() => setShowDatePicker(true)}
                 onClearDueDate={handleClearDueDate}
               />
@@ -455,17 +451,17 @@ export default function ClarifySheet({
       </TrueSheet>
 
       <ChooserModal
+        name="chooserTag"
         type="tag"
-        visible={showTagChooser}
         selectedIds={selectedTagIds}
-        onClose={() => setShowTagChooser(false)}
+        onClose={() => {}}
         onSelect={handleTagSelect}
       />
       <ChooserModal
+        name="chooserProject"
         type="project"
-        visible={showProjectChooser}
         selectedIds={selectedProjectId ? [selectedProjectId] : []}
-        onClose={() => setShowProjectChooser(false)}
+        onClose={() => {}}
         onSelect={handleProjectSelect}
       />
       {showDatePicker ? (

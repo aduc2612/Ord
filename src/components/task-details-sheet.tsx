@@ -36,6 +36,7 @@ function createStyles(theme: Theme) {
       justifyContent: "space-between",
       paddingTop: spacing.xxxxl,
       paddingHorizontal: spacing.lg,
+      backgroundColor: theme.colors.background,
     },
     headerDoneButton: {
       minHeight: 48,
@@ -139,8 +140,6 @@ export default function TaskDetailsSheet({
   );
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [descHeight, setDescHeight] = useState<number>(0);
-  const [showTagChooser, setShowTagChooser] = useState(false);
-  const [showProjectChooser, setShowProjectChooser] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const hasChangesRef = useRef(false);
@@ -171,11 +170,11 @@ export default function TaskDetailsSheet({
   }, []);
 
   const handleTagPress = useCallback(() => {
-    setShowTagChooser(true);
+    TrueSheet.present("chooserTag");
   }, []);
 
   const handleProjectPress = useCallback(() => {
-    setShowProjectChooser(true);
+    TrueSheet.present("chooserProject");
   }, []);
 
   const handleDueDatePress = useCallback(() => {
@@ -417,17 +416,17 @@ export default function TaskDetailsSheet({
       </TrueSheet>
 
       <ChooserModal
+        name="chooserTag"
         type="tag"
-        visible={showTagChooser}
         selectedIds={selectedTagIds}
-        onClose={() => setShowTagChooser(false)}
+        onClose={() => {}}
         onSelect={handleTagSelect}
       />
       <ChooserModal
+        name="chooserProject"
         type="project"
-        visible={showProjectChooser}
         selectedIds={selectedProjectId ? [selectedProjectId] : []}
-        onClose={() => setShowProjectChooser(false)}
+        onClose={() => {}}
         onSelect={handleProjectSelect}
       />
       {showDatePicker ? (
