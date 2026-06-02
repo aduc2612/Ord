@@ -8,8 +8,15 @@ const BACKGROUND_SYNC_TASK = "ord-background-powersync-task";
 const MINIMUM_INTERVAL = 15;
 let lastProcessedTime = 0;
 const DEBOUNCE_MS = 200;
+let isSyncing = false;
 
 TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
+  if (isSyncing) {
+    console.log("[Background Sync] Already syncing, skipping");
+    return BackgroundTask.BackgroundTaskResult.Success;
+  }
+  isSyncing = true;
+
   try {
     console.log(`[Background Sync] Starting at ${new Date().toISOString()}`);
 
@@ -43,6 +50,8 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
   } catch (error) {
     console.error("[Background Sync] Failed:", error);
     return BackgroundTask.BackgroundTaskResult.Failed;
+  } finally {
+    isSyncing = false;
   }
 
   return BackgroundTask.BackgroundTaskResult.Success;
