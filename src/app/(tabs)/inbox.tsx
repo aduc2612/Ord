@@ -163,7 +163,7 @@ export default function InboxScreen() {
           ready ? <Text style={styles.emptyText}>No notes found</Text> : null
         }
       />
-      <FabButton type="note" />
+      <FabButton type="note" name="inboxFabPrompt" />
       <ClarifySheet
         noteId={clarifyNoteId}
         noteQueue={clarifyQueue}

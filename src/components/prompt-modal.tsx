@@ -1,9 +1,11 @@
 import { borderRadius, spacing, typography } from "@/constants/theme";
+import { useKeyboard } from "@/hooks/use-keyboard";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -68,7 +70,7 @@ function createStyles(theme: Theme) {
 }
 
 export type PromptModalProps = {
-  visible: boolean;
+  name: string;
   title: string;
   message?: string;
   placeholder?: string;
@@ -80,7 +82,7 @@ export type PromptModalProps = {
 };
 
 export default function PromptModal({
-  visible,
+  name,
   title,
   message,
   placeholder,
@@ -94,25 +96,12 @@ export default function PromptModal({
   const styles = createStyles(theme);
   const [text, setText] = useState(defaultValue);
   const [showError, setShowError] = useState(false);
+  const sheetRef = useRef<TrueSheet>(null);
   const inputRef = useRef<TextInput>(null);
 
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (visible) {
-      setText(defaultValue);
-      setShowError(false);
-    }
-  }, [visible, defaultValue]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    if (visible) {
-      const timeout = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-      return () => clearTimeout(timeout);
-    }
-  }, [visible]);
+  const isKeyboardOpen = useKeyboard();
 
   const handleConfirm = useCallback(() => {
     if (!text.trim()) {
@@ -120,6 +109,7 @@ export default function PromptModal({
       return;
     }
     onConfirm(text.trim());
+    sheetRef.current?.dismiss();
   }, [onConfirm, text]);
 
   const handleChangeText = useCallback((value: string) => {
@@ -128,12 +118,33 @@ export default function PromptModal({
   }, []);
 
   return (
-    <BottomSheet
-      index={visible ? 0 : -1}
-      onDismiss={onCancel}
-      enablePanDownToClose
+    <TrueSheet
+      ref={sheetRef}
+      name={name}
+      detents={["auto"]}
+      cornerRadius={theme.borderRadius.xxl}
+      grabber
+      onWillPresent={() => {
+        setText(defaultValue);
+        setShowError(false);
+      }}
+      onDidPresent={() => {
+        inputRef.current?.focus();
+      }}
+      onDidDismiss={() => {
+        onCancel();
+      }}
+      insetAdjustment="never"
     >
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          {
+            paddingBottom:
+              insets.bottom * (1 - Number(isKeyboardOpen)) + spacing.xl,
+          },
+        ]}
+      >
         <Text style={styles.title}>{title}</Text>
         {message ? <Text style={styles.message}>{message}</Text> : null}
         <TextInput
@@ -145,7 +156,6 @@ export default function PromptModal({
           placeholderTextColor={theme.colors.onSurfaceVariant}
           onSubmitEditing={handleConfirm}
           returnKeyType="done"
-          autoFocus
         />
         {showError ? (
           <Text style={styles.errorText}>Please enter a value</Text>
@@ -156,7 +166,7 @@ export default function PromptModal({
               styles.cancelButton,
               { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
             ]}
-            onPress={onCancel}
+            onPress={() => sheetRef.current?.dismiss()}
           >
             <Text style={styles.cancelText}>{cancelLabel}</Text>
           </Pressable>
@@ -171,6 +181,6 @@ export default function PromptModal({
           </Pressable>
         </View>
       </View>
-    </BottomSheet>
+    </TrueSheet>
   );
 }

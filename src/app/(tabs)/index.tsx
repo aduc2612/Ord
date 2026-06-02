@@ -178,7 +178,7 @@ export default function HomeScreen() {
           </Text>
         </Pressable>
       </ScrollView>
-      <FabButton type="note" />
+      <FabButton type="note" name="indexFabPrompt" />
       <TodaySheet />
       <TaskDetailsSheet
         taskId={selectedTaskId ?? ""}

@@ -324,13 +324,11 @@ export default function DbTestScreen() {
   };
 
   const [prompt, setPrompt] = useState<{
-    visible: boolean;
     title: string;
     message: string;
     defaultValue: string;
     onConfirm: (value: string) => void;
   }>({
-    visible: false,
     title: "",
     message: "",
     defaultValue: "",
@@ -355,7 +353,6 @@ export default function DbTestScreen() {
 
   const editNoteTitle = (noteId: string, currentTitle: string) => {
     setPrompt({
-      visible: true,
       title: "Edit Note",
       message: "Enter a new title for this note:",
       defaultValue: currentTitle,
@@ -365,11 +362,11 @@ export default function DbTestScreen() {
         }
       },
     });
+    TrueSheet.present("dbTestPrompt");
   };
 
   const editTagTitle = (tagId: string, currentTitle: string) => {
     setPrompt({
-      visible: true,
       title: "Edit Tag",
       message: "Enter a new title for this tag:",
       defaultValue: currentTitle,
@@ -379,6 +376,7 @@ export default function DbTestScreen() {
         }
       },
     });
+    TrueSheet.present("dbTestPrompt");
   };
 
   const getTagsForTask = (taskId: string): Tag[] => {
@@ -875,12 +873,12 @@ export default function DbTestScreen() {
         </View>
       </ScrollView>
       <PromptModal
-        visible={prompt.visible}
+        name="dbTestPrompt"
         title={prompt.title}
         message={prompt.message}
         defaultValue={prompt.defaultValue}
         onConfirm={prompt.onConfirm}
-        onCancel={() => setPrompt((p) => ({ ...p, visible: false }))}
+        onCancel={() => {}}
       />
       <TaskDetailsSheet
         taskId={sheetTaskId ?? ""}

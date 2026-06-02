@@ -103,7 +103,7 @@ export default function ChooserModal({
   const sheetRef = useRef<TrueSheet>(null);
   const { tagList, insertTag } = useDbTags();
   const { projectList, insertProject } = useDbProjects();
-  const [showPrompt, setShowPrompt] = useState(false);
+  const promptName = `${name}Prompt`;
   const [searchQuery, setSearchQuery] = useState("");
 
   const items = type === "tag" ? tagList : projectList;
@@ -140,7 +140,6 @@ export default function ChooserModal({
       } else {
         await insertProject(value);
       }
-      setShowPrompt(false);
     },
     [type, insertTag, insertProject],
   );
@@ -174,18 +173,16 @@ export default function ChooserModal({
         scrollable
         onWillPresent={() => {
           setSearchQuery("");
-          setShowPrompt(false);
         }}
         onDidDismiss={() => {
           setSearchQuery("");
-          setShowPrompt(false);
           onClose();
         }}
         header={
           <View style={styles.header}>
             <Pressable
               style={styles.newButton}
-              onPress={() => setShowPrompt(true)}
+              onPress={() => TrueSheet.present(promptName)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.newButtonText}>New</Text>
@@ -234,11 +231,11 @@ export default function ChooserModal({
         />
       </TrueSheet>
       <PromptModal
-        visible={showPrompt}
+        name={promptName}
         title={type === "tag" ? "New Tag" : "New Project"}
         placeholder={type === "tag" ? "Tag name" : "Project name"}
         onConfirm={handleCreateNew}
-        onCancel={() => setShowPrompt(false)}
+        onCancel={() => {}}
       />
     </>
   );

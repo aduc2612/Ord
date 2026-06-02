@@ -6,7 +6,8 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { FabType } from "@/types/fab";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useMemo, useState } from "react";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useCallback, useMemo } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import PromptModal from "./prompt-modal";
 
@@ -37,6 +38,7 @@ const FAB_CONFIGS: Record<
 
 type FabButtonProps = {
   type: FabType;
+  name: string;
 };
 
 function createStyles(theme: Theme) {
@@ -56,10 +58,9 @@ function createStyles(theme: Theme) {
   });
 }
 
-export default function FabButton({ type }: FabButtonProps) {
+export default function FabButton({ type, name }: FabButtonProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const [visible, setVisible] = useState(false);
 
   const { insertNote } = useDbNotes();
   const { insertProject } = useDbProjects();
@@ -81,14 +82,11 @@ export default function FabButton({ type }: FabButtonProps) {
   const handleConfirm = useCallback(
     (value: string) => {
       insertFn(value);
-      setVisible(false);
     },
     [insertFn],
   );
 
-  const handleCancel = useCallback(() => {
-    setVisible(false);
-  }, []);
+  const handleCancel = useCallback(() => {}, []);
 
   return (
     <>
@@ -98,12 +96,12 @@ export default function FabButton({ type }: FabButtonProps) {
           { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
         ]}
         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-        onPress={() => setVisible(true)}
+        onPress={() => TrueSheet.present(name)}
       >
         <Ionicons name="add" size={28} color={theme.colors.onPrimary} />
       </Pressable>
       <PromptModal
-        visible={visible}
+        name={name}
         title={config.title}
         placeholder={config.placeholder}
         confirmLabel={config.confirmLabel}
