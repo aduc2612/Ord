@@ -1,11 +1,9 @@
-import FilterSheet, {
-  type FilterSelections,
-} from "@/components/filter-sheet";
+import FilterSheet, { type FilterSelections } from "@/components/filter-sheet";
 import SearchBar from "@/components/search-bar";
 import SegmentedControl from "@/components/segmented-control";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
-import { spacing, typography } from "@/constants/theme";
+import { borderRadius, spacing, typography } from "@/constants/theme";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
@@ -39,8 +37,27 @@ function createStyles(theme: Theme) {
       alignItems: "center",
       gap: spacing.sm,
     },
-    filterButton: {
-      padding: spacing.sm,
+    filterRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      minHeight: 48,
+    },
+    filterLabel: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
+    },
+    filterValue: {
+      ...typography.bodyMedium,
+      color: theme.colors.onSurfaceVariant,
+      marginRight: spacing.sm,
+    },
+    filterValueRow: {
+      flexDirection: "row",
+      alignItems: "center",
     },
     searchBarFill: {
       flex: 1,
@@ -154,13 +171,10 @@ export default function TodaySheet() {
   // Apply additional filters (category, tags)
   const filteredTasks = useMemo(() => {
     return segmentFilteredTasks.filter((task) => {
-      if (filters.category && task.category !== filters.category)
-        return false;
+      if (filters.category && task.category !== filters.category) return false;
       if (filters.tags.length > 0) {
         const hasAllTags = filters.tags.every((tagId) =>
-          taskTagList.some(
-            (tt) => tt.taskId === task.id && tt.tagId === tagId,
-          ),
+          taskTagList.some((tt) => tt.taskId === task.id && tt.tagId === tagId),
         );
         if (!hasAllTags) return false;
       }
@@ -207,7 +221,12 @@ export default function TodaySheet() {
           setSearchQuery("");
           setSelectedSegment("due_today");
           setSelectedTaskId(null);
-          setFilters({ category: null, tags: [], projectId: null, overdue: false });
+          setFilters({
+            category: null,
+            tags: [],
+            projectId: null,
+            overdue: false,
+          });
         }}
         header={
           <View style={styles.stickyHeader}>
@@ -219,22 +238,26 @@ export default function TodaySheet() {
                 placeholder="Search tasks"
                 style={styles.searchBarFill}
               />
-              <Pressable
-                style={styles.filterButton}
-                onPress={() => TrueSheet.present("filterSheet")}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons
-                  name="filter"
-                  size={24}
-                  color={
-                    filterCount > 0
-                      ? theme.colors.primary
-                      : theme.colors.onSurface
-                  }
-                />
-              </Pressable>
             </View>
+
+            {/* Filter Row */}
+            <Pressable
+              style={styles.filterRow}
+              onPress={() => TrueSheet.present("filterSheet")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.filterLabel}>Filter</Text>
+              <View style={styles.filterValueRow}>
+                <Text style={styles.filterValue}>
+                  {filterCount > 0 ? `${filterCount} selected` : "None"}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </View>
+            </Pressable>
 
             {/* Segmented Control */}
             <SegmentedControl
@@ -264,7 +287,7 @@ export default function TodaySheet() {
         onApply={(sel) => {
           setFilters(sel);
         }}
-        availableFilters={["category", "tag"]}
+        availableFilters={["tag"]}
         initialSelections={filters}
       />
 
