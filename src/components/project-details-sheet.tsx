@@ -1,7 +1,5 @@
 import DropdownMenu from "@/components/dropdown-menu";
-import FilterBottomSheet, {
-  type FilterSelections,
-} from "@/components/filter-bottom-sheet";
+import FilterSheet, { type FilterSelections } from "@/components/filter-sheet";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
 import { borderRadius, spacing, typography } from "@/constants/theme";
@@ -10,18 +8,12 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import {
-  BottomSheet,
-  type BottomSheetMethods,
-} from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
+  FlatList,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -30,25 +22,24 @@ import {
 import Toast from "react-native-toast-message";
 
 export type ProjectDetailsSheetProps = {
-  visible: boolean;
   projectId: string;
   onDismiss: () => void;
 };
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    keyboardAvoiding: {
-      flex: 1,
-    },
-    scrollContent: {
-      flexGrow: 1,
+    headerContent: {
       paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.sm,
       backgroundColor: theme.colors.background,
     },
     headerRow: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      paddingTop: spacing.xxxxl,
+      backgroundColor: theme.colors.background,
+      marginBottom: spacing.md,
     },
     headerTitle: {
       ...typography.titleMedium,
@@ -84,15 +75,20 @@ function createStyles(theme: Theme) {
     },
     taskListContainer: {
       gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      backgroundColor: theme.colors.background,
     },
     emptyState: {
       ...typography.bodyMedium,
       color: theme.colors.onSurfaceVariant,
       paddingVertical: spacing.xl,
+      paddingHorizontal: spacing.lg,
       textAlign: "center",
     },
     notFoundContainer: {
       padding: spacing.lg,
+      backgroundColor: theme.colors.background,
+      flex: 1,
     },
     notFoundText: {
       ...typography.titleMedium,
@@ -118,6 +114,7 @@ function createStyles(theme: Theme) {
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
       minHeight: 48,
+      marginBottom: spacing.md,
     },
     filterLabel: {
       ...typography.bodyMedium,
@@ -136,14 +133,13 @@ function createStyles(theme: Theme) {
 }
 
 export default function ProjectDetailsSheet({
-  visible,
   projectId,
   onDismiss,
 }: ProjectDetailsSheetProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
 
-  const sheetRef = useRef<BottomSheetMethods>(null);
+  const sheetRef = useRef<TrueSheet>(null);
 
   const { projectList, updateProject, deleteProject } = useDbProjects();
 
@@ -164,11 +160,11 @@ export default function ProjectDetailsSheet({
   const [description, setDescription] = useState("");
   const [descHeight, setDescHeight] = useState(0);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [filterVisible, setFilterVisible] = useState(false);
   const [filters, setFilters] = useState<FilterSelections>({
     category: null,
     tags: [],
     projectId: null,
+    overdue: false,
   });
 
   const filteredTasks = useMemo(() => {
@@ -187,20 +183,7 @@ export default function ProjectDetailsSheet({
   const filterCount = (filters.category ? 1 : 0) + filters.tags.length;
 
   const hasChangesRef = useRef(false);
-  const lastInitializedRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!project || !visible) return;
-
-    if (lastInitializedRef.current === projectId) return;
-
-    lastInitializedRef.current = projectId;
-
-    setTitle(project.title);
-    setDescription(project.description ?? "");
-
-    hasChangesRef.current = false;
-  }, [project, projectId, visible]);
+  const pendingActionRef = useRef<"archive" | "delete" | null>(null);
 
   const handleTitleChange = useCallback((text: string) => {
     setTitle(text);
@@ -227,62 +210,27 @@ export default function ProjectDetailsSheet({
 
   const handleDone = useCallback(async () => {
     await saveChanges();
-
-    sheetRef.current?.close();
-
-    setTimeout(() => {
-      onDismiss();
-    }, 300);
-  }, [saveChanges, onDismiss]);
-
-  const handleClose = useCallback(() => {
-    sheetRef.current?.close();
-
-    setTimeout(() => {
-      onDismiss();
-    }, 300);
-  }, [onDismiss]);
+    sheetRef.current?.dismiss();
+  }, [saveChanges]);
 
   const handleArchiveToggle = useCallback(async () => {
     if (!project) return;
-
     await saveChanges();
+    pendingActionRef.current = "archive";
+    sheetRef.current?.dismiss();
+  }, [project, saveChanges]);
 
-    sheetRef.current?.close();
-
-    setTimeout(async () => {
-      onDismiss();
-
-      await updateProject(project.id, {
-        isActive: !project.isActive,
-      });
-
-      Toast.show({
-        type: "success",
-        text1: project.isActive ? "Project archived" : "Project reactivated",
-      });
-    }, 300);
-  }, [project, updateProject, onDismiss, saveChanges]);
-
-  const handleDelete = useCallback(async () => {
+  const handleDelete = useCallback(() => {
     if (!project) return;
-
-    sheetRef.current?.close();
-
-    setTimeout(async () => {
-      onDismiss();
-
-      await deleteProject(project.id);
-
-      Toast.show({
-        type: "success",
-        text1: "Project deleted",
-      });
-    }, 300);
-  }, [project, deleteProject, onDismiss]);
+    pendingActionRef.current = "delete";
+    sheetRef.current?.dismiss();
+  }, [project]);
 
   const handleTaskPress = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
+    requestAnimationFrame(() => {
+      TrueSheet.present("taskDetailsSheet");
+    });
   }, []);
 
   const descriptionMinHeight = useMemo(
@@ -290,153 +238,174 @@ export default function ProjectDetailsSheet({
     [descHeight],
   );
 
-  if (!visible) {
-    return null;
-  }
-
   return (
     <>
-      <BottomSheet
+      <TrueSheet
         ref={sheetRef}
-        key={projectId}
-        index={0}
-        enablePanDownToClose
-        onDismiss={handleClose}
+        name="projectDetailsSheet"
+        detents={[1]}
+        cornerRadius={theme.borderRadius.xxl}
+        grabber
+        scrollable
+        onWillPresent={() => {
+          if (!project) return;
+          hasChangesRef.current = false;
+          setTitle(project.title);
+          setDescription(project.description ?? "");
+        }}
+        onDidDismiss={() => {
+          setTitle("");
+          setDescription("");
+          setFilters({
+            category: null,
+            tags: [],
+            projectId: null,
+            overdue: false,
+          });
+          setSelectedTaskId(null);
+          const action = pendingActionRef.current;
+          pendingActionRef.current = null;
+          onDismiss();
+          if (action === "archive" && project) {
+            updateProject(project.id, { isActive: !project.isActive }).then(
+              () => {
+                Toast.show({
+                  type: "success",
+                  text1: project.isActive
+                    ? "Project archived"
+                    : "Project reactivated",
+                });
+              },
+            );
+          } else if (action === "delete" && project) {
+            deleteProject(project.id).then(() => {
+              Toast.show({ type: "success", text1: "Project deleted" });
+            });
+          }
+        }}
+        header={
+          <View style={styles.headerContent}>
+            <View style={styles.headerRow}>
+              <DropdownMenu
+                name="projectDetailsDropdown"
+                options={[
+                  {
+                    icon:
+                      project?.isActive === false
+                        ? "refresh-outline"
+                        : "archive-outline",
+                    label:
+                      project?.isActive === false
+                        ? "Unarchive Project"
+                        : "Archive Project",
+                    onPress: handleArchiveToggle,
+                  },
+                  {
+                    icon: "trash",
+                    label: "Delete Project",
+                    destructive: true,
+                    onPress: handleDelete,
+                  },
+                ]}
+              />
+              <Text style={styles.headerTitle}>Edit Project</Text>
+              <Pressable
+                style={styles.headerDoneButton}
+                onPress={handleDone}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.headerDoneText}>Done</Text>
+              </Pressable>
+            </View>
+
+            <TextInput
+              style={styles.titleInput}
+              value={title}
+              onChangeText={handleTitleChange}
+              placeholder="Project name"
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+            />
+
+            <View style={styles.descriptionSpacer} />
+
+            <TextInput
+              style={[
+                styles.descriptionInput,
+                { height: descriptionMinHeight },
+              ]}
+              value={description}
+              onChangeText={handleDescriptionChange}
+              onContentSizeChange={(e) =>
+                setDescHeight(e.nativeEvent.contentSize.height)
+              }
+              placeholder="Description"
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+              multiline
+              textAlignVertical="top"
+            />
+
+            <View style={styles.sectionGap} />
+
+            <Text style={styles.sectionHeader}>Tasks</Text>
+
+            <Pressable
+              style={styles.filterRow}
+              onPress={() => TrueSheet.present("filterSheet")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.filterLabel}>Filter</Text>
+              <View style={styles.filterValueRow}>
+                <Text style={styles.filterValue}>
+                  {filterCount > 0 ? `${filterCount} selected` : "None"}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </View>
+            </Pressable>
+          </View>
+        }
       >
         {!project ? (
           <View style={styles.notFoundContainer}>
             <Text style={styles.notFoundText}>Project not found</Text>
           </View>
+        ) : projectTasks.length === 0 ? (
+          <View style={styles.notFoundContainer}>
+            <Text style={styles.emptyState}>No tasks in this project</Text>
+          </View>
+        ) : filteredTasks.length === 0 ? (
+          <View style={styles.notFoundContainer}>
+            <Text style={styles.emptyState}>No tasks found</Text>
+          </View>
         ) : (
-          <KeyboardAvoidingView
-            style={styles.keyboardAvoiding}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.headerRow}>
-                <DropdownMenu
-                  options={[
-                    {
-                      icon: project.isActive
-                        ? "archive-outline"
-                        : "refresh-outline",
-                      label: project.isActive
-                        ? "Archive Project"
-                        : "Unarchive Project",
-                      onPress: handleArchiveToggle,
-                    },
-                    {
-                      icon: "trash",
-                      label: "Delete Project",
-                      destructive: true,
-                      onPress: handleDelete,
-                    },
-                  ]}
-                />
-
-                <Text style={styles.headerTitle}>Edit Project</Text>
-
-                <Pressable
-                  style={styles.headerDoneButton}
-                  onPress={handleDone}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.headerDoneText}>Done</Text>
-                </Pressable>
-              </View>
-
-              <View style={styles.sectionGap} />
-
-              <TextInput
-                style={styles.titleInput}
-                value={title}
-                onChangeText={handleTitleChange}
-                placeholder="Project name"
-                placeholderTextColor={theme.colors.onSurfaceVariant}
+          <FlatList
+            data={filteredTasks}
+            renderItem={({ item }) => (
+              <TaskItem
+                title={item.title}
+                onPress={() => handleTaskPress(item.id)}
               />
-
-              <View style={styles.descriptionSpacer} />
-
-              <TextInput
-                style={[
-                  styles.descriptionInput,
-                  { height: descriptionMinHeight },
-                ]}
-                value={description}
-                onChangeText={handleDescriptionChange}
-                onContentSizeChange={(e) =>
-                  setDescHeight(e.nativeEvent.contentSize.height)
-                }
-                placeholder="Description"
-                placeholderTextColor={theme.colors.onSurfaceVariant}
-                multiline
-                textAlignVertical="top"
-              />
-
-              <View style={styles.sectionGap} />
-
-              <Text style={styles.sectionHeader}>Tasks</Text>
-
-              <Pressable
-                style={styles.filterRow}
-                onPress={() => setFilterVisible(true)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.filterLabel}>Filter</Text>
-                <View style={styles.filterValueRow}>
-                  <Text style={styles.filterValue}>
-                    {filterCount > 0 ? `${filterCount} selected` : "None"}
-                  </Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-              </Pressable>
-
-              {projectTasks.length === 0 ? (
-                <Text style={styles.emptyState}>No tasks in this project</Text>
-              ) : filteredTasks.length === 0 ? (
-                <Text style={styles.emptyState}>No tasks found</Text>
-              ) : (
-                <FlashList
-                  data={filteredTasks}
-                  renderItem={({ item }) => (
-                    <TaskItem
-                      title={item.title}
-                      onPress={() => handleTaskPress(item.id)}
-                    />
-                  )}
-                  contentContainerStyle={styles.taskListContainer}
-                />
-              )}
-            </ScrollView>
-          </KeyboardAvoidingView>
+            )}
+            contentContainerStyle={styles.taskListContainer}
+          />
         )}
-      </BottomSheet>
+      </TrueSheet>
 
-      <FilterBottomSheet
-        visible={filterVisible}
-        onDismiss={() => setFilterVisible(false)}
+      <FilterSheet
         onApply={(sel) => {
           setFilters(sel);
-          setFilterVisible(false);
         }}
         availableFilters={["category", "tag"]}
         initialSelections={filters}
       />
 
-      {selectedTaskId ? (
-        <TaskDetailsSheet
-          visible={true}
-          taskId={selectedTaskId}
-          onDismiss={() => setSelectedTaskId(null)}
-        />
-      ) : null}
+      <TaskDetailsSheet
+        taskId={selectedTaskId ?? ""}
+        onDismiss={() => setSelectedTaskId(null)}
+      />
     </>
   );
 }

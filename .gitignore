@@ -46,3 +46,9 @@ app-example
 powersync-pass
 
 .kilo/
+# React Native MCP
+/results/
+
+# IDE / Tooling
+.claude/
+.remember/

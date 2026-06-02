@@ -117,7 +117,7 @@ Always make the hitbox / hitslop of a clickable component at least **48x48**
 
 Always consider using **useSafeAreaInsets** (over SafeAreaView) from react-native-safe-area-context in anywhere that needs to handle safe area (must have SafeAreaProvider at the root of the app)
 
-Never use FlatList or .map(), instead use **FlashList** from Shopify for performance
+Never use .map() for lists unless the lists are very small, instead use **FlatList**
 
 For any UI task:
 

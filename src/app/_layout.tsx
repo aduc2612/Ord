@@ -6,6 +6,7 @@ import NetworkToastProvider from "@/providers/network-toast-provider";
 import { PowerSyncProvider } from "@/providers/powersync-provider";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 function RootNavigator() {
@@ -31,24 +32,30 @@ function RootNavigator() {
 export default function RootLayout() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    initializeBackgroundTask().then((fn) => {
-      cleanup = fn;
-    }).catch((err) => {
-      console.error("[Background Sync] Init error:", err);
-    });
-    return () => { cleanup?.(); };
+    initializeBackgroundTask()
+      .then((fn) => {
+        cleanup = fn;
+      })
+      .catch((err) => {
+        console.error("[Background Sync] Init error:", err);
+      });
+    return () => {
+      cleanup?.();
+    };
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <PowerSyncProvider>
-          <NetworkToastProvider>
-            <SplashScreenController />
-            <RootNavigator />
-          </NetworkToastProvider>
-        </PowerSyncProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <PowerSyncProvider>
+            <NetworkToastProvider>
+              <SplashScreenController />
+              <RootNavigator />
+            </NetworkToastProvider>
+          </PowerSyncProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

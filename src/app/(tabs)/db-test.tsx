@@ -1,5 +1,5 @@
-import type { FilterSelections } from "@/components/filter-bottom-sheet";
-import FilterBottomSheet from "@/components/filter-bottom-sheet";
+import type { FilterSelections } from "@/components/filter-sheet";
+import FilterSheet from "@/components/filter-sheet";
 import ProjectDetailsSheet from "@/components/project-details-sheet";
 import PromptModal from "@/components/prompt-modal";
 import TaskDetailsSheet from "@/components/task-details-sheet";
@@ -18,6 +18,7 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -313,23 +314,12 @@ export default function DbTestScreen() {
     taskTags.error ||
     notes.error;
 
-  const loadAll = () => {
-    Promise.all([
-      tasks.loadTasks(),
-      projects.loadProjects(),
-      tags.loadTags(),
-      taskTags.loadTaskTags(),
-    ]);
-  };
-
   const [prompt, setPrompt] = useState<{
-    visible: boolean;
     title: string;
     message: string;
     defaultValue: string;
     onConfirm: (value: string) => void;
   }>({
-    visible: false,
     title: "",
     message: "",
     defaultValue: "",
@@ -340,7 +330,6 @@ export default function DbTestScreen() {
   const [sheetProjectId, setSheetProjectId] = useState<string | null>(null);
 
   // Filter bottom sheet test state
-  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [filterSheetConfig, setFilterSheetConfig] = useState<
     ("category" | "tag" | "project")[]
   >(["category", "tag", "project"]);
@@ -350,11 +339,11 @@ export default function DbTestScreen() {
 
   const editTaskTitle = (taskId: string) => {
     setSheetTaskId(taskId);
+    TrueSheet.present("taskDetailsSheet");
   };
 
   const editNoteTitle = (noteId: string, currentTitle: string) => {
     setPrompt({
-      visible: true,
       title: "Edit Note",
       message: "Enter a new title for this note:",
       defaultValue: currentTitle,
@@ -364,11 +353,11 @@ export default function DbTestScreen() {
         }
       },
     });
+    TrueSheet.present("dbTestPrompt");
   };
 
   const editTagTitle = (tagId: string, currentTitle: string) => {
     setPrompt({
-      visible: true,
       title: "Edit Tag",
       message: "Enter a new title for this tag:",
       defaultValue: currentTitle,
@@ -378,6 +367,7 @@ export default function DbTestScreen() {
         }
       },
     });
+    TrueSheet.present("dbTestPrompt");
   };
 
   const getTagsForTask = (taskId: string): Tag[] => {
@@ -397,21 +387,7 @@ export default function DbTestScreen() {
         {/* Global Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Global</Text>
-          <View style={styles.buttonRow}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                {
-                  opacity:
-                    pressed || loading ? theme.interaction.pressedOpacity : 1,
-                },
-              ]}
-              onPress={loadAll}
-              disabled={loading}
-            >
-              <Text style={styles.secondaryButtonText}>Refresh All</Text>
-            </Pressable>
-          </View>
+
           {error ? (
             <Text style={styles.statusText}>
               Error: {typeof error === "string" ? error : error.message}
@@ -631,7 +607,10 @@ export default function DbTestScreen() {
                   <View style={styles.taskActions}>
                     <Pressable
                       style={styles.editSmallButton}
-                      onPress={() => setSheetProjectId(project.id)}
+                      onPress={() => {
+                        setSheetProjectId(project.id);
+                        TrueSheet.present("projectDetailsSheet");
+                      }}
                     >
                       <Text style={styles.editSmallButtonText}>Edit</Text>
                     </Pressable>
@@ -804,7 +783,7 @@ export default function DbTestScreen() {
               ]}
               onPress={() => {
                 setFilterSheetConfig(["category", "tag", "project"]);
-                setFilterSheetVisible(true);
+                TrueSheet.present("filterSheet");
               }}
             >
               <Text style={styles.buttonText}>All Filters</Text>
@@ -818,7 +797,7 @@ export default function DbTestScreen() {
               ]}
               onPress={() => {
                 setFilterSheetConfig(["category", "tag"]);
-                setFilterSheetVisible(true);
+                TrueSheet.present("filterSheet");
               }}
             >
               <Text style={styles.secondaryButtonText}>Cat + Tag</Text>
@@ -832,7 +811,7 @@ export default function DbTestScreen() {
               ]}
               onPress={() => {
                 setFilterSheetConfig(["tag"]);
-                setFilterSheetVisible(true);
+                TrueSheet.present("filterSheet");
               }}
             >
               <Text style={styles.secondaryButtonText}>Tag Only</Text>
@@ -871,42 +850,28 @@ export default function DbTestScreen() {
         </View>
       </ScrollView>
       <PromptModal
-        visible={prompt.visible}
+        name="dbTestPrompt"
         title={prompt.title}
         message={prompt.message}
         defaultValue={prompt.defaultValue}
         onConfirm={prompt.onConfirm}
-        onCancel={() => setPrompt((p) => ({ ...p, visible: false }))}
+        onCancel={() => {}}
       />
-      {sheetTaskId ? (
-        <TaskDetailsSheet
-          visible={!!sheetTaskId}
-          taskId={sheetTaskId}
-          onDismiss={() => setSheetTaskId(null)}
-        />
-      ) : null}
-      {sheetProjectId ? (
-        // <ProjectDetailsSheet
-        //   visible={!!sheetProjectId}
-        //   projectId={sheetProjectId}
-        //   onDismiss={() => setSheetProjectId(null)}
-        // />
-        <ProjectDetailsSheet
-          visible={sheetProjectId !== null}
-          projectId={sheetProjectId ?? ""}
-          onDismiss={() => {
-            setSheetProjectId(null);
-          }}
-        />
-      ) : null}
-      <FilterBottomSheet
-        visible={filterSheetVisible}
+      <TaskDetailsSheet
+        taskId={sheetTaskId ?? ""}
+        onDismiss={() => setSheetTaskId(null)}
+      />
+      <ProjectDetailsSheet
+        projectId={sheetProjectId ?? ""}
+        onDismiss={() => {
+          setSheetProjectId(null);
+        }}
+      />
+      <FilterSheet
         availableFilters={filterSheetConfig}
         initialSelections={appliedFilters ?? undefined}
-        onDismiss={() => setFilterSheetVisible(false)}
         onApply={(filters) => {
           setAppliedFilters(filters);
-          setFilterSheetVisible(false);
         }}
       />
     </View>

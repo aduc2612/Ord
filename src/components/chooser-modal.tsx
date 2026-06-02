@@ -5,16 +5,15 @@ import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { BottomSheet } from "@expo/ui/community/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
-import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 type ChooserType = "tag" | "project";
 
 export type ChooserModalProps = {
-  visible: boolean;
+  name: string;
   type: ChooserType;
   selectedIds: string[];
   onClose: () => void;
@@ -25,13 +24,13 @@ function createStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
       backgroundColor: theme.colors.background,
-      paddingTop: spacing.lg,
     },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: spacing.lg,
+      paddingTop: spacing.xxxxl,
       paddingBottom: spacing.md,
     },
     headerTitle: {
@@ -93,7 +92,7 @@ function createStyles(theme: Theme) {
 }
 
 export default function ChooserModal({
-  visible,
+  name,
   type,
   selectedIds,
   onClose,
@@ -101,9 +100,10 @@ export default function ChooserModal({
 }: ChooserModalProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
+  const sheetRef = useRef<TrueSheet>(null);
   const { tagList, insertTag } = useDbTags();
   const { projectList, insertProject } = useDbProjects();
-  const [showPrompt, setShowPrompt] = useState(false);
+  const promptName = `${name}Prompt`;
   const [searchQuery, setSearchQuery] = useState("");
 
   const items = type === "tag" ? tagList : projectList;
@@ -140,7 +140,6 @@ export default function ChooserModal({
       } else {
         await insertProject(value);
       }
-      setShowPrompt(false);
     },
     [type, insertTag, insertProject],
   );
@@ -165,17 +164,25 @@ export default function ChooserModal({
 
   return (
     <>
-      <BottomSheet
-        index={visible ? 0 : -1}
-        onDismiss={onClose}
-        // snapPoints={["50%", "90%"]}
-        enablePanDownToClose
-      >
-        <View style={styles.container}>
+      <TrueSheet
+        ref={sheetRef}
+        name={name}
+        detents={[0.5, 1]}
+        cornerRadius={theme.borderRadius.xxl}
+        grabber
+        scrollable
+        onWillPresent={() => {
+          setSearchQuery("");
+        }}
+        onDidDismiss={() => {
+          setSearchQuery("");
+          onClose();
+        }}
+        header={
           <View style={styles.header}>
             <Pressable
               style={styles.newButton}
-              onPress={() => setShowPrompt(true)}
+              onPress={() => TrueSheet.present(promptName)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.newButtonText}>New</Text>
@@ -185,49 +192,50 @@ export default function ChooserModal({
             </Text>
             <Pressable
               style={styles.closeButton}
-              onPress={onClose}
+              onPress={() => sheetRef.current?.dismiss()}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.closeButtonText}>Done</Text>
             </Pressable>
           </View>
-          <View style={styles.searchWrapper}>
-            <SearchBar
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder={`Search ${type === "tag" ? "tags" : "projects"}`}
-            />
-          </View>
-          <FlashList
-            data={filteredItems}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            ListHeaderComponent={
-              <Pressable
-                style={styles.noneRow}
-                onPress={() => handleSelect(null)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.itemLabel}>None</Text>
-                {noneSelected ? (
-                  <Ionicons
-                    name="checkmark"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
-                ) : null}
-              </Pressable>
-            }
+        }
+      >
+        <View style={styles.searchWrapper}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={`Search ${type === "tag" ? "tags" : "projects"}`}
           />
         </View>
-      </BottomSheet>
+        <FlatList
+          data={filteredItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <Pressable
+              style={styles.noneRow}
+              onPress={() => handleSelect(null)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.itemLabel}>None</Text>
+              {noneSelected ? (
+                <Ionicons
+                  name="checkmark"
+                  size={22}
+                  color={theme.colors.primary}
+                />
+              ) : null}
+            </Pressable>
+          }
+        />
+      </TrueSheet>
       <PromptModal
-        visible={showPrompt}
+        name={promptName}
         title={type === "tag" ? "New Tag" : "New Project"}
         placeholder={type === "tag" ? "Tag name" : "Project name"}
         onConfirm={handleCreateNew}
-        onCancel={() => setShowPrompt(false)}
+        onCancel={() => {}}
       />
     </>
   );
