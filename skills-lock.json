@@ -115,6 +115,12 @@
       "skillPath": "skills/powersync/SKILL.md",
       "computedHash": "14368a13df17d0e5463e4f094d6b2f08934d7ee6f0b8e74aa00cadd16e424b57"
     },
+    "requesting-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/requesting-code-review/SKILL.md",
+      "computedHash": "874f3786b05007a8b4a60452a4cd89b9917c645d34b6b1e40ea05037d12f0e67"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
