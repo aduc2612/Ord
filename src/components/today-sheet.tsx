@@ -10,6 +10,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -229,43 +230,46 @@ export default function TodaySheet() {
           });
         }}
         header={
-          <View style={styles.stickyHeader}>
-            {/* Search Row */}
-            <View style={styles.searchRow}>
-              <SearchBar
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Search tasks"
-                style={styles.searchBarFill}
-              />
-            </View>
-
-            {/* Filter Row */}
-            <Pressable
-              style={styles.filterRow}
-              onPress={() => TrueSheet.present("filterSheet")}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.filterLabel}>Filter</Text>
-              <View style={styles.filterValueRow}>
-                <Text style={styles.filterValue}>
-                  {filterCount > 0 ? `${filterCount} selected` : "None"}
-                </Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={theme.colors.onSurfaceVariant}
+          <>
+            <View style={styles.stickyHeader}>
+              {/* Search Row */}
+              <View style={styles.searchRow}>
+                <SearchBar
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Search tasks"
+                  style={styles.searchBarFill}
                 />
               </View>
-            </Pressable>
 
-            {/* Segmented Control */}
-            <SegmentedControl
-              options={dynamicSegmentOptions}
-              selectedValue={selectedSegment}
-              onSelect={setSelectedSegment}
-            />
-          </View>
+              {/* Filter Row */}
+              <Pressable
+                style={styles.filterRow}
+                onPress={() => TrueSheet.present("filterSheet")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.filterLabel}>Filter</Text>
+                <View style={styles.filterValueRow}>
+                  <Text style={styles.filterValue}>
+                    {filterCount > 0 ? `${filterCount} selected` : "None"}
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                </View>
+              </Pressable>
+
+              {/* Segmented Control */}
+              <SegmentedControl
+                options={dynamicSegmentOptions}
+                selectedValue={selectedSegment}
+                onSelect={setSelectedSegment}
+              />
+            </View>
+            <ToastProvider />
+          </>
         }
       >
         {searchedTasks.length === 0 ? (

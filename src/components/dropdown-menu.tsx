@@ -3,6 +3,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useRef } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -110,16 +111,19 @@ export default function DropdownMenu({ name, options }: DropdownMenuProps) {
         cornerRadius={theme.borderRadius.xxl}
         grabber
         header={
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}> </Text>
-            <Pressable
-              style={styles.doneButton}
-              onPress={() => sheetRef.current?.dismiss()}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.doneButtonText}>Done</Text>
-            </Pressable>
-          </View>
+          <>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}> </Text>
+              <Pressable
+                style={styles.doneButton}
+                onPress={() => sheetRef.current?.dismiss()}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.doneButtonText}>Done</Text>
+              </Pressable>
+            </View>
+            <ToastProvider />
+          </>
         }
       >
         <FlatList

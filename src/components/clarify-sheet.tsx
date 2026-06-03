@@ -7,7 +7,7 @@ import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import NetworkToastProvider from "@/providers/network-toast-provider";
+import ToastProvider from "@/providers/toast-provider";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import DateTimePicker, {
@@ -153,18 +153,18 @@ export default function ClarifySheet({
 
   const handleNext = useCallback(async () => {
     if (!primaryAction) {
-      Toast.show({ type: "error", text1: "Please select an action" });
+      Toast.show({ type: "warning", text1: "Please select an action" });
       return;
     }
 
     if (primaryAction === "actionable") {
       if (!secondaryAction) {
-        Toast.show({ type: "error", text1: "Please select a sub-action" });
+        Toast.show({ type: "warning", text1: "Please select a sub-action" });
         return;
       }
       if (!actionText.trim()) {
         Toast.show({
-          type: "error",
+          type: "warning",
           text1: "Please enter a next action",
         });
         return;
@@ -351,33 +351,39 @@ export default function ClarifySheet({
           onDismiss();
         }}
         header={
-          <View style={styles.stickyHeader}>
-            <Pressable
-              style={styles.headerCloseButton}
-              onPress={() => sheetRef.current?.dismiss()}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Ionicons
-                name="close"
-                size={28}
-                color={theme.colors.onBackground}
-              />
-            </Pressable>
-            <View style={styles.progressWrapper}>
-              <View style={styles.progressTrack}>
-                <View
-                  style={[styles.progressFill, { width: `${progress * 100}%` }]}
+          <>
+            <View style={styles.stickyHeader}>
+              <Pressable
+                style={styles.headerCloseButton}
+                onPress={() => sheetRef.current?.dismiss()}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="close"
+                  size={28}
+                  color={theme.colors.onBackground}
                 />
+              </Pressable>
+              <View style={styles.progressWrapper}>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${progress * 100}%` },
+                    ]}
+                  />
+                </View>
               </View>
+              <Pressable
+                style={styles.headerNextButton}
+                onPress={handleNext}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.headerNextText}>Next</Text>
+              </Pressable>
             </View>
-            <Pressable
-              style={styles.headerNextButton}
-              onPress={handleNext}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.headerNextText}>Next</Text>
-            </Pressable>
-          </View>
+            <ToastProvider></ToastProvider>
+          </>
         }
       >
         <ScrollView
@@ -447,7 +453,6 @@ export default function ClarifySheet({
             </>
           ) : null}
         </ScrollView>
-        <NetworkToastProvider></NetworkToastProvider>
       </TrueSheet>
 
       <ChooserModal

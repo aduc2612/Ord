@@ -3,6 +3,7 @@ import { useKeyboard } from "@/hooks/use-keyboard";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -135,6 +136,11 @@ export default function PromptModal({
         onCancel();
       }}
       insetAdjustment="never"
+      header={
+        <>
+          <ToastProvider />
+        </>
+      }
     >
       <View
         style={[

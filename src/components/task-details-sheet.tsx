@@ -8,6 +8,7 @@ import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
@@ -316,32 +317,35 @@ export default function TaskDetailsSheet({
           }
         }}
         header={
-          <View style={styles.headerRow}>
-            <DropdownMenu
-              name="taskDetailsDropdown"
-              options={[
-                {
-                  icon: "checkmark-circle",
-                  label: "Mark Complete",
-                  onPress: handleMarkComplete,
-                },
-                {
-                  icon: "trash",
-                  label: "Delete Task",
-                  destructive: true,
-                  onPress: handleDelete,
-                },
-              ]}
-            />
-            <Text style={styles.headerTitle}>Edit Task</Text>
-            <Pressable
-              style={styles.headerDoneButton}
-              onPress={handleDone}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.headerDoneText}>Done</Text>
-            </Pressable>
-          </View>
+          <>
+            <View style={styles.headerRow}>
+              <DropdownMenu
+                name="taskDetailsDropdown"
+                options={[
+                  {
+                    icon: "checkmark-circle",
+                    label: "Mark Complete",
+                    onPress: handleMarkComplete,
+                  },
+                  {
+                    icon: "trash",
+                    label: "Delete Task",
+                    destructive: true,
+                    onPress: handleDelete,
+                  },
+                ]}
+              />
+              <Text style={styles.headerTitle}>Edit Task</Text>
+              <Pressable
+                style={styles.headerDoneButton}
+                onPress={handleDone}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.headerDoneText}>Done</Text>
+              </Pressable>
+            </View>
+            <ToastProvider />
+          </>
         }
       >
         {!task ? (

@@ -7,6 +7,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -179,25 +180,28 @@ export default function ChooserModal({
           onClose();
         }}
         header={
-          <View style={styles.header}>
-            <Pressable
-              style={styles.newButton}
-              onPress={() => TrueSheet.present(promptName)}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.newButtonText}>New</Text>
-            </Pressable>
-            <Text style={styles.headerTitle}>
-              {type === "tag" ? "Tags" : "Projects"}
-            </Text>
-            <Pressable
-              style={styles.closeButton}
-              onPress={() => sheetRef.current?.dismiss()}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.closeButtonText}>Done</Text>
-            </Pressable>
-          </View>
+          <>
+            <View style={styles.header}>
+              <Pressable
+                style={styles.newButton}
+                onPress={() => TrueSheet.present(promptName)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.newButtonText}>New</Text>
+              </Pressable>
+              <Text style={styles.headerTitle}>
+                {type === "tag" ? "Tags" : "Projects"}
+              </Text>
+              <Pressable
+                style={styles.closeButton}
+                onPress={() => sheetRef.current?.dismiss()}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.closeButtonText}>Done</Text>
+              </Pressable>
+            </View>
+            <ToastProvider />
+          </>
         }
       >
         <View style={styles.searchWrapper}>

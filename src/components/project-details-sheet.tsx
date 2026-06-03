@@ -10,6 +10,7 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   FlatList,
@@ -284,88 +285,91 @@ export default function ProjectDetailsSheet({
           }
         }}
         header={
-          <View style={styles.headerContent}>
-            <View style={styles.headerRow}>
-              <DropdownMenu
-                name="projectDetailsDropdown"
-                options={[
-                  {
-                    icon:
-                      project?.isActive === false
-                        ? "refresh-outline"
-                        : "archive-outline",
-                    label:
-                      project?.isActive === false
-                        ? "Unarchive Project"
-                        : "Archive Project",
-                    onPress: handleArchiveToggle,
-                  },
-                  {
-                    icon: "trash",
-                    label: "Delete Project",
-                    destructive: true,
-                    onPress: handleDelete,
-                  },
-                ]}
+          <>
+            <View style={styles.headerContent}>
+              <View style={styles.headerRow}>
+                <DropdownMenu
+                  name="projectDetailsDropdown"
+                  options={[
+                    {
+                      icon:
+                        project?.isActive === false
+                          ? "refresh-outline"
+                          : "archive-outline",
+                      label:
+                        project?.isActive === false
+                          ? "Unarchive Project"
+                          : "Archive Project",
+                      onPress: handleArchiveToggle,
+                    },
+                    {
+                      icon: "trash",
+                      label: "Delete Project",
+                      destructive: true,
+                      onPress: handleDelete,
+                    },
+                  ]}
+                />
+                <Text style={styles.headerTitle}>Edit Project</Text>
+                <Pressable
+                  style={styles.headerDoneButton}
+                  onPress={handleDone}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={styles.headerDoneText}>Done</Text>
+                </Pressable>
+              </View>
+
+              <TextInput
+                style={styles.titleInput}
+                value={title}
+                onChangeText={handleTitleChange}
+                placeholder="Project name"
+                placeholderTextColor={theme.colors.onSurfaceVariant}
               />
-              <Text style={styles.headerTitle}>Edit Project</Text>
+
+              <View style={styles.descriptionSpacer} />
+
+              <TextInput
+                style={[
+                  styles.descriptionInput,
+                  { height: descriptionMinHeight },
+                ]}
+                value={description}
+                onChangeText={handleDescriptionChange}
+                onContentSizeChange={(e) =>
+                  setDescHeight(e.nativeEvent.contentSize.height)
+                }
+                placeholder="Description"
+                placeholderTextColor={theme.colors.onSurfaceVariant}
+                multiline
+                textAlignVertical="top"
+              />
+
+              <View style={styles.sectionGap} />
+
+              <Text style={styles.sectionHeader}>Tasks</Text>
+
               <Pressable
-                style={styles.headerDoneButton}
-                onPress={handleDone}
+                style={styles.filterRow}
+                onPress={() => TrueSheet.present("filterSheet")}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={styles.headerDoneText}>Done</Text>
+                <Text style={styles.filterLabel}>Filter</Text>
+                <View style={styles.filterValueRow}>
+                  <Text style={styles.filterValue}>
+                    {filterCount > 0 ? `${filterCount} selected` : "None"}
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                </View>
               </Pressable>
             </View>
-
-            <TextInput
-              style={styles.titleInput}
-              value={title}
-              onChangeText={handleTitleChange}
-              placeholder="Project name"
-              placeholderTextColor={theme.colors.onSurfaceVariant}
-            />
-
-            <View style={styles.descriptionSpacer} />
-
-            <TextInput
-              style={[
-                styles.descriptionInput,
-                { height: descriptionMinHeight },
-              ]}
-              value={description}
-              onChangeText={handleDescriptionChange}
-              onContentSizeChange={(e) =>
-                setDescHeight(e.nativeEvent.contentSize.height)
-              }
-              placeholder="Description"
-              placeholderTextColor={theme.colors.onSurfaceVariant}
-              multiline
-              textAlignVertical="top"
-            />
-
-            <View style={styles.sectionGap} />
-
-            <Text style={styles.sectionHeader}>Tasks</Text>
-
-            <Pressable
-              style={styles.filterRow}
-              onPress={() => TrueSheet.present("filterSheet")}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.filterLabel}>Filter</Text>
-              <View style={styles.filterValueRow}>
-                <Text style={styles.filterValue}>
-                  {filterCount > 0 ? `${filterCount} selected` : "None"}
-                </Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={theme.colors.onSurfaceVariant}
-                />
-              </View>
-            </Pressable>
-          </View>
+            <ToastProvider />
+          </>
         }
       >
         {!project ? (

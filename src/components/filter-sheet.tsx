@@ -8,13 +8,16 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { FlatList, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -219,7 +222,14 @@ export default function FilterSheet({
       overdue: draftOverdue,
     });
     sheetRef.current?.dismiss();
-  }, [draftCategory, draftTags, draftProjectId, draftOverdue, isSomeday, onApply]);
+  }, [
+    draftCategory,
+    draftTags,
+    draftProjectId,
+    draftOverdue,
+    isSomeday,
+    onApply,
+  ]);
 
   // ── List data based on active segment ────────────────────────────────────
 
@@ -356,16 +366,19 @@ export default function FilterSheet({
         setActiveSegment(availableFilters[0] ?? "category");
       }}
       header={
-        <View style={styles.stickyHeader}>
-          <Text style={styles.headerTitle}>Filter</Text>
-          <Pressable
-            style={styles.doneButton}
-            onPress={handleDone}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </Pressable>
-        </View>
+        <>
+          <View style={styles.stickyHeader}>
+            <Text style={styles.headerTitle}>Filter</Text>
+            <Pressable
+              style={styles.doneButton}
+              onPress={handleDone}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </Pressable>
+          </View>
+          <ToastProvider />
+        </>
       }
     >
       <View style={styles.container}>
@@ -386,7 +399,10 @@ export default function FilterSheet({
           <Switch
             value={draftOverdue}
             onValueChange={setDraftOverdue}
-            trackColor={{ false: theme.colors.outlineVariant, true: theme.colors.primary }}
+            trackColor={{
+              false: theme.colors.outlineVariant,
+              true: theme.colors.primary,
+            }}
             thumbColor={theme.colors.surface}
           />
         </View>
