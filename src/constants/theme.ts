@@ -25,7 +25,7 @@ export const colors = {
     success: "#4CAF50",
     onSuccess: "#FFFFFF",
     warning: "#FEF3C7",
-    onWarning: "#D97706",
+    onWarning: "#92400E",
 
     background: "#f4f3f8",
     onBackground: "#1a1a1c",

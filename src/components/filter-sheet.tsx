@@ -21,7 +21,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type FilterSegment = "category" | "tag" | "project";
+export type FilterSegment = "category" | "tag" | "project" | "overdue";
 
 export type FilterSelections = {
   category: string | null; // single select: "next_action" | "waiting_for" | "someday" | null
@@ -178,6 +178,7 @@ export default function FilterSheet({
     category: "Category",
     tag: "Tag",
     project: "Project",
+    overdue: "Overdue",
   };
 
   const segmentOptions: SegmentedOption[] = visibleSegments.map((seg) => ({
@@ -246,6 +247,8 @@ export default function FilterSheet({
         return tagList.map((t) => ({ id: t.id, label: t.title }));
       case "project":
         return projectList.map((p) => ({ id: p.id, label: p.title }));
+      case "overdue":
+        return [];
       default:
         return [];
     }
@@ -262,11 +265,13 @@ export default function FilterSheet({
           return draftTags.includes(id);
         case "project":
           return draftProjectId === id;
+        case "overdue":
+          return draftOverdue;
         default:
           return false;
       }
     },
-    [effectiveSegment, draftCategory, draftTags, draftProjectId],
+    [effectiveSegment, draftCategory, draftTags, draftProjectId, draftOverdue],
   );
 
   const handleItemPress = useCallback(
@@ -280,6 +285,9 @@ export default function FilterSheet({
           break;
         case "project":
           handleProjectSelect(id);
+          break;
+        case "overdue":
+          setDraftOverdue((prev) => !prev);
           break;
       }
     },
@@ -302,6 +310,9 @@ export default function FilterSheet({
       case "project":
         setDraftProjectId(null);
         break;
+      case "overdue":
+        setDraftOverdue(false);
+        break;
     }
   }, [effectiveSegment]);
 
@@ -313,10 +324,18 @@ export default function FilterSheet({
         return draftTags.length === 0;
       case "project":
         return draftProjectId === null;
+      case "overdue":
+        return !draftOverdue;
       default:
         return true;
     }
-  }, [effectiveSegment, draftCategory, draftTags, draftProjectId]);
+  }, [
+    effectiveSegment,
+    draftCategory,
+    draftTags,
+    draftProjectId,
+    draftOverdue,
+  ]);
 
   // ── Render item ──────────────────────────────────────────────────────────
 
@@ -393,43 +412,47 @@ export default function FilterSheet({
           </View>
         ) : null}
 
-        {/* Overdue toggle */}
-        <View style={styles.overdueRow}>
-          <Text style={styles.overdueLabel}>Overdue only</Text>
-          <Switch
-            value={draftOverdue}
-            onValueChange={setDraftOverdue}
-            trackColor={{
-              false: theme.colors.outlineVariant,
-              true: theme.colors.primary,
-            }}
-            thumbColor={theme.colors.surface}
-          />
-        </View>
+        {/* Overdue toggle (only when caller opts in) */}
+        {availableFilters.includes("overdue") ? (
+          <View style={styles.overdueRow}>
+            <Text style={styles.overdueLabel}>Overdue only</Text>
+            <Switch
+              value={draftOverdue}
+              onValueChange={setDraftOverdue}
+              trackColor={{
+                false: theme.colors.outlineVariant,
+                true: theme.colors.primary,
+              }}
+              thumbColor={theme.colors.surface}
+            />
+          </View>
+        ) : null}
 
-        {/* Content list */}
-        <FlatList
-          data={listData}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListHeaderComponent={
-            <Pressable
-              style={styles.noneRow}
-              onPress={handleNonePress}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.noneLabel}>None</Text>
-              {isNoneSelected ? (
-                <Ionicons
-                  name="checkmark"
-                  size={22}
-                  color={theme.colors.primary}
-                />
-              ) : null}
-            </Pressable>
-          }
-        />
+        {/* Content list (hidden for overdue segment — it's a toggle) */}
+        {effectiveSegment !== "overdue" ? (
+          <FlatList
+            data={listData}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              <Pressable
+                style={styles.noneRow}
+                onPress={handleNonePress}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.noneLabel}>None</Text>
+                {isNoneSelected ? (
+                  <Ionicons
+                    name="checkmark"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                ) : null}
+              </Pressable>
+            }
+          />
+        ) : null}
       </View>
     </TrueSheet>
   );

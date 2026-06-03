@@ -169,6 +169,7 @@ export default function ProjectDetailsSheet({
   });
 
   const filteredTasks = useMemo(() => {
+    const now = Date.now();
     return projectTasks.filter((task) => {
       if (filters.category && task.category !== filters.category) return false;
       if (filters.tags.length > 0) {
@@ -176,6 +177,11 @@ export default function ProjectDetailsSheet({
           taskTagList.some((tt) => tt.taskId === task.id && tt.tagId === tagId),
         );
         if (!hasAllTags) return false;
+      }
+      if (filters.overdue) {
+        if (task.dueDate === null || task.dueDate >= now || task.completedAt !== null) {
+          return false;
+        }
       }
       return true;
     });
@@ -402,7 +408,7 @@ export default function ProjectDetailsSheet({
         onApply={(sel) => {
           setFilters(sel);
         }}
-        availableFilters={["category", "tag"]}
+        availableFilters={["category", "tag", "overdue"]}
         initialSelections={filters}
       />
 

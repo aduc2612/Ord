@@ -4,8 +4,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const REVIEW_STORAGE_KEY = "ord-review-state";
 
+export type ReviewStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
 type ReviewState = {
-  currentStep: number; // 0 = not started / completed, 1–6 = in-progress
+  currentStep: ReviewStep;
   lastReviewedAt: number | null;
 };
 
@@ -16,6 +18,10 @@ type ReviewActions = {
   resetReview: () => void;
 };
 
+function clampStep(step: number): ReviewStep {
+  return Math.max(0, Math.min(6, Math.round(step))) as ReviewStep;
+}
+
 export const useReviewStore = create<ReviewState & ReviewActions>()(
   persist(
     (set) => ({
@@ -24,10 +30,9 @@ export const useReviewStore = create<ReviewState & ReviewActions>()(
 
       startReview: () => set({ currentStep: 1 }),
 
-      setStep: (step: number) => set({ currentStep: step }),
+      setStep: (step: number) => set({ currentStep: clampStep(step) }),
 
-      completeReview: () =>
-        set({ currentStep: 0, lastReviewedAt: Date.now() }),
+      completeReview: () => set({ currentStep: 0, lastReviewedAt: Date.now() }),
 
       resetReview: () => set({ currentStep: 0 }),
     }),

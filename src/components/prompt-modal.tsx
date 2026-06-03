@@ -78,7 +78,7 @@ export type PromptModalProps = {
   defaultValue?: string;
   cancelLabel?: string;
   confirmLabel?: string;
-  onConfirm: (value: string) => void;
+  onConfirm: (value: string) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -104,13 +104,17 @@ export default function PromptModal({
 
   const isKeyboardOpen = useKeyboard();
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (!text.trim()) {
       setShowError(true);
       return;
     }
-    onConfirm(text.trim());
-    sheetRef.current?.dismiss();
+    try {
+      await onConfirm(text.trim());
+      sheetRef.current?.dismiss();
+    } catch {
+      // Let the modal stay open on failure — do not dismiss
+    }
   }, [onConfirm, text]);
 
   const handleChangeText = useCallback((value: string) => {

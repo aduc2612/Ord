@@ -7,7 +7,7 @@ export default function NetworkToastProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
-      const isConnected = state.isConnected ?? true;
+      const isConnected = state.isInternetReachable ?? state.isConnected ?? true;
 
       if (wasConnectedRef.current !== isConnected) {
         Toast.show({

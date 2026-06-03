@@ -203,7 +203,7 @@ export default function TaskDetailsSheet({
   }, []);
 
   const saveChanges = useCallback(async () => {
-    if (!hasChangesRef.current || !task) return;
+    if (!hasChangesRef.current || !task) return true;
 
     try {
       const isSomeday = category === "someday";
@@ -232,8 +232,10 @@ export default function TaskDetailsSheet({
       ]);
 
       hasChangesRef.current = false;
+      return true;
     } catch {
       Toast.show({ type: "error", text1: "Failed to save changes" });
+      return false;
     }
   }, [
     task,
@@ -251,15 +253,19 @@ export default function TaskDetailsSheet({
   ]);
 
   const handleDone = useCallback(async () => {
-    await saveChanges();
-    sheetRef.current?.dismiss();
+    const success = await saveChanges();
+    if (success) {
+      sheetRef.current?.dismiss();
+    }
   }, [saveChanges]);
 
   const handleMarkComplete = useCallback(async () => {
     if (!task) return;
-    await saveChanges();
-    pendingActionRef.current = "complete";
-    sheetRef.current?.dismiss();
+    const success = await saveChanges();
+    if (success) {
+      pendingActionRef.current = "complete";
+      sheetRef.current?.dismiss();
+    }
   }, [task, saveChanges]);
 
   const handleDelete = useCallback(() => {

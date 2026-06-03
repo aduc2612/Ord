@@ -116,13 +116,21 @@ export function toastConfig(theme: Theme) {
       </View>
     ),
     online: (props: BaseToastProps) => (
-      <View style={[styles.base, styles.onlineContainer]}>
+      <View
+        style={[styles.base, styles.onlineContainer]}
+        accessibilityRole="alert"
+        accessibilityLiveRegion="polite"
+      >
         <Ionicons name="cloud-done" size={20} color={theme.colors.onSuccess} />
         <Text style={[styles.text, styles.onlineText]}>{props.text1}</Text>
       </View>
     ),
     offline: (props: BaseToastProps) => (
-      <View style={[styles.base, styles.offlineContainer]}>
+      <View
+        style={[styles.base, styles.offlineContainer]}
+        accessibilityRole="alert"
+        accessibilityLiveRegion="polite"
+      >
         <Ionicons name="cloud-offline" size={20} color={theme.colors.onError} />
         <Text style={[styles.text, styles.offlineText]}>{props.text1}</Text>
       </View>
@@ -143,7 +151,7 @@ export default function ToastProvider({ children }: PropsWithChildren) {
         config={config}
         topOffset={insets.top + theme.spacing.sm}
         swipeable={false}
-        visibilityTime={1000}
+        visibilityTime={3000}
       />
     </>
   );
