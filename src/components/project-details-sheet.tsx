@@ -6,6 +6,7 @@ import { borderRadius, spacing, typography } from "@/constants/theme";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
+import { useCurrentTime } from "@/hooks/use-current-time";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -168,8 +169,9 @@ export default function ProjectDetailsSheet({
     overdue: false,
   });
 
+  const now = useCurrentTime();
+
   const filteredTasks = useMemo(() => {
-    const now = Date.now();
     return projectTasks.filter((task) => {
       if (filters.category && task.category !== filters.category) return false;
       if (filters.tags.length > 0) {
@@ -179,15 +181,22 @@ export default function ProjectDetailsSheet({
         if (!hasAllTags) return false;
       }
       if (filters.overdue) {
-        if (task.dueDate === null || task.dueDate >= now || task.completedAt !== null) {
+        if (
+          task.dueDate === null ||
+          task.dueDate >= now ||
+          task.completedAt !== null
+        ) {
           return false;
         }
       }
       return true;
     });
-  }, [projectTasks, filters, taskTagList]);
+  }, [projectTasks, filters, taskTagList, now]);
 
-  const filterCount = (filters.category ? 1 : 0) + filters.tags.length;
+  const filterCount =
+    (filters.category ? 1 : 0) +
+    filters.tags.length +
+    (filters.overdue ? 1 : 0);
 
   const hasChangesRef = useRef(false);
   const pendingActionRef = useRef<"archive" | "delete" | null>(null);

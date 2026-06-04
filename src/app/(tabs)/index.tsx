@@ -5,11 +5,13 @@ import { componentStyles, spacing, typography } from "@/constants/theme";
 import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTasks } from "@/hooks/use-db-tasks";
+import { useCurrentTime } from "@/hooks/use-current-time";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { usePendingFiltersStore } from "@/store/pending-filters";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -69,17 +71,14 @@ export default function HomeScreen() {
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const setPendingFilters = usePendingFiltersStore((s) => s.setPendingFilters);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const { noteList } = useDbNotes();
   const { taskList } = useDbTasks();
   const { projectList } = useDbProjects();
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const now = useCurrentTime();
 
   const inboxCount = noteList.length;
 
@@ -111,13 +110,15 @@ export default function HomeScreen() {
       {
         label: "Waiting For",
         value: waitingForCount,
-        onPress: () =>
-          router.push({
-            pathname: "/(tabs)/tasks",
-            params: {
-              filters: JSON.stringify({ category: "waiting_for" }),
-            },
-          }),
+        onPress: () => {
+          setPendingFilters({
+            category: "waiting_for",
+            tags: [],
+            projectId: null,
+            overdue: false,
+          });
+          router.push("/(tabs)/tasks");
+        },
       },
       {
         label: "Projects count",
@@ -127,16 +128,25 @@ export default function HomeScreen() {
       {
         label: "Overdue",
         value: overdueCount,
-        onPress: () =>
-          router.push({
-            pathname: "/(tabs)/tasks",
-            params: {
-              filters: JSON.stringify({ overdue: true }),
-            },
-          }),
+        onPress: () => {
+          setPendingFilters({
+            category: null,
+            tags: [],
+            projectId: null,
+            overdue: true,
+          });
+          router.push("/(tabs)/tasks");
+        },
       },
     ],
-    [inboxCount, waitingForCount, projectsCount, overdueCount, router],
+    [
+      inboxCount,
+      waitingForCount,
+      projectsCount,
+      overdueCount,
+      router,
+      setPendingFilters,
+    ],
   );
 
   return (

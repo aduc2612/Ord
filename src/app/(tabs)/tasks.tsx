@@ -3,53 +3,28 @@ import SearchBar from "@/components/search-bar";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
 import { borderRadius, spacing, typography } from "@/constants/theme";
-import type { Project, Task, TaskTag } from "@/db/schema";
-import { useDbProjects } from "@/hooks/use-db-projects";
+import type { Task, TaskTag } from "@/db/schema";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
+import { useCurrentTime } from "@/hooks/use-current-time";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
+import { usePendingFiltersStore } from "@/store/pending-filters";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type TaskFilters = {
-  category: string | null;
-  tags: string[];
-  project: string | null;
-  overdue: boolean | null;
-};
-
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const DEFAULT_FILTERS: TaskFilters = {
+const DEFAULT_FILTERS: FilterSelections = {
   category: null,
   tags: [],
-  project: null,
-  overdue: null,
+  projectId: null,
+  overdue: false,
 };
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function parseFilters(filtersStr: string | undefined): TaskFilters {
-  if (!filtersStr) return DEFAULT_FILTERS;
-  try {
-    const parsed = JSON.parse(filtersStr);
-    return {
-      category: parsed.category ?? null,
-      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
-      project: parsed.project ?? null,
-      overdue: typeof parsed.overdue === "boolean" ? parsed.overdue : null,
-    };
-  } catch {
-    return DEFAULT_FILTERS;
-  }
-}
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
@@ -114,55 +89,29 @@ export default function TasksScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ filters?: string }>();
 
-  // Parse initial filters from URL params
-  const initialFilters = useMemo(
-    () => parseFilters(params.filters),
-    [params.filters],
+  const clearPendingFilters = usePendingFiltersStore(
+    (s) => s.clearPendingFilters,
   );
 
   // ── State ──────────────────────────────────────────────────────────────────
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<FilterSelections>({
-    category: initialFilters.category,
-    tags: initialFilters.tags,
-    projectId: null,
-    overdue: initialFilters.overdue ?? false,
-  });
-
-  // Keep track of which params string was active the last time we applied
-  // filters. On focus we compare the current params to this value:
-  //   - changed (or undefined on first visit) → new deep-link push from another
-  //     screen; apply the incoming params.
-  //   - same → normal return after navigating away; reset to defaults so stale
-  //     deep-link params don't persist across tab switches.
-  const lastAppliedParamsRef = useRef<string | undefined>(undefined);
+  const [filters, setFilters] = useState<FilterSelections>(DEFAULT_FILTERS);
 
   useFocusEffect(
     useCallback(() => {
-      if (params.filters !== lastAppliedParamsRef.current) {
-        // Params changed: apply them and remember what we applied.
-        lastAppliedParamsRef.current = params.filters;
-        setFilters({
-          category: initialFilters.category,
-          tags: initialFilters.tags,
-          projectId: null,
-          overdue: initialFilters.overdue ?? false,
-        });
+      // Read imperatively to avoid re-firing when we clear the store.
+      const pending = usePendingFiltersStore.getState().pendingFilters;
+      if (pending) {
+        setFilters(pending);
         setSearchQuery("");
+        clearPendingFilters();
       } else {
-        // Same params as last time → returning from another screen, reset.
-        setFilters({
-          category: null,
-          tags: [],
-          projectId: null,
-          overdue: false,
-        });
+        setFilters(DEFAULT_FILTERS);
         setSearchQuery("");
       }
-    }, [params.filters, initialFilters]),
+    }, [clearPendingFilters]),
   );
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
@@ -170,29 +119,8 @@ export default function TasksScreen() {
 
   const { taskList } = useDbTasks();
   const { taskTagList } = useDbTaskTags();
-  const { projectList } = useDbProjects();
 
-  // Resolve project name from URL params to project ID
-  useEffect(() => {
-    if (initialFilters.project && projectList.length > 0) {
-      const project = projectList.find(
-        (p: Project) => p.title === initialFilters.project,
-      );
-      if (project) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- setFilters doesn't affect dependencies, safe one-time resolution
-        setFilters((prev: FilterSelections) => {
-          if (prev.projectId === project.id) return prev;
-          return { ...prev, projectId: project.id };
-        });
-      }
-    }
-  }, [initialFilters.project, projectList]);
-
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const now = useCurrentTime();
 
   // ── Filtering ──────────────────────────────────────────────────────────────
 
@@ -323,7 +251,7 @@ export default function TasksScreen() {
       {/* Filter bottom sheet */}
       <FilterSheet
         onApply={handleFilterApply}
-        availableFilters={["category", "tag", "project"]}
+        availableFilters={["category", "tag", "project", "overdue"]}
         initialSelections={filters}
       />
 

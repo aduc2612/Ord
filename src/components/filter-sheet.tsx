@@ -170,7 +170,8 @@ export default function FilterSheet({
       // Someday: only show category
       return availableFilters.filter((s) => s === "category");
     }
-    return availableFilters;
+    // Exclude "overdue" — it's rendered as a standalone Switch, not a segment tab
+    return availableFilters.filter((s) => s !== "overdue");
   }, [availableFilters, isSomeday]);
 
   // Build segmented control options from visible segments
@@ -187,7 +188,9 @@ export default function FilterSheet({
   }));
 
   // Ensure activeSegment is valid for current visible segments
-  const effectiveSegment = visibleSegments.includes(activeSegment)
+  const effectiveSegment = (
+    visibleSegments as readonly FilterSegment[]
+  ).includes(activeSegment)
     ? activeSegment
     : (visibleSegments[0] ?? "category");
 
