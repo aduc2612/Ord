@@ -1,14 +1,14 @@
 import FabButton from "@/components/fab-button";
 import ProjectDetailsSheet from "@/components/project-details-sheet";
-import { borderRadius, spacing, typography } from "@/constants/theme";
+import ProjectItem from "@/components/project-item";
+import { spacing, typography } from "@/constants/theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function createStyles(theme: Theme) {
@@ -24,33 +24,6 @@ function createStyles(theme: Theme) {
     header: {
       ...typography.headlineLarge,
       color: theme.colors.onBackground,
-    },
-    card: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      backgroundColor: theme.colors.surface,
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      marginHorizontal: spacing.lg,
-      minHeight: 48,
-    },
-    cardLeft: {
-      flex: 1,
-      marginRight: spacing.md,
-    },
-    cardTitle: {
-      ...typography.titleMedium,
-      color: theme.colors.onSurface,
-    },
-    cardSubtitle: {
-      ...typography.bodySmall,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: spacing.xs,
-    },
-    progressLabel: {
-      ...typography.labelSmall,
-      color: theme.colors.onSurfaceVariant,
     },
     emptyText: {
       ...typography.bodyMedium,
@@ -97,46 +70,23 @@ export default function ProjectsScreen() {
   }, []);
 
   const renderItem = useCallback(
-    ({
-      item,
-    }: {
-      item: (typeof projectStats)[number];
-    }) => (
-      <Pressable
-        style={({ pressed }) => [
-          styles.card,
-          pressed && { opacity: theme.interaction.pressedOpacity },
-        ]}
+    ({ item }: { item: (typeof projectStats)[number] }) => (
+      <ProjectItem
+        title={item.title}
+        completed={item.completed}
+        total={item.total}
+        percent={item.percent}
         onPress={() => handleProjectPress(item.id)}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <View style={styles.cardLeft}>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          <Text style={styles.cardSubtitle}>
-            {item.completed}/{item.total} completed
-          </Text>
-        </View>
-        <AnimatedCircularProgress
-          size={48}
-          width={4}
-          fill={item.percent}
-          tintColor={theme.colors.primary}
-          backgroundColor={theme.colors.outlineVariant}
-          lineCap="round"
-          rotation={0}
-        >
-          {() => (
-            <Text style={styles.progressLabel}>{item.percent}%</Text>
-          )}
-        </AnimatedCircularProgress>
-      </Pressable>
+      />
     ),
-    [handleProjectPress, styles, theme],
+    [handleProjectPress],
   );
 
   return (
     <View style={styles.container}>
-      <View style={[styles.headerWrapper, { paddingTop: insets.top + spacing.lg }]}>
+      <View
+        style={[styles.headerWrapper, { paddingTop: insets.top + spacing.lg }]}
+      >
         <Text style={styles.header}>Projects</Text>
       </View>
 
@@ -144,7 +94,10 @@ export default function ProjectsScreen() {
         data={projectStats}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.lg }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.lg,
+          paddingBottom: spacing.lg,
+        }}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No projects yet</Text>
         }

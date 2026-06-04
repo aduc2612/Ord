@@ -34,9 +34,9 @@ function createStyles(theme: Theme) {
     },
     keyboardAvoiding: {
       flex: 1,
+      backgroundColor: theme.colors.background,
     },
     scrollContent: {
-      flexGrow: 1,
       paddingHorizontal: spacing.lg,
       backgroundColor: theme.colors.background,
     },
@@ -78,11 +78,14 @@ function createStyles(theme: Theme) {
       backgroundColor: theme.colors.primary,
       borderRadius: borderRadius.round,
     },
+    clarifyingTextScroll: {
+      maxHeight: 2 * spacing.md + 20,
+      padding: spacing.md,
+    },
     clarifyingText: {
       ...typography.bodyMedium,
       color: theme.colors.onSurfaceVariant,
       textAlign: "center",
-      paddingBottom: spacing.lg,
     },
     sectionGap: {
       height: spacing.lg,
@@ -386,73 +389,81 @@ export default function ClarifySheet({
           </>
         }
       >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: spacing.lg },
-          ]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.clarifyingText} numberOfLines={1}>
-            Clarifying: {currentNote?.title ?? ""}
-          </Text>
-
-          <SegmentedControl
-            options={[
-              { label: "Trash", value: "trash" },
-              { label: "Someday", value: "someday" },
-              { label: "Actionable", value: "actionable" },
+        <View style={{ backgroundColor: theme.colors.background, flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: spacing.lg },
             ]}
-            selectedValue={primaryAction}
-            onSelect={handlePrimarySelect}
-          />
-
-          {showSecondSection ? (
-            <>
-              <View style={styles.sectionGap} />
-              <Text style={styles.actionLabel}>
-                {"What's the very next physical action?"}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.clarifyingTextScroll}
+            >
+              <Text style={styles.clarifyingText}>
+                {currentNote?.title ?? ""}
               </Text>
-              <TextInput
-                style={styles.actionInput}
-                value={actionText}
-                onChangeText={handleChangeActionText}
-                placeholder="Describe the next action..."
-                placeholderTextColor={theme.colors.onSurfaceVariant}
-              />
-              <View style={styles.sectionGap} />
-              <SegmentedControl
-                options={[
-                  { label: "Done in 2 min", value: "done_2min" },
-                  { label: "Delegate", value: "delegate" },
-                  { label: "Defer", value: "defer" },
-                ]}
-                selectedValue={secondaryAction}
-                onSelect={handleSecondarySelect}
-              />
-              {showDoneHelper ? (
-                <Text style={styles.doneHelperText}>
-                  Finish the task NOW before pressing Next
-                </Text>
-              ) : null}
-            </>
-          ) : null}
+            </ScrollView>
 
-          {showDetailSection ? (
-            <>
-              <View style={styles.sectionGap} />
-              <TaskMetaChooser
-                selectedTagIds={selectedTagIds}
-                selectedProjectId={selectedProjectId}
-                dueDate={dueDate}
-                onTagPress={() => TrueSheet.present("chooserTag")}
-                onProjectPress={() => TrueSheet.present("chooserProject")}
-                onDueDatePress={() => setShowDatePicker(true)}
-                onClearDueDate={handleClearDueDate}
-              />
-            </>
-          ) : null}
-        </ScrollView>
+            <SegmentedControl
+              options={[
+                { label: "Trash", value: "trash" },
+                { label: "Someday", value: "someday" },
+                { label: "Actionable", value: "actionable" },
+              ]}
+              selectedValue={primaryAction}
+              onSelect={handlePrimarySelect}
+            />
+
+            {showSecondSection ? (
+              <>
+                <View style={styles.sectionGap} />
+                <Text style={styles.actionLabel}>
+                  {"What's the very next physical action?"}
+                </Text>
+                <TextInput
+                  style={styles.actionInput}
+                  value={actionText}
+                  onChangeText={handleChangeActionText}
+                  placeholder="Describe the next action..."
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                />
+                <View style={styles.sectionGap} />
+                <SegmentedControl
+                  options={[
+                    { label: "Done in 2 min", value: "done_2min" },
+                    { label: "Delegate", value: "delegate" },
+                    { label: "Defer", value: "defer" },
+                  ]}
+                  selectedValue={secondaryAction}
+                  onSelect={handleSecondarySelect}
+                />
+                {showDoneHelper ? (
+                  <Text style={styles.doneHelperText}>
+                    Finish the task NOW before pressing Next
+                  </Text>
+                ) : null}
+              </>
+            ) : null}
+
+            {showDetailSection ? (
+              <>
+                <View style={styles.sectionGap} />
+                <TaskMetaChooser
+                  selectedTagIds={selectedTagIds}
+                  selectedProjectId={selectedProjectId}
+                  dueDate={dueDate}
+                  onTagPress={() => TrueSheet.present("chooserTag")}
+                  onProjectPress={() => TrueSheet.present("chooserProject")}
+                  onDueDatePress={() => setShowDatePicker(true)}
+                  onClearDueDate={handleClearDueDate}
+                />
+              </>
+            ) : null}
+          </ScrollView>
+        </View>
       </TrueSheet>
 
       <ChooserModal

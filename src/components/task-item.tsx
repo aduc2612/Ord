@@ -6,11 +6,14 @@ import {
 } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 export type TaskItemProps = {
   title: string;
+  completed: boolean;
   onPress: () => void;
+  onCheckboxPress?: () => void;
 };
 
 function createStyles(theme: Theme) {
@@ -25,20 +28,22 @@ function createStyles(theme: Theme) {
       minHeight: 48,
       marginBottom: spacing.sm,
     },
-    dot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: theme.colors.onSurface,
-    },
     title: {
       ...typography.bodyMedium,
       color: theme.colors.onSurface,
     },
+    titleCompleted: {
+      color: theme.colors.onSurfaceVariant,
+    },
   });
 }
 
-export default function TaskItem({ title, onPress }: TaskItemProps) {
+export default function TaskItem({
+  title,
+  completed,
+  onPress,
+  onCheckboxPress,
+}: TaskItemProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
 
@@ -51,8 +56,21 @@ export default function TaskItem({ title, onPress }: TaskItemProps) {
       onPress={onPress}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
-      <View style={styles.dot} />
-      <Text style={styles.title}>{title}</Text>
+      <Pressable
+        onPress={onCheckboxPress ?? onPress}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons
+          name={completed ? "checkmark-circle" : "ellipse-outline"}
+          size={22}
+          color={
+            completed ? theme.colors.primary : theme.colors.onSurfaceVariant
+          }
+        />
+      </Pressable>
+      <Text style={[styles.title, completed && styles.titleCompleted]}>
+        {title}
+      </Text>
     </Pressable>
   );
 }

@@ -79,6 +79,7 @@ function createStyles(theme: Theme) {
       gap: spacing.sm,
       paddingHorizontal: spacing.lg,
       backgroundColor: theme.colors.background,
+      flex: 1,
     },
     emptyState: {
       ...typography.bodyMedium,
@@ -145,7 +146,7 @@ export default function ProjectDetailsSheet({
 
   const { projectList, updateProject, deleteProject } = useDbProjects();
 
-  const { taskList } = useDbTasks();
+  const { taskList, completeTask } = useDbTasks();
   const { taskTagList } = useDbTaskTags();
 
   const project = useMemo(
@@ -405,7 +406,9 @@ export default function ProjectDetailsSheet({
             renderItem={({ item }) => (
               <TaskItem
                 title={item.title}
+                completed={item.completedAt !== null}
                 onPress={() => handleTaskPress(item.id)}
+                onCheckboxPress={() => completeTask(item.id)}
               />
             )}
             contentContainerStyle={styles.taskListContainer}

@@ -69,6 +69,8 @@ function createStyles(theme: Theme) {
     },
     menuContent: {
       paddingVertical: spacing.sm,
+      backgroundColor: theme.colors.background,
+      paddingTop: spacing.xxxxl,
     },
   });
 }
@@ -112,16 +114,6 @@ export default function DropdownMenu({ name, options }: DropdownMenuProps) {
         grabber
         header={
           <>
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}> </Text>
-              <Pressable
-                style={styles.doneButton}
-                onPress={() => sheetRef.current?.dismiss()}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.doneButtonText}>Done</Text>
-              </Pressable>
-            </View>
             <ToastProvider />
           </>
         }

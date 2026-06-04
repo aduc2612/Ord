@@ -1,6 +1,8 @@
 import ClarifySheet from "@/components/clarify-sheet";
 import ProjectDetailsSheet from "@/components/project-details-sheet";
+import ProjectItem from "@/components/project-item";
 import TaskDetailsSheet from "@/components/task-details-sheet";
+import TaskItem from "@/components/task-item";
 import { borderRadius, spacing, typography } from "@/constants/theme";
 import { physicalSweepItems } from "@/data/review-data";
 import { useDbNotes } from "@/hooks/use-db-notes";
@@ -65,22 +67,6 @@ function createStyles(theme: Theme) {
       color: theme.colors.onBackground,
       marginBottom: spacing.md,
     },
-    checklistContainer: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      gap: spacing.sm,
-    },
-    checklistItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      minHeight: 48,
-      gap: spacing.md,
-    },
-    checklistText: {
-      ...typography.bodyLarge,
-      color: theme.colors.onSurface,
-    },
     brainDumpInput: {
       ...typography.bodyLarge,
       color: theme.colors.onSurface,
@@ -126,21 +112,6 @@ function createStyles(theme: Theme) {
       ...typography.labelLarge,
       color: theme.colors.onPrimary,
     },
-    listItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      marginBottom: spacing.sm,
-      minHeight: 48,
-      gap: spacing.md,
-    },
-    listItemText: {
-      ...typography.bodyMedium,
-      color: theme.colors.onSurface,
-      flex: 1,
-    },
     emptyText: {
       ...typography.bodyMedium,
       color: theme.colors.onSurfaceVariant,
@@ -167,7 +138,7 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
 
   const { currentStep, setStep, completeReview } = useReviewStore();
   const { noteList, insertNote } = useDbNotes();
-  const { taskList } = useDbTasks();
+  const { taskList, completeTask } = useDbTasks();
   const { projectList } = useDbProjects();
 
   // Step 1 local state
@@ -208,6 +179,18 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
     () => projectList.filter((p) => p.isActive === true),
     [projectList],
   );
+
+  const projectStats = useMemo(() => {
+    return activeProjects.map((project) => {
+      const projectTasks = taskList.filter((t) => t.projectId === project.id);
+      const completed = projectTasks.filter(
+        (t) => t.completedAt !== null,
+      ).length;
+      const total = projectTasks.length;
+      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return { ...project, completed, total, percent };
+    });
+  }, [activeProjects, taskList]);
 
   const displayStep = currentStep > 0 && currentStep <= 6 ? currentStep : 1;
 
@@ -302,34 +285,6 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
     onDismiss();
   }, [onDismiss]);
 
-  const renderChecklistItem = (item: string, index: number) => {
-    const isChecked = checkedItems.has(index);
-    return (
-      <Pressable
-        key={item}
-        style={styles.checklistItem}
-        onPress={() => toggleChecked(index)}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <Ionicons
-          name={isChecked ? "checkmark-circle" : "ellipse-outline"}
-          size={22}
-          color={
-            isChecked ? theme.colors.primary : theme.colors.onSurfaceVariant
-          }
-        />
-        <Text
-          style={[
-            styles.checklistText,
-            isChecked && { color: theme.colors.onSurfaceVariant },
-          ]}
-        >
-          {item}
-        </Text>
-      </Pressable>
-    );
-  };
-
   const waitingForKeyExtractor = useCallback(
     (item: { id: string }) => item.id,
     [],
@@ -340,51 +295,9 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
     [],
   );
 
-  const activeProjectsKeyExtractor = useCallback(
+  const projectStatsKeyExtractor = useCallback(
     (item: { id: string }) => item.id,
     [],
-  );
-
-  const renderWaitingForItem = ({
-    item,
-  }: {
-    item: { id: string; title: string };
-  }) => (
-    <Pressable
-      style={styles.listItem}
-      onPress={() => handleTaskPress(item.id)}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-    >
-      <Text style={styles.listItemText}>{item.title}</Text>
-    </Pressable>
-  );
-
-  const renderSomedayItem = ({
-    item,
-  }: {
-    item: { id: string; title: string };
-  }) => (
-    <Pressable
-      style={styles.listItem}
-      onPress={() => handleTaskPress(item.id)}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-    >
-      <Text style={styles.listItemText}>{item.title}</Text>
-    </Pressable>
-  );
-
-  const renderProjectItem = ({
-    item,
-  }: {
-    item: { id: string; title: string };
-  }) => (
-    <Pressable
-      style={styles.listItem}
-      onPress={() => handleProjectPress(item.id)}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-    >
-      <Text style={styles.listItemText}>{item.title}</Text>
-    </Pressable>
   );
 
   const renderStepContent = () => {
@@ -394,11 +307,15 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
           <>
             <Text style={styles.stepTitle}>Step 1 — Physical Sweep</Text>
             <Text style={styles.subtitle}>Clear these:</Text>
-            <View style={styles.checklistContainer}>
-              {physicalSweepItems.map((item, index) =>
-                renderChecklistItem(item, index),
-              )}
-            </View>
+            {physicalSweepItems.map((item, index) => (
+              <TaskItem
+                key={item}
+                title={item}
+                completed={checkedItems.has(index)}
+                onPress={() => toggleChecked(index)}
+                onCheckboxPress={() => toggleChecked(index)}
+              />
+            ))}
           </>
         );
 
@@ -453,7 +370,14 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
             ) : (
               <FlatList
                 data={waitingForTasks}
-                renderItem={renderWaitingForItem}
+                renderItem={({ item }) => (
+                  <TaskItem
+                    title={item.title}
+                    completed={false}
+                    onPress={() => handleTaskPress(item.id)}
+                    onCheckboxPress={() => completeTask(item.id)}
+                  />
+                )}
                 keyExtractor={waitingForKeyExtractor}
                 scrollEnabled={false}
               />
@@ -465,13 +389,21 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
         return (
           <>
             <Text style={styles.stepTitle}>Step 5 — Projects</Text>
-            {activeProjects.length === 0 ? (
+            {projectStats.length === 0 ? (
               <Text style={styles.emptyText}>No active projects</Text>
             ) : (
               <FlatList
-                data={activeProjects}
-                renderItem={renderProjectItem}
-                keyExtractor={activeProjectsKeyExtractor}
+                data={projectStats}
+                renderItem={({ item }) => (
+                  <ProjectItem
+                    title={item.title}
+                    completed={item.completed}
+                    total={item.total}
+                    percent={item.percent}
+                    onPress={() => handleProjectPress(item.id)}
+                  />
+                )}
+                keyExtractor={projectStatsKeyExtractor}
                 scrollEnabled={false}
               />
             )}
@@ -487,7 +419,14 @@ export default function ReviewSheet({ onDismiss }: ReviewSheetProps) {
             ) : (
               <FlatList
                 data={somedayTasks}
-                renderItem={renderSomedayItem}
+                renderItem={({ item }) => (
+                  <TaskItem
+                    title={item.title}
+                    completed={false}
+                    onPress={() => handleTaskPress(item.id)}
+                    onCheckboxPress={() => completeTask(item.id)}
+                  />
+                )}
                 keyExtractor={somedayKeyExtractor}
                 scrollEnabled={false}
               />
