@@ -3,30 +3,11 @@ import { borderRadius, spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useReviewStore } from "@/store/review-store";
+import { formatDate } from "@/utils/format-date";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useCallback, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-function formatDate(timestamp: number | null): string {
-  if (!timestamp) return "Never";
-  const date = new Date(timestamp);
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-}
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({

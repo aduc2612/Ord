@@ -8,9 +8,12 @@ export default function TabsLayout() {
         <Tabs.Screen name="db-test" options={{ headerShown: false }} />
       )}
       <Tabs.Screen name="lists" options={{ headerShown: false }} />
-      <Tabs.Screen name="inbox" options={{ headerShown: false }} />
-      <Tabs.Screen name="tasks" options={{ headerShown: false }} />
-      <Tabs.Screen name="projects" options={{ headerShown: false }} />
+      <Tabs.Screen name="inbox" options={{ headerShown: false, href: null }} />
+      <Tabs.Screen name="tasks" options={{ headerShown: false, href: null }} />
+      <Tabs.Screen
+        name="projects"
+        options={{ headerShown: false, href: null }}
+      />
       <Tabs.Screen name="review" options={{ headerShown: false }} />
     </Tabs>
   );

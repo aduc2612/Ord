@@ -11,7 +11,10 @@ import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRouter } from "expo-router";
 import { usePendingFiltersStore } from "@/store/pending-filters";
+import { useReviewStore } from "@/store/review-store";
+import { formatDate } from "@/utils/format-date";
 import { useMemo, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -49,6 +52,11 @@ function createStyles(theme: Theme) {
       color: theme.colors.onSurface,
       fontWeight: "600",
     },
+    summaryValueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+    },
     viewTasksButton: {
       backgroundColor: theme.colors.primary,
       borderRadius: componentStyles.card.borderRadius,
@@ -78,6 +86,7 @@ export default function HomeScreen() {
   const { taskList } = useDbTasks();
   const { projectList } = useDbProjects();
 
+  const lastReviewedAt = useReviewStore((s) => s.lastReviewedAt);
   const now = useCurrentTime();
 
   const inboxCount = noteList.length;
@@ -103,7 +112,7 @@ export default function HomeScreen() {
   const summaryRows = useMemo(
     () => [
       {
-        label: "Inbox count",
+        label: "Inbox",
         value: inboxCount,
         onPress: () => router.push("/(tabs)/inbox"),
       },
@@ -121,9 +130,9 @@ export default function HomeScreen() {
         },
       },
       {
-        label: "Projects count",
+        label: "Projects",
         value: projectsCount,
-        onPress: () => router.push("/(tabs)/lists"),
+        onPress: () => router.push("/(tabs)/projects"),
       },
       {
         label: "Overdue",
@@ -138,12 +147,18 @@ export default function HomeScreen() {
           router.push("/(tabs)/tasks");
         },
       },
+      {
+        label: "Last reviewed",
+        value: formatDate(lastReviewedAt),
+        onPress: () => router.push("/(tabs)/review"),
+      },
     ],
     [
       inboxCount,
       waitingForCount,
       projectsCount,
       overdueCount,
+      lastReviewedAt,
       router,
       setPendingFilters,
     ],
@@ -172,7 +187,14 @@ export default function HomeScreen() {
               onPress={item.onPress}
             >
               <Text style={styles.summaryLabel}>{item.label}</Text>
-              <Text style={styles.summaryValue}>{item.value}</Text>
+              <View style={styles.summaryValueRow}>
+                <Text style={styles.summaryValue}>{item.value}</Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </View>
             </Pressable>
           ))}
         </View>

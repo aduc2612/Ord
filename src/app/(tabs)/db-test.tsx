@@ -3,6 +3,7 @@ import FilterSheet from "@/components/filter-sheet";
 import ProjectDetailsSheet from "@/components/project-details-sheet";
 import PromptModal from "@/components/prompt-modal";
 import TaskDetailsSheet from "@/components/task-details-sheet";
+import { formatDate } from "@/utils/format-date";
 import {
   borderRadius,
   componentStyles,
@@ -233,12 +234,8 @@ function TaskItem({
           </Text>
           <Text style={styles.taskMeta}>
             {task.category}
-            {task.dueDate
-              ? ` | Due: ${new Date(task.dueDate).toLocaleDateString()}`
-              : ""}
-            {isCompleted
-              ? ` | Completed: ${new Date(task.completedAt!).toLocaleDateString()}`
-              : ""}
+            {task.dueDate ? ` | Due: ${formatDate(task.dueDate)}` : ""}
+            {isCompleted ? ` | Completed: ${formatDate(task.completedAt)}` : ""}
           </Text>
           {task.description ? (
             <Text style={[styles.taskMeta, { marginTop: 2 }]}>
