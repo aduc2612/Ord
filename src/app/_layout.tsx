@@ -3,6 +3,7 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import { initializeBackgroundTask } from "@/lib/background-sync";
 import AuthProvider from "@/providers/auth-provider";
 import NetworkToastProvider from "@/providers/network-toast-provider";
+import ToastProvider from "@/providers/toast-provider";
 import { PowerSyncProvider } from "@/providers/powersync-provider";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
@@ -49,10 +50,12 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <AuthProvider>
           <PowerSyncProvider>
-            <NetworkToastProvider>
-              <SplashScreenController />
-              <RootNavigator />
-            </NetworkToastProvider>
+            <ToastProvider>
+              <NetworkToastProvider>
+                <SplashScreenController />
+                <RootNavigator />
+              </NetworkToastProvider>
+            </ToastProvider>
           </PowerSyncProvider>
         </AuthProvider>
       </SafeAreaProvider>

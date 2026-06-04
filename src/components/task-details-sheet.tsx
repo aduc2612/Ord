@@ -8,6 +8,7 @@ import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
@@ -202,7 +203,7 @@ export default function TaskDetailsSheet({
   }, []);
 
   const saveChanges = useCallback(async () => {
-    if (!hasChangesRef.current || !task) return;
+    if (!hasChangesRef.current || !task) return true;
 
     try {
       const isSomeday = category === "someday";
@@ -231,8 +232,10 @@ export default function TaskDetailsSheet({
       ]);
 
       hasChangesRef.current = false;
+      return true;
     } catch {
       Toast.show({ type: "error", text1: "Failed to save changes" });
+      return false;
     }
   }, [
     task,
@@ -250,15 +253,19 @@ export default function TaskDetailsSheet({
   ]);
 
   const handleDone = useCallback(async () => {
-    await saveChanges();
-    sheetRef.current?.dismiss();
+    const success = await saveChanges();
+    if (success) {
+      sheetRef.current?.dismiss();
+    }
   }, [saveChanges]);
 
   const handleMarkComplete = useCallback(async () => {
     if (!task) return;
-    await saveChanges();
-    pendingActionRef.current = "complete";
-    sheetRef.current?.dismiss();
+    const success = await saveChanges();
+    if (success) {
+      pendingActionRef.current = "complete";
+      sheetRef.current?.dismiss();
+    }
   }, [task, saveChanges]);
 
   const handleDelete = useCallback(() => {
@@ -316,32 +323,35 @@ export default function TaskDetailsSheet({
           }
         }}
         header={
-          <View style={styles.headerRow}>
-            <DropdownMenu
-              name="taskDetailsDropdown"
-              options={[
-                {
-                  icon: "checkmark-circle",
-                  label: "Mark Complete",
-                  onPress: handleMarkComplete,
-                },
-                {
-                  icon: "trash",
-                  label: "Delete Task",
-                  destructive: true,
-                  onPress: handleDelete,
-                },
-              ]}
-            />
-            <Text style={styles.headerTitle}>Edit Task</Text>
-            <Pressable
-              style={styles.headerDoneButton}
-              onPress={handleDone}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.headerDoneText}>Done</Text>
-            </Pressable>
-          </View>
+          <>
+            <View style={styles.headerRow}>
+              <DropdownMenu
+                name="taskDetailsDropdown"
+                options={[
+                  {
+                    icon: "checkmark-circle",
+                    label: "Mark Complete",
+                    onPress: handleMarkComplete,
+                  },
+                  {
+                    icon: "trash",
+                    label: "Delete Task",
+                    destructive: true,
+                    onPress: handleDelete,
+                  },
+                ]}
+              />
+              <Text style={styles.headerTitle}>Edit Task</Text>
+              <Pressable
+                style={styles.headerDoneButton}
+                onPress={handleDone}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.headerDoneText}>Done</Text>
+              </Pressable>
+            </View>
+            <ToastProvider />
+          </>
         }
       >
         {!task ? (

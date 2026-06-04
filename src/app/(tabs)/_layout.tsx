@@ -11,6 +11,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="inbox" options={{ headerShown: false }} />
       <Tabs.Screen name="tasks" options={{ headerShown: false }} />
       <Tabs.Screen name="projects" options={{ headerShown: false }} />
+      <Tabs.Screen name="review" options={{ headerShown: false }} />
     </Tabs>
   );
 }

@@ -25,6 +25,12 @@
       "skillPath": "skills/caveman-commit/SKILL.md",
       "computedHash": "1dd642480aee47934d6c202fd471e41922c7dc312e92a6e38059442b39bb0795"
     },
+    "caveman-review": {
+      "source": "juliusbrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman-review/SKILL.md",
+      "computedHash": "b9091dbc51de0f3710ea818fd4d638539f8c1784f8fda931eb159c44861e702e"
+    },
     "content-marketing": {
       "source": "refoundai/lenny-skills",
       "sourceType": "github",
@@ -114,6 +120,12 @@
       "sourceType": "github",
       "skillPath": "skills/powersync/SKILL.md",
       "computedHash": "14368a13df17d0e5463e4f094d6b2f08934d7ee6f0b8e74aa00cadd16e424b57"
+    },
+    "requesting-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/requesting-code-review/SKILL.md",
+      "computedHash": "874f3786b05007a8b4a60452a4cd89b9917c645d34b6b1e40ea05037d12f0e67"
     },
     "supabase": {
       "source": "supabase/agent-skills",

@@ -3,6 +3,7 @@ import { useKeyboard } from "@/hooks/use-keyboard";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -77,7 +78,7 @@ export type PromptModalProps = {
   defaultValue?: string;
   cancelLabel?: string;
   confirmLabel?: string;
-  onConfirm: (value: string) => void;
+  onConfirm: (value: string) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -96,6 +97,7 @@ export default function PromptModal({
   const styles = createStyles(theme);
   const [text, setText] = useState(defaultValue);
   const [showError, setShowError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const sheetRef = useRef<TrueSheet>(null);
   const inputRef = useRef<TextInput>(null);
 
@@ -103,14 +105,22 @@ export default function PromptModal({
 
   const isKeyboardOpen = useKeyboard();
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (!text.trim()) {
       setShowError(true);
       return;
     }
-    onConfirm(text.trim());
-    sheetRef.current?.dismiss();
-  }, [onConfirm, text]);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onConfirm(text.trim());
+      sheetRef.current?.dismiss();
+    } catch {
+      // Let the modal stay open on failure — do not dismiss
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [onConfirm, text, isSubmitting]);
 
   const handleChangeText = useCallback((value: string) => {
     setText(value);
@@ -127,6 +137,7 @@ export default function PromptModal({
       onWillPresent={() => {
         setText(defaultValue);
         setShowError(false);
+        setIsSubmitting(false);
       }}
       onDidPresent={() => {
         inputRef.current?.focus();
@@ -135,6 +146,11 @@ export default function PromptModal({
         onCancel();
       }}
       insetAdjustment="never"
+      header={
+        <>
+          <ToastProvider />
+        </>
+      }
     >
       <View
         style={[
@@ -174,9 +190,15 @@ export default function PromptModal({
           <Pressable
             style={({ pressed }) => [
               styles.confirmButton,
-              { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
+              {
+                opacity:
+                  pressed || isSubmitting
+                    ? theme.interaction.pressedOpacity
+                    : 1,
+              },
             ]}
             onPress={handleConfirm}
+            disabled={isSubmitting}
           >
             <Text style={styles.confirmText}>{confirmLabel}</Text>
           </Pressable>

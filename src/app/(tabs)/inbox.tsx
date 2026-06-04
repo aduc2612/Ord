@@ -100,7 +100,7 @@ export default function InboxScreen() {
   const handleProcess = useCallback(() => {
     const available = sortedNotes;
     if (available.length === 0) {
-      Toast.show({ type: "error", text1: "No notes to process" });
+      Toast.show({ type: "warning", text1: "No notes to process" });
       return;
     }
     setClarifyNoteId(available[0].id);

@@ -24,6 +24,8 @@ export const colors = {
 
     success: "#4CAF50",
     onSuccess: "#FFFFFF",
+    warning: "#FEF3C7",
+    onWarning: "#92400E",
 
     background: "#f4f3f8",
     onBackground: "#1a1a1c",
@@ -64,6 +66,8 @@ export const colors = {
 
     success: "#81C784",
     onSuccess: "#000000",
+    warning: "#451A03",
+    onWarning: "#FBBF24",
 
     background: "#121212",
     onBackground: "#E6E6E6",

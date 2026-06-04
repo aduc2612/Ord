@@ -8,17 +8,20 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import ToastProvider from "@/providers/toast-provider";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { FlatList, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type FilterSegment = "category" | "tag" | "project";
+export type FilterSegment = "category" | "tag" | "project" | "overdue";
 
 export type FilterSelections = {
   category: string | null; // single select: "next_action" | "waiting_for" | "someday" | null
@@ -167,7 +170,8 @@ export default function FilterSheet({
       // Someday: only show category
       return availableFilters.filter((s) => s === "category");
     }
-    return availableFilters;
+    // Exclude "overdue" — it's rendered as a standalone Switch, not a segment tab
+    return availableFilters.filter((s) => s !== "overdue");
   }, [availableFilters, isSomeday]);
 
   // Build segmented control options from visible segments
@@ -175,6 +179,7 @@ export default function FilterSheet({
     category: "Category",
     tag: "Tag",
     project: "Project",
+    overdue: "Overdue",
   };
 
   const segmentOptions: SegmentedOption[] = visibleSegments.map((seg) => ({
@@ -183,7 +188,9 @@ export default function FilterSheet({
   }));
 
   // Ensure activeSegment is valid for current visible segments
-  const effectiveSegment = visibleSegments.includes(activeSegment)
+  const effectiveSegment = (
+    visibleSegments as readonly FilterSegment[]
+  ).includes(activeSegment)
     ? activeSegment
     : (visibleSegments[0] ?? "category");
 
@@ -219,7 +226,14 @@ export default function FilterSheet({
       overdue: draftOverdue,
     });
     sheetRef.current?.dismiss();
-  }, [draftCategory, draftTags, draftProjectId, draftOverdue, isSomeday, onApply]);
+  }, [
+    draftCategory,
+    draftTags,
+    draftProjectId,
+    draftOverdue,
+    isSomeday,
+    onApply,
+  ]);
 
   // ── List data based on active segment ────────────────────────────────────
 
@@ -236,6 +250,8 @@ export default function FilterSheet({
         return tagList.map((t) => ({ id: t.id, label: t.title }));
       case "project":
         return projectList.map((p) => ({ id: p.id, label: p.title }));
+      case "overdue":
+        return [];
       default:
         return [];
     }
@@ -252,11 +268,13 @@ export default function FilterSheet({
           return draftTags.includes(id);
         case "project":
           return draftProjectId === id;
+        case "overdue":
+          return draftOverdue;
         default:
           return false;
       }
     },
-    [effectiveSegment, draftCategory, draftTags, draftProjectId],
+    [effectiveSegment, draftCategory, draftTags, draftProjectId, draftOverdue],
   );
 
   const handleItemPress = useCallback(
@@ -270,6 +288,9 @@ export default function FilterSheet({
           break;
         case "project":
           handleProjectSelect(id);
+          break;
+        case "overdue":
+          setDraftOverdue((prev) => !prev);
           break;
       }
     },
@@ -292,6 +313,9 @@ export default function FilterSheet({
       case "project":
         setDraftProjectId(null);
         break;
+      case "overdue":
+        setDraftOverdue(false);
+        break;
     }
   }, [effectiveSegment]);
 
@@ -303,10 +327,18 @@ export default function FilterSheet({
         return draftTags.length === 0;
       case "project":
         return draftProjectId === null;
+      case "overdue":
+        return !draftOverdue;
       default:
         return true;
     }
-  }, [effectiveSegment, draftCategory, draftTags, draftProjectId]);
+  }, [
+    effectiveSegment,
+    draftCategory,
+    draftTags,
+    draftProjectId,
+    draftOverdue,
+  ]);
 
   // ── Render item ──────────────────────────────────────────────────────────
 
@@ -356,16 +388,19 @@ export default function FilterSheet({
         setActiveSegment(availableFilters[0] ?? "category");
       }}
       header={
-        <View style={styles.stickyHeader}>
-          <Text style={styles.headerTitle}>Filter</Text>
-          <Pressable
-            style={styles.doneButton}
-            onPress={handleDone}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </Pressable>
-        </View>
+        <>
+          <View style={styles.stickyHeader}>
+            <Text style={styles.headerTitle}>Filter</Text>
+            <Pressable
+              style={styles.doneButton}
+              onPress={handleDone}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </Pressable>
+          </View>
+          <ToastProvider />
+        </>
       }
     >
       <View style={styles.container}>
@@ -380,40 +415,47 @@ export default function FilterSheet({
           </View>
         ) : null}
 
-        {/* Overdue toggle */}
-        <View style={styles.overdueRow}>
-          <Text style={styles.overdueLabel}>Overdue only</Text>
-          <Switch
-            value={draftOverdue}
-            onValueChange={setDraftOverdue}
-            trackColor={{ false: theme.colors.outlineVariant, true: theme.colors.primary }}
-            thumbColor={theme.colors.surface}
-          />
-        </View>
+        {/* Overdue toggle (only when caller opts in) */}
+        {availableFilters.includes("overdue") ? (
+          <View style={styles.overdueRow}>
+            <Text style={styles.overdueLabel}>Overdue only</Text>
+            <Switch
+              value={draftOverdue}
+              onValueChange={setDraftOverdue}
+              trackColor={{
+                false: theme.colors.outlineVariant,
+                true: theme.colors.primary,
+              }}
+              thumbColor={theme.colors.surface}
+            />
+          </View>
+        ) : null}
 
-        {/* Content list */}
-        <FlatList
-          data={listData}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListHeaderComponent={
-            <Pressable
-              style={styles.noneRow}
-              onPress={handleNonePress}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.noneLabel}>None</Text>
-              {isNoneSelected ? (
-                <Ionicons
-                  name="checkmark"
-                  size={22}
-                  color={theme.colors.primary}
-                />
-              ) : null}
-            </Pressable>
-          }
-        />
+        {/* Content list (hidden for overdue segment — it's a toggle) */}
+        {effectiveSegment !== "overdue" ? (
+          <FlatList
+            data={listData}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              <Pressable
+                style={styles.noneRow}
+                onPress={handleNonePress}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.noneLabel}>None</Text>
+                {isNoneSelected ? (
+                  <Ionicons
+                    name="checkmark"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                ) : null}
+              </Pressable>
+            }
+          />
+        ) : null}
       </View>
     </TrueSheet>
   );
