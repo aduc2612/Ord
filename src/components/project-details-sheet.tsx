@@ -79,6 +79,7 @@ function createStyles(theme: Theme) {
       gap: spacing.sm,
       paddingHorizontal: spacing.lg,
       backgroundColor: theme.colors.background,
+      flex: 1,
     },
     emptyState: {
       ...typography.bodyMedium,
