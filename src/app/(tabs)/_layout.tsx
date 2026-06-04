@@ -15,6 +15,7 @@ export default function TabsLayout() {
         options={{ headerShown: false, href: null }}
       />
       <Tabs.Screen name="review" options={{ headerShown: false }} />
+      <Tabs.Screen name="settings" options={{ headerShown: false }} />
     </Tabs>
   );
 }
