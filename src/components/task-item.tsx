@@ -31,6 +31,7 @@ function createStyles(theme: Theme) {
     title: {
       ...typography.bodyMedium,
       color: theme.colors.onSurface,
+      flexShrink: 1,
     },
     titleCompleted: {
       color: theme.colors.onSurfaceVariant,
@@ -58,7 +59,7 @@ export default function TaskItem({
     >
       <Pressable
         onPress={onCheckboxPress ?? onPress}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        hitSlop={{ top: 26, bottom: 26, left: 26, right: 26 }}
       >
         <Ionicons
           name={completed ? "checkmark-circle" : "ellipse-outline"}
