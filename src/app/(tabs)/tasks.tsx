@@ -117,7 +117,7 @@ export default function TasksScreen() {
 
   // ── Data hooks ─────────────────────────────────────────────────────────────
 
-  const { taskList } = useDbTasks();
+  const { taskList, completeTask } = useDbTasks();
   const { taskTagList } = useDbTaskTags();
 
   const now = useCurrentTime();
@@ -192,10 +192,15 @@ export default function TasksScreen() {
   const renderItem = useCallback(
     ({ item }: { item: Task }) => (
       <View style={styles.taskItemWrapper}>
-        <TaskItem title={item.title} onPress={() => handleTaskPress(item.id)} />
+        <TaskItem
+          title={item.title}
+          completed={false}
+          onPress={() => handleTaskPress(item.id)}
+          onCheckboxPress={() => completeTask(item.id)}
+        />
       </View>
     ),
-    [handleTaskPress, styles.taskItemWrapper],
+    [handleTaskPress, styles.taskItemWrapper, completeTask],
   );
 
   // ── Render ─────────────────────────────────────────────────────────────────

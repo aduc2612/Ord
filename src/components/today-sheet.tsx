@@ -91,7 +91,7 @@ export default function TodaySheet() {
   const theme = useTheme();
   const styles = createStyles(theme);
 
-  const { taskList } = useDbTasks();
+  const { taskList, completeTask } = useDbTasks();
   const { taskTagList } = useDbTaskTags();
 
   // ── Internal state (resets when sheet opens) ────────────────────────────
@@ -203,9 +203,14 @@ export default function TodaySheet() {
 
   const renderItem = useCallback(
     ({ item }: { item: (typeof searchedTasks)[number] }) => (
-      <TaskItem title={item.title} onPress={() => handleTaskPress(item.id)} />
+      <TaskItem
+        title={item.title}
+        completed={false}
+        onPress={() => handleTaskPress(item.id)}
+        onCheckboxPress={() => completeTask(item.id)}
+      />
     ),
-    [handleTaskPress],
+    [handleTaskPress, completeTask],
   );
 
   // ── Render ───────────────────────────────────────────────────────────────
