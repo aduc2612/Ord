@@ -12,11 +12,14 @@ export type DropdownOption = {
   label: string;
   onPress: () => void | Promise<void>;
   destructive?: boolean;
+  selected?: boolean;
 };
 
 export type DropdownMenuProps = {
   name: string;
+  title?: string;
   options: DropdownOption[];
+  showTrigger?: boolean;
 };
 
 function createStyles(theme: Theme) {
@@ -34,6 +37,7 @@ function createStyles(theme: Theme) {
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.xxxxl,
       paddingBottom: spacing.md,
+      backgroundColor: theme.colors.background,
     },
     headerTitle: {
       ...typography.titleMedium,
@@ -67,15 +71,22 @@ function createStyles(theme: Theme) {
       width: 24,
       alignItems: "center",
     },
+    menuItemRight: {
+      marginLeft: "auto",
+    },
     menuContent: {
-      paddingVertical: spacing.sm,
+      paddingBottom: spacing.sm,
       backgroundColor: theme.colors.background,
-      paddingTop: spacing.xxxxl,
     },
   });
 }
 
-export default function DropdownMenu({ name, options }: DropdownMenuProps) {
+export default function DropdownMenu({
+  name,
+  title,
+  options,
+  showTrigger = true,
+}: DropdownMenuProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
   const sheetRef = useRef<TrueSheet>(null);
@@ -92,19 +103,21 @@ export default function DropdownMenu({ name, options }: DropdownMenuProps) {
 
   return (
     <>
-      <Pressable
-        style={({ pressed }) => [
-          styles.trigger,
-          { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
-        ]}
-        onPress={() => TrueSheet.present(name)}
-      >
-        <Ionicons
-          name="ellipsis-vertical"
-          size={24}
-          color={theme.colors.onSurface}
-        />
-      </Pressable>
+      {showTrigger ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.trigger,
+            { opacity: pressed ? theme.interaction.pressedOpacity : 1 },
+          ]}
+          onPress={() => TrueSheet.present(name)}
+        >
+          <Ionicons
+            name="ellipsis-vertical"
+            size={24}
+            color={theme.colors.onSurface}
+          />
+        </Pressable>
+      ) : null}
 
       <TrueSheet
         ref={sheetRef}
@@ -115,6 +128,9 @@ export default function DropdownMenu({ name, options }: DropdownMenuProps) {
         header={
           <>
             <ToastProvider />
+            <View style={styles.header}>
+              {title ? <Text style={styles.headerTitle}>{title}</Text> : null}
+            </View>
           </>
         }
       >
@@ -147,6 +163,15 @@ export default function DropdownMenu({ name, options }: DropdownMenuProps) {
               >
                 {item.label}
               </Text>
+              {item.selected ? (
+                <View style={styles.menuItemRight}>
+                  <Ionicons
+                    name="checkmark"
+                    size={20}
+                    color={theme.colors.onSurface}
+                  />
+                </View>
+              ) : null}
             </Pressable>
           )}
           keyExtractor={(_, index) => String(index)}

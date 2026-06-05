@@ -1,10 +1,13 @@
 import { connector, powerSyncDb } from "@/lib/powersync";
 import { supabase } from "@/lib/supabase";
 import { PowerSyncContext } from "@powersync/react-native";
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useRef, useState } from "react";
+import Toast from "react-native-toast-message";
 
 export function PowerSyncProvider({ children }: PropsWithChildren) {
   const [isReady, setIsReady] = useState(false);
+  const hasShownSyncToast = useRef(false);
+  const listenerCleanup = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let isFirstCallback = true;
@@ -19,7 +22,31 @@ export function PowerSyncProvider({ children }: PropsWithChildren) {
           if (cancelled) return;
           if (session) {
             await powerSyncDb.connect(connector);
+
+            hasShownSyncToast.current = false;
+            listenerCleanup.current = powerSyncDb.registerListener({
+              statusChanged: (status) => {
+                if (!hasShownSyncToast.current && status.hasSynced) {
+                  hasShownSyncToast.current = true;
+                  Toast.show({
+                    type: "success",
+                    text1: "Synced successfully",
+                  });
+                }
+
+                if (!status.hasSynced && status.dataFlowStatus?.downloadError) {
+                  Toast.show({
+                    type: "error",
+                    text1: "Sync failed — working with local data",
+                    visibilityTime: 5000,
+                  });
+                }
+              },
+            });
           } else {
+            listenerCleanup.current?.();
+            listenerCleanup.current = null;
+            hasShownSyncToast.current = false;
             await powerSyncDb.disconnectAndClear();
           }
         })
@@ -35,7 +62,14 @@ export function PowerSyncProvider({ children }: PropsWithChildren) {
     return () => {
       cancelled = true;
       subscription.unsubscribe();
-      op = op.then(() => powerSyncDb.disconnect()).catch(() => {});
+      op = op
+        .then(() => {
+          listenerCleanup.current?.();
+          listenerCleanup.current = null;
+          hasShownSyncToast.current = false;
+          return powerSyncDb.disconnect();
+        })
+        .catch(() => {});
     };
   }, []);
 

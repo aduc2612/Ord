@@ -49,7 +49,7 @@ function createStyles(theme: Theme) {
       right: theme.spacing.lg,
       width: 56,
       height: 56,
-      borderRadius: borderRadius.round,
+      borderRadius: borderRadius.xl,
       backgroundColor: theme.colors.primary,
       alignItems: "center",
       justifyContent: "center",
