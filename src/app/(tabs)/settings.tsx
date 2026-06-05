@@ -160,6 +160,8 @@ export default function SettingsScreen() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
+      } else {
+        setUserEmail("Not provided");
       }
     });
   }, []);
@@ -406,7 +408,7 @@ export default function SettingsScreen() {
           icon: tpl.icon,
           label: tpl.label,
           onPress: () => {
-            Linking.openURL(
+            return Linking.openURL(
               `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(tpl.body)}`,
             );
           },

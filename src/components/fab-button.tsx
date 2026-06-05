@@ -42,11 +42,11 @@ type FabButtonProps = {
   name: string;
 };
 
-function createStyles(theme: Theme, insets: any) {
+function createStyles(theme: Theme, insetsBottom: number) {
   return StyleSheet.create({
     fab: {
       position: "absolute",
-      bottom: theme.spacing.tabBar + theme.spacing.sm + insets.bottom,
+      bottom: theme.spacing.tabBar + theme.spacing.sm + insetsBottom,
       right: theme.spacing.lg,
       width: 56,
       height: 56,
@@ -62,7 +62,7 @@ function createStyles(theme: Theme, insets: any) {
 export default function FabButton({ type, name }: FabButtonProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = createStyles(theme, insets);
+  const styles = createStyles(theme, insets.bottom);
 
   const { insertNote } = useDbNotes();
   const { insertProject } = useDbProjects();

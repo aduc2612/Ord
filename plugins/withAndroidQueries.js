@@ -6,17 +6,29 @@ const { withAndroidManifest } = require("expo/config-plugins");
  */
 const withAndroidQueries = (config) => {
   return withAndroidManifest(config, (config) => {
-    config.modResults.manifest.queries = [
-      ...(config.modResults.manifest.queries || []),
-      {
+    const queries = config.modResults.manifest.queries || [];
+
+    const hasMailto = queries.some((q) =>
+      q.intent?.some(
+        (i) =>
+          i.action?.some(
+            (a) => a.$?.["android:name"] === "android.intent.action.SENDTO",
+          ) && i.data?.some((d) => d.$?.["android:scheme"] === "mailto"),
+      ),
+    );
+
+    if (!hasMailto) {
+      queries.push({
         intent: [
           {
             action: [{ $: { "android:name": "android.intent.action.SENDTO" } }],
             data: [{ $: { "android:scheme": "mailto" } }],
           },
         ],
-      },
-    ];
+      });
+    }
+
+    config.modResults.manifest.queries = queries;
     return config;
   });
 };

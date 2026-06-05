@@ -152,7 +152,7 @@ function TabItem({
         onLongPress={onLongPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        hitSlop={{ top: 8, bottom: 8, left: 14, right: 14 }}
         style={inactiveTabStyles.wrapper}
       >
         <Ionicons
