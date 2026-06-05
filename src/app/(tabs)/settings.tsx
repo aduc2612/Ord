@@ -1,9 +1,13 @@
+import DropdownMenu from "@/components/dropdown-menu";
 import { spacing, typography } from "@/constants/theme";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import { useThemeStore } from "@/store/theme-store";
+import type { ThemePreference } from "@/store/theme-store";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Alert,
   Pressable,
@@ -121,6 +125,8 @@ export default function SettingsScreen() {
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
   const { profile } = useAuthContext();
+  const preference = useThemeStore((s) => s.preference);
+  const setThemePreference = useThemeStore((s) => s.setThemePreference);
 
   const userName = (profile?.name as string) ?? "User";
   const userEmail = (profile?.email as string) ?? "user@example.com";
@@ -187,13 +193,33 @@ export default function SettingsScreen() {
         {/* Preferences */}
         <Text style={styles.sectionLabel}>Preferences</Text>
         <View style={styles.card}>
-          <SettingsRow
-            icon="sunny-outline"
-            label="Theme"
-            subtitle="System default"
-            styles={styles}
-            theme={theme}
-          />
+          <Pressable
+            style={({ pressed }) => [
+              styles.row,
+              pressed && { opacity: theme.interaction.pressedOpacity },
+            ]}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            onPress={() => TrueSheet.present("theme-picker")}
+          >
+            <Ionicons
+              name="sunny-outline"
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <View style={styles.rowContent}>
+              <Text style={styles.rowLabel}>Theme</Text>
+              <Text style={styles.rowSubtitle}>
+                {preferenceLabel(preference)}
+              </Text>
+            </View>
+            <View style={styles.rowRight}>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </View>
+          </Pressable>
           <SettingsRow
             icon="notifications-outline"
             label="Notifications"
@@ -267,15 +293,53 @@ export default function SettingsScreen() {
           />
         </View>
       </ScrollView>
+
+      <DropdownMenu
+        name="theme-picker"
+        title="Theme"
+        showTrigger={false}
+        options={[
+          {
+            icon: "phone-portrait-outline",
+            label: "System Default",
+            selected: preference === "system",
+            onPress: () => setThemePreference("system"),
+          },
+          {
+            icon: "sunny-outline",
+            label: "Light",
+            selected: preference === "light",
+            onPress: () => setThemePreference("light"),
+          },
+          {
+            icon: "moon-outline",
+            label: "Dark",
+            selected: preference === "dark",
+            onPress: () => setThemePreference("dark"),
+          },
+        ]}
+      />
     </View>
   );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+function preferenceLabel(preference: ThemePreference): string {
+  switch (preference) {
+    case "system":
+      return "System default";
+    case "light":
+      return "Light";
+    case "dark":
+      return "Dark";
+  }
 }
 
 // ─── Row helper ──────────────────────────────────────────────────────────────
 
 function SettingsRow({
   icon,
-  colorScheme,
   label,
   subtitle,
   styles,
