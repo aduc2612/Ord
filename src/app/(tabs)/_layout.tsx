@@ -13,6 +13,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="inbox" options={{ href: null }} />
       <Tabs.Screen name="tasks" options={{ href: null }} />
       <Tabs.Screen name="projects" options={{ href: null }} />
+      <Tabs.Screen name="completed-tasks" options={{ href: null }} />
+      <Tabs.Screen name="archived-projects" options={{ href: null }} />
       <Tabs.Screen name="review" />
       <Tabs.Screen name="settings" />
     </Tabs>
