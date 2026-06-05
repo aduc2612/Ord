@@ -14,10 +14,7 @@
         "tinted": "./assets/images/ios-icon-tinted.png"
       },
       "infoPlist": {
-        "UIBackgroundModes": [
-          "processing",
-          "fetch"
-        ]
+        "UIBackgroundModes": ["processing", "fetch"]
       }
     },
     "android": {
@@ -58,7 +55,8 @@
       "expo-image",
       "expo-background-task",
       "@react-native-community/datetimepicker",
-      "expo-status-bar"
+      "expo-status-bar",
+      "./plugins/withAndroidQueries"
     ],
     "experiments": {
       "typedRoutes": true,

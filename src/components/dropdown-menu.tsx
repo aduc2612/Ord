@@ -174,7 +174,7 @@ export default function DropdownMenu({
               ) : null}
             </Pressable>
           )}
-          keyExtractor={(_, index) => String(index)}
+          keyExtractor={(item) => item.label}
           contentContainerStyle={styles.menuContent}
         />
       </TrueSheet>

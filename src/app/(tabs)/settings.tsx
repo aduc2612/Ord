@@ -4,12 +4,17 @@ import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useThemeStore } from "@/store/theme-store";
 import type { ThemePreference } from "@/store/theme-store";
-import { useAuthContext } from "@/hooks/use-auth-context";
 import { supabase } from "@/lib/supabase";
 import { useStatus } from "@powersync/react-native";
 import { formatRelativeTime } from "@/utils/format-date";
+import * as Application from "expo-application";
+import * as Linking from "expo-linking";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import {
+  FEEDBACK_EMAIL,
+  feedbackTemplates,
+} from "@/constants/feedback-templates";
 import {
   Alert,
   Pressable,
@@ -18,6 +23,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const options = { headerShown: false };
@@ -117,27 +123,9 @@ function createStyles(theme: Theme) {
       borderRadius: 10,
       overflow: "hidden",
     },
-    avatar: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: theme.colors.primaryContainer,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    avatarText: {
-      ...typography.labelMedium,
-      color: theme.colors.onPrimaryContainer,
-    },
-    profileName: {
-      ...typography.bodyMedium,
-      fontWeight: "600",
-      color: theme.colors.onSurface,
-    },
     profileEmail: {
-      ...typography.bodySmall,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: spacing.xs,
+      ...typography.bodyMedium,
+      color: theme.colors.onSurface,
     },
   });
 }
@@ -153,7 +141,6 @@ export default function SettingsScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
-  const { profile } = useAuthContext();
   const preference = useThemeStore((s) => s.preference);
   const setThemePreference = useThemeStore((s) => s.setThemePreference);
   const status = useStatus();
@@ -167,15 +154,15 @@ export default function SettingsScreen() {
     status.dataFlowStatus?.uploadError != null;
   const lastSyncedAt = status.lastSyncedAt;
 
-  const userName = (profile?.name as string) ?? "User";
-  const userEmail = (profile?.email as string) ?? "user@example.com";
-  const userInitials =
-    userName
-      .split(" ")
-      .map((w: string) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "U";
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -195,11 +182,12 @@ export default function SettingsScreen() {
         <Text style={styles.sectionLabel}>Account</Text>
         <View style={styles.card}>
           <View style={styles.row}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{userInitials}</Text>
-            </View>
+            <Ionicons
+              name="person-outline"
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
             <View style={styles.rowContent}>
-              <Text style={styles.profileName}>{userName}</Text>
               <Text style={styles.profileEmail}>{userEmail}</Text>
             </View>
           </View>
@@ -259,27 +247,6 @@ export default function SettingsScreen() {
               />
             </View>
           </Pressable>
-          <SettingsRow
-            icon="notifications-outline"
-            label="Notifications"
-            subtitle="Daily digest · 8:00 AM"
-            styles={styles}
-            theme={theme}
-          />
-          <SettingsRow
-            icon="calendar-outline"
-            label="Weekly review day"
-            subtitle="Friday"
-            styles={styles}
-            theme={theme}
-          />
-          <SettingsRow
-            icon="time-outline"
-            label="Default due time"
-            subtitle="End of day · 5:00 PM"
-            styles={styles}
-            theme={theme}
-          />
         </View>
 
         {/* Data */}
@@ -348,13 +315,33 @@ export default function SettingsScreen() {
         {/* About */}
         <Text style={styles.sectionLabel}>About</Text>
         <View style={styles.card}>
-          <SettingsRow
-            icon="chatbubble-outline"
-            label="Send feedback"
-            subtitle="Report a bug or suggest a feature"
-            styles={styles}
-            theme={theme}
-          />
+          <Pressable
+            style={({ pressed }) => [
+              styles.row,
+              pressed && { opacity: theme.interaction.pressedOpacity },
+            ]}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            onPress={() => TrueSheet.present("feedback-picker")}
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <View style={styles.rowContent}>
+              <Text style={styles.rowLabel}>Send feedback</Text>
+              <Text style={styles.rowSubtitle}>
+                Report a bug or suggest a feature
+              </Text>
+            </View>
+            <View style={styles.rowRight}>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </View>
+          </Pressable>
           <View style={styles.row}>
             <Ionicons
               name="information-circle-outline"
@@ -365,7 +352,10 @@ export default function SettingsScreen() {
               <Text style={styles.rowLabel}>Version</Text>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.badgeText}>1.0.0 (42)</Text>
+              <Text style={styles.badgeText}>
+                {Application.nativeApplicationVersion ?? "?.?.?"} (
+                {Application.nativeBuildVersion ?? "?"})
+              </Text>
             </View>
           </View>
           <SettingsRow
@@ -401,6 +391,26 @@ export default function SettingsScreen() {
             onPress: () => setThemePreference("dark"),
           },
         ]}
+      />
+
+      <DropdownMenu
+        name="feedback-picker"
+        title="Send feedback"
+        showTrigger={false}
+        options={(
+          Object.entries(feedbackTemplates) as [
+            keyof typeof feedbackTemplates,
+            (typeof feedbackTemplates)[keyof typeof feedbackTemplates],
+          ][]
+        ).map(([, tpl]) => ({
+          icon: tpl.icon,
+          label: tpl.label,
+          onPress: () => {
+            Linking.openURL(
+              `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(tpl.body)}`,
+            );
+          },
+        }))}
       />
     </View>
   );
