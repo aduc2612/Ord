@@ -6,6 +6,8 @@ import { useThemeStore } from "@/store/theme-store";
 import type { ThemePreference } from "@/store/theme-store";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import { supabase } from "@/lib/supabase";
+import { useStatus } from "@powersync/react-native";
+import { formatRelativeTime } from "@/utils/format-date";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
@@ -88,6 +90,33 @@ function createStyles(theme: Theme) {
       borderRadius: 10,
       overflow: "hidden",
     },
+    errorBadge: {
+      ...typography.labelSmall,
+      backgroundColor: theme.colors.error,
+      color: theme.colors.onError,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: 10,
+      overflow: "hidden",
+    },
+    offlineBadge: {
+      ...typography.labelSmall,
+      backgroundColor: theme.colors.surfaceVariant,
+      color: theme.colors.onSurfaceVariant,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: 10,
+      overflow: "hidden",
+    },
+    syncingBadge: {
+      ...typography.labelSmall,
+      backgroundColor: theme.colors.warning,
+      color: theme.colors.onWarning,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: 10,
+      overflow: "hidden",
+    },
     avatar: {
       width: 36,
       height: 36,
@@ -127,6 +156,16 @@ export default function SettingsScreen() {
   const { profile } = useAuthContext();
   const preference = useThemeStore((s) => s.preference);
   const setThemePreference = useThemeStore((s) => s.setThemePreference);
+  const status = useStatus();
+
+  const isConnected = status.connected;
+  const hasSynced = status.hasSynced;
+  // const isSyncing =
+  //   status.dataFlowStatus?.downloading || status.dataFlowStatus?.uploading;
+  const hasError =
+    status.dataFlowStatus?.downloadError != null ||
+    status.dataFlowStatus?.uploadError != null;
+  const lastSyncedAt = status.lastSyncedAt;
 
   const userName = (profile?.name as string) ?? "User";
   const userEmail = (profile?.email as string) ?? "user@example.com";
@@ -248,16 +287,60 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <View style={styles.row}>
             <Ionicons
-              name="sync-outline"
+              name={
+                !isConnected
+                  ? "cloud-offline"
+                  : hasError && !hasSynced
+                    ? "cloud-offline"
+                    : hasSynced
+                      ? "checkmark-circle"
+                      : "sync"
+              }
               size={20}
-              color={theme.colors.onSurfaceVariant}
+              color={
+                !isConnected
+                  ? theme.colors.onSurfaceVariant
+                  : hasError && !hasSynced
+                    ? theme.colors.error
+                    : hasSynced
+                      ? theme.colors.success
+                      : theme.colors.onWarning
+              }
             />
             <View style={styles.rowContent}>
               <Text style={styles.rowLabel}>Sync status</Text>
-              <Text style={styles.rowSubtitle}>Last synced just now</Text>
+              <Text style={styles.rowSubtitle}>
+                {!isConnected
+                  ? "Offline · changes saved locally"
+                  : hasError && !hasSynced
+                    ? "Sync error · working offline"
+                    : hasSynced
+                      ? lastSyncedAt
+                        ? `Last synced ${formatRelativeTime(lastSyncedAt)}`
+                        : "Synced"
+                      : "Syncing your data…"}
+              </Text>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.syncedBadge}>Synced</Text>
+              <Text
+                style={
+                  !isConnected
+                    ? styles.offlineBadge
+                    : hasError && !hasSynced
+                      ? styles.errorBadge
+                      : hasSynced
+                        ? styles.syncedBadge
+                        : styles.syncingBadge
+                }
+              >
+                {!isConnected
+                  ? "Offline"
+                  : hasError && !hasSynced
+                    ? "Error"
+                    : hasSynced
+                      ? "Synced"
+                      : "Syncing…"}
+              </Text>
             </View>
           </View>
         </View>
