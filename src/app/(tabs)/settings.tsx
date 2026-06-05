@@ -171,7 +171,7 @@ export default function SettingsScreen() {
           styles.scrollContent,
           {
             paddingTop: insets.top + spacing.lg,
-            paddingBottom: insets.bottom + spacing.lg,
+            paddingBottom: insets.bottom + spacing.tabBar,
           },
         ]}
         showsVerticalScrollIndicator={false}

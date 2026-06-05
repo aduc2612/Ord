@@ -174,6 +174,7 @@ export const spacing = {
   xxl: 32,
   xxxl: 40,
   xxxxl: 48,
+  tabBar: 80,
 };
 
 // Border radius scale
