@@ -408,7 +408,7 @@ export default function SettingsScreen() {
           icon: tpl.icon,
           label: tpl.label,
           onPress: () => {
-            return Linking.openURL(
+            Linking.openURL(
               `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(tpl.body)}`,
             );
           },
