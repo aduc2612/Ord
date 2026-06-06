@@ -1,21 +1,22 @@
+import CustomTabBar from "@/components/custom-tab-bar";
 import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
   return (
-    <Tabs>
-      <Tabs.Screen name="index" options={{ headerShown: false }} />
-      {__DEV__ && (
-        <Tabs.Screen name="db-test" options={{ headerShown: false }} />
-      )}
-      <Tabs.Screen name="lists" options={{ headerShown: false }} />
-      <Tabs.Screen name="inbox" options={{ headerShown: false, href: null }} />
-      <Tabs.Screen name="tasks" options={{ headerShown: false, href: null }} />
-      <Tabs.Screen
-        name="projects"
-        options={{ headerShown: false, href: null }}
-      />
-      <Tabs.Screen name="review" options={{ headerShown: false }} />
-      <Tabs.Screen name="settings" options={{ headerShown: false }} />
+    <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
+      <Tabs.Screen name="index" />
+      {__DEV__ && <Tabs.Screen name="db-test" />}
+      <Tabs.Screen name="lists" />
+      <Tabs.Screen name="inbox" options={{ href: null }} />
+      <Tabs.Screen name="tasks" options={{ href: null }} />
+      <Tabs.Screen name="projects" options={{ href: null }} />
+      <Tabs.Screen name="completed-tasks" options={{ href: null }} />
+      <Tabs.Screen name="archived-projects" options={{ href: null }} />
+      <Tabs.Screen name="review" />
+      <Tabs.Screen name="settings" />
     </Tabs>
   );
 }

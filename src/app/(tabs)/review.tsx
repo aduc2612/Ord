@@ -75,7 +75,15 @@ export default function ReviewScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.content, { paddingTop: insets.top + spacing.lg }]}>
+      <View
+        style={[
+          styles.content,
+          {
+            paddingTop: insets.top + spacing.lg,
+            paddingBottom: insets.bottom + spacing.tabBar,
+          },
+        ]}
+      >
         <Text style={styles.header}>Review</Text>
         <View style={styles.centerArea}>
           <Text style={styles.lastReviewedText}>

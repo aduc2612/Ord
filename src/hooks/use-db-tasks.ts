@@ -158,6 +158,31 @@ export function useDbTasks() {
     [userId],
   );
 
+  const uncompleteTask = useCallback(
+    async (taskId: string) => {
+      if (!userId) {
+        Toast.show({ type: "error", text1: "No user ID available" });
+        return;
+      }
+      setLoading(true);
+      try {
+        await db
+          .update(tasks)
+          .set({
+            completedAt: null,
+            updatedAt: Date.now(),
+          })
+          .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+      } catch (e) {
+        console.error("uncompleteTask error:", e);
+        Toast.show({ type: "error", text1: "Failed to uncomplete task" });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId],
+  );
+
   const deleteTask = useCallback(
     async (taskId: string) => {
       if (!userId) {
@@ -203,6 +228,7 @@ export function useDbTasks() {
     insertTask,
     updateTask,
     completeTask,
+    uncompleteTask,
     deleteTask,
     deleteAllTasks,
   };

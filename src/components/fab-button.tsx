@@ -10,6 +10,7 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useCallback, useMemo } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import PromptModal from "./prompt-modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const FAB_CONFIGS: Record<
   FabType,
@@ -41,11 +42,11 @@ type FabButtonProps = {
   name: string;
 };
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsBottom: number) {
   return StyleSheet.create({
     fab: {
       position: "absolute",
-      bottom: theme.spacing.xxl,
+      bottom: theme.spacing.tabBar + theme.spacing.sm + insetsBottom,
       right: theme.spacing.lg,
       width: 56,
       height: 56,
@@ -60,7 +61,8 @@ function createStyles(theme: Theme) {
 
 export default function FabButton({ type, name }: FabButtonProps) {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.bottom);
 
   const { insertNote } = useDbNotes();
   const { insertProject } = useDbProjects();

@@ -1,16 +1,13 @@
 import { borderRadius, spacing, typography } from "@/constants/theme";
+import { useDbNotes } from "@/hooks/use-db-notes";
+import { useDbProjects } from "@/hooks/use-db-projects";
+import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-// TODO: Replace placeholder counts with real data from hooks
-const listItems = [
-  { id: "inbox", label: "Inbox", count: 15 },
-  { id: "projects", label: "Projects", count: 15 },
-  { id: "all-tasks", label: "All tasks", count: 15 },
-];
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -55,12 +52,47 @@ export default function ListsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const { taskList } = useDbTasks();
+  const { projectList } = useDbProjects();
+  const { noteList } = useDbNotes();
+
+  const listItems = useMemo(() => {
+    const activeTasks = taskList.filter((t) => t.completedAt === null).length;
+    const completedTasks = taskList.filter(
+      (t) => t.completedAt !== null,
+    ).length;
+    const activeProjects = projectList.filter(
+      (p) => p.isActive !== false,
+    ).length;
+    const archivedProjects = projectList.filter(
+      (p) => p.isActive === false,
+    ).length;
+    return [
+      { id: "inbox", label: "Inbox", count: noteList.length },
+      { id: "projects", label: "Projects", count: activeProjects },
+      { id: "tasks", label: "Tasks", count: activeTasks },
+      {
+        id: "completed",
+        label: "Completed",
+        count: completedTasks,
+      },
+      {
+        id: "archived",
+        label: "Archived",
+        count: archivedProjects,
+      },
+    ];
+  }, [taskList, projectList, noteList]);
+
   return (
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + spacing.lg },
+          {
+            paddingTop: insets.top + spacing.lg,
+            paddingBottom: insets.bottom + spacing.tabBar,
+          },
         ]}
       >
         <Text style={styles.header}>Lists</Text>
@@ -73,6 +105,12 @@ export default function ListsScreen() {
                 router.push("/(tabs)/inbox");
               } else if (item.id === "projects") {
                 router.push("/(tabs)/projects");
+              } else if (item.id === "tasks") {
+                router.push("/(tabs)/tasks");
+              } else if (item.id === "completed") {
+                router.push("/(tabs)/completed-tasks");
+              } else if (item.id === "archived") {
+                router.push("/(tabs)/archived-projects");
               }
             }}
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}

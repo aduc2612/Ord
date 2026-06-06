@@ -169,7 +169,10 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + spacing.lg },
+          {
+            paddingTop: insets.top + spacing.lg,
+            paddingBottom: insets.bottom + spacing.tabBar,
+          },
         ]}
       >
         <Text style={styles.header}>Home</Text>
