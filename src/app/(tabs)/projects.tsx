@@ -97,7 +97,7 @@ export default function ProjectsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom + spacing.tabBar }]}>
       <View
         style={[styles.headerWrapper, { paddingTop: insets.top + spacing.lg }]}
       >

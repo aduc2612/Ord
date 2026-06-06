@@ -63,7 +63,7 @@ export default function CompletedTasksScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom + spacing.tabBar }]}>
       <View
         style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
       >

@@ -375,7 +375,7 @@ export default function DbTestScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.tabBar }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Database Test</Text>
         <Text style={styles.userIdText}>User: {userId ?? "Not logged in"}</Text>

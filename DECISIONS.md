@@ -11,3 +11,7 @@ Throughout the project, to ensure touch targets meet the 48x48 dp accessibility 
 ## Tasks Screen Focus Handler — Preserve Reset-on-Return Behavior
 
 In `src/app/(tabs)/tasks.tsx`, the `useFocusEffect` block resets local filters and search query to defaults when the tab regains focus and no `pendingFilters` handoff is set. An AI flag suggested removing the `else` branch to preserve state across refocuses. This was rejected: resetting filters and search on normal tab return is the intended behavior. The current implementation is correct and should not be changed.
+
+## Padding bottom to avoid tab bar
+
+Every screen must have some kind of spacing.tabBar at the bottom to avoid the tab bar

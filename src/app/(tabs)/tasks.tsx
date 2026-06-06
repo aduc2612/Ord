@@ -206,7 +206,7 @@ export default function TasksScreen() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom + spacing.tabBar }]}>
       {/* Fixed header area: title + search + filter */}
       <View
         style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
