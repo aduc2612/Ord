@@ -5,9 +5,9 @@ import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTags } from "@/hooks/use-db-tags";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import ToastProvider from "@/providers/toast-provider";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -23,10 +23,8 @@ export type ChooserModalProps = {
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
-    container: {
-      backgroundColor: theme.colors.background,
-    },
     header: {
+      backgroundColor: theme.colors.background,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -60,6 +58,8 @@ function createStyles(theme: Theme) {
     },
     listContent: {
       paddingHorizontal: spacing.lg,
+      backgroundColor: theme.colors.background,
+      flexGrow: 1,
     },
     noneRow: {
       flexDirection: "row",
@@ -88,6 +88,7 @@ function createStyles(theme: Theme) {
     searchWrapper: {
       paddingHorizontal: spacing.lg,
       paddingBottom: spacing.md,
+      backgroundColor: theme.colors.background,
     },
   });
 }
