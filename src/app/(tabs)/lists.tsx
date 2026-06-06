@@ -1,8 +1,9 @@
 import { borderRadius, spacing, typography } from "@/constants/theme";
-import type { Theme } from "@/hooks/use-theme";
-import { useTheme } from "@/hooks/use-theme";
+import { useDbNotes } from "@/hooks/use-db-notes";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTasks } from "@/hooks/use-db-tasks";
+import type { Theme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -53,6 +54,7 @@ export default function ListsScreen() {
 
   const { taskList } = useDbTasks();
   const { projectList } = useDbProjects();
+  const { noteList } = useDbNotes();
 
   const listItems = useMemo(() => {
     const activeTasks = taskList.filter((t) => t.completedAt === null).length;
@@ -66,7 +68,7 @@ export default function ListsScreen() {
       (p) => p.isActive === false,
     ).length;
     return [
-      { id: "inbox", label: "Inbox", count: activeTasks },
+      { id: "inbox", label: "Inbox", count: noteList.length },
       { id: "projects", label: "Projects", count: activeProjects },
       { id: "tasks", label: "Tasks", count: activeTasks },
       {
@@ -80,7 +82,7 @@ export default function ListsScreen() {
         count: archivedProjects,
       },
     ];
-  }, [taskList, projectList]);
+  }, [taskList, projectList, noteList]);
 
   return (
     <View style={styles.container}>
@@ -106,9 +108,9 @@ export default function ListsScreen() {
               } else if (item.id === "tasks") {
                 router.push("/(tabs)/tasks");
               } else if (item.id === "completed") {
-                router.push("/(tabs)/completed");
+                router.push("/(tabs)/completed-tasks");
               } else if (item.id === "archived") {
-                router.push("/(tabs)/archived");
+                router.push("/(tabs)/archived-projects");
               }
             }}
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
