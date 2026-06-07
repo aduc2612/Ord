@@ -402,6 +402,7 @@ export default function ProjectDetailsSheet({
         ) : (
           <FlatList
             data={filteredTasks}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TaskItem
                 title={item.title}
