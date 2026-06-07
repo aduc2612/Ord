@@ -14,7 +14,10 @@
         "tinted": "./assets/images/ios-icon-tinted.png"
       },
       "infoPlist": {
-        "UIBackgroundModes": ["processing", "fetch"]
+        "UIBackgroundModes": [
+          "processing",
+          "fetch"
+        ]
       }
     },
     "android": {
@@ -32,6 +35,14 @@
       "favicon": "./assets/images/ios-icon-default.png"
     },
     "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "ord-mobile",
+          "organization": "duc-nguyen-oc"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
