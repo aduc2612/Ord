@@ -13,8 +13,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ArchivedProjectsScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.bottom, insets.top);
 
   const { projectList } = useDbProjects();
   const { taskList } = useDbTasks();
@@ -73,9 +73,7 @@ export default function ArchivedProjectsScreen() {
 
   return (
     <View style={styles.container}>
-      <View
-        style={[styles.headerWrapper, { paddingTop: insets.top + spacing.lg }]}
-      >
+      <View style={styles.headerWrapper}>
         <Text style={styles.header}>Archived Projects</Text>
       </View>
 
@@ -108,15 +106,17 @@ export default function ArchivedProjectsScreen() {
   );
 }
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsBottom: number, insetsTop: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingBottom: insetsBottom + spacing.tabBar,
     },
     headerWrapper: {
       paddingHorizontal: spacing.lg,
       marginBottom: spacing.lg,
+      paddingTop: insetsTop + spacing.lg,
     },
     searchWrapper: {
       paddingHorizontal: spacing.lg,

@@ -13,11 +13,12 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsBottom: number, insetsTop: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingBottom: insetsBottom + spacing.tabBar,
     },
     headerRow: {
       flexDirection: "row",
@@ -60,6 +61,7 @@ function createStyles(theme: Theme) {
     topSection: {
       gap: spacing.lg,
       paddingBottom: spacing.lg,
+      paddingTop: insetsTop + spacing.lg,
     },
     listContent: {
       paddingBottom: spacing.lg,
@@ -70,8 +72,8 @@ function createStyles(theme: Theme) {
 export default function InboxScreen() {
   const { noteList, ready } = useDbNotes();
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.bottom, insets.top);
   const [searchQuery, setSearchQuery] = useState("");
   const [clarifyNoteId, setClarifyNoteId] = useState("");
   const [clarifyQueue, setClarifyQueue] = useState<string[]>([]);
@@ -133,9 +135,7 @@ export default function InboxScreen() {
   );
   return (
     <View style={styles.container}>
-      <View
-        style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
-      >
+      <View style={styles.topSection}>
         <View style={styles.headerRow}>
           <Text style={styles.header}>Inbox</Text>
           <Pressable
