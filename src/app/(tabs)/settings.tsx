@@ -1,20 +1,21 @@
 import DropdownMenu from "@/components/dropdown-menu";
-import { spacing, typography } from "@/constants/theme";
-import type { Theme } from "@/hooks/use-theme";
-import { useTheme } from "@/hooks/use-theme";
-import { useThemeStore } from "@/store/theme-store";
-import type { ThemePreference } from "@/store/theme-store";
-import { supabase } from "@/lib/supabase";
-import { useStatus } from "@powersync/react-native";
-import { formatRelativeTime } from "@/utils/format-date";
-import * as Application from "expo-application";
-import * as Linking from "expo-linking";
-import { Ionicons } from "@expo/vector-icons";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   FEEDBACK_EMAIL,
   feedbackTemplates,
 } from "@/constants/feedback-templates";
+import { spacing, typography } from "@/constants/theme";
+import type { Theme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
+import { supabase } from "@/lib/supabase";
+import type { ThemePreference } from "@/store/theme-store";
+import { useThemeStore } from "@/store/theme-store";
+import { formatRelativeTime } from "@/utils/format-date";
+import { Ionicons } from "@expo/vector-icons";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useStatus } from "@powersync/react-native";
+import * as Application from "expo-application";
+import * as Linking from "expo-linking";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -23,7 +24,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const options = { headerShown: false };
@@ -407,8 +407,8 @@ export default function SettingsScreen() {
         ).map(([, tpl]) => ({
           icon: tpl.icon,
           label: tpl.label,
-          onPress: () => {
-            return Linking.openURL(
+          onPress: async () => {
+            await Linking.openURL(
               `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(tpl.body)}`,
             );
           },
