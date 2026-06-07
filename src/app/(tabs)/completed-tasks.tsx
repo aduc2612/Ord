@@ -83,7 +83,7 @@ export default function CompletedTasksScreen() {
         data={sortedTasks}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: spacing.lg }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.tabBar }}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No completed tasks found</Text>
         }

@@ -158,7 +158,7 @@ export default function InboxScreen() {
         data={filteredNotes}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.tabBar }]}
         ListEmptyComponent={
           ready ? <Text style={styles.emptyText}>No notes found</Text> : null
         }

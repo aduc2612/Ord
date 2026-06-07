@@ -118,7 +118,7 @@ export default function ProjectsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingHorizontal: spacing.lg,
-          paddingBottom: spacing.lg,
+          paddingBottom: insets.bottom + spacing.tabBar,
         }}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No projects found</Text>

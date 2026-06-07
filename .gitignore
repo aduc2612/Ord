@@ -52,3 +52,7 @@ powersync-pass
 # IDE / Tooling
 .claude/
 .remember/
+
+.agents\chain-runs
+context.md
+plan.md

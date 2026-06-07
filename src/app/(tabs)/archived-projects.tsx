@@ -93,7 +93,7 @@ export default function ArchivedProjectsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingHorizontal: spacing.lg,
-          paddingBottom: spacing.lg,
+          paddingBottom: insets.bottom + spacing.tabBar,
         }}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No archived projects found</Text>

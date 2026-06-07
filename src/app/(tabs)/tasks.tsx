@@ -247,7 +247,7 @@ export default function TasksScreen() {
         data={filteredTasks}
         renderItem={renderItem}
         keyExtractor={(item: Task) => item.id}
-        contentContainerStyle={{ paddingBottom: spacing.lg }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.tabBar }}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No tasks found</Text>
         }

@@ -1,0 +1,50 @@
+{
+  "subagents": {
+    "agentOverrides": {
+      "scout": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "thinking": "high",
+        "fallbackModels": ["opencode-go/mimo-v2.5"]
+      },
+      "researcher": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "thinking": "high",
+        "fallbackModels": ["opencode-go/mimo-v2.5"]
+      },
+      "planner": {
+        "model": "opencode-go/mimo-v2.5-pro",
+        "thinking": "high",
+        "fallbackModels": [
+          "opencode-go/qwen3.7-plus",
+          "opencode-go/deepseek-v4-pro"
+        ]
+      },
+      "worker": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "thinking": "high",
+        "fallbackModels": ["opencode-go/mimo-v2.5"]
+      },
+      "reviewer": {
+        "model": "opencode-go/qwen3.7-plus",
+        "thinking": "high",
+        "fallbackModels": [
+          "opencode-go/deepseek-v4-pro",
+          "opencode-go/qwen3.6-plus"
+        ]
+      },
+      "context-builder": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "thinking": "high",
+        "fallbackModels": ["opencode-go/mimo-v2.5"]
+      },
+      "oracle": {
+        "model": "opencode-go/deepseek-v4-pro",
+        "thinking": "high",
+        "fallbackModels": [
+          "opencode-go/qwen3.7-plus",
+          "opencode-go/mimo-v2.5-pro"
+        ]
+      }
+    }
+  }
+}
