@@ -22,6 +22,7 @@
     "@react-native-community/netinfo": "12.0.1",
     "@react-navigation/native": "^7.2.5",
     "@react-oauth/google": "^0.13.5",
+    "@sentry/react-native": "~7.11.0",
     "@shopify/flash-list": "2.0.2",
     "@supabase/supabase-js": "^2.105.4",
     "drizzle-orm": "^0.45.2",
