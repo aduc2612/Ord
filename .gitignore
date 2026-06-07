@@ -52,3 +52,9 @@ powersync-pass
 # IDE / Tooling
 .claude/
 .remember/
+.pi/
+
+# Planning artifacts
+context.md
+plan.md
+nul

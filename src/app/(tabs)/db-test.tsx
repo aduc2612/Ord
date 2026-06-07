@@ -24,11 +24,13 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsTop: number, insetsBottom: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingTop: insetsTop,
+      paddingBottom: insetsBottom + spacing.tabBar,
     },
     header: {
       padding: spacing.lg,
@@ -281,8 +283,8 @@ function TaskItem({
 
 export default function DbTestScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.top, insets.bottom);
   const { claims } = useAuthContext();
   const userId = claims?.sub as string | undefined;
 
@@ -375,7 +377,7 @@ export default function DbTestScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Database Test</Text>
         <Text style={styles.userIdText}>User: {userId ?? "Not logged in"}</Text>
