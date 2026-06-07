@@ -127,6 +127,66 @@
       "skillPath": "skills/requesting-code-review/SKILL.md",
       "computedHash": "874f3786b05007a8b4a60452a4cd89b9917c645d34b6b1e40ea05037d12f0e67"
     },
+    "sentry-code-review": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-code-review/SKILL.md",
+      "computedHash": "5f7d4418a3010e3033af6663fadb859a75d8b8446bf598103f0f5c14b56118f2"
+    },
+    "sentry-create-alert": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-create-alert/SKILL.md",
+      "computedHash": "db9114eb711176051edf942474672f85d59b4b50cad12a29a566292e57d7b7c4"
+    },
+    "sentry-feature-setup": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-feature-setup/SKILL.md",
+      "computedHash": "83227ede9028b8b0b8fc48830e815576aba661edd45a011148fb5f817187a12e"
+    },
+    "sentry-instrumentation-guide": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-instrumentation-guide/SKILL.md",
+      "computedHash": "d475a29003e314bb8a753913753628991bb26a62477fdd4b592cef0da1a42589"
+    },
+    "sentry-pr-code-review": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-pr-code-review/SKILL.md",
+      "computedHash": "fa7f6a970e26ffdea45ee3be3aa0db3c701e5c4beb534eb033c67e7a8a3adcd6"
+    },
+    "sentry-sdk-setup": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-sdk-setup/SKILL.md",
+      "computedHash": "8f0e776ddd62b1f15a2a28d1cc37d2e6628925f3f28ad5d2156040f8107b6d1a"
+    },
+    "sentry-sdk-upgrade": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-sdk-upgrade/SKILL.md",
+      "computedHash": "6733ffde5be0edd08988f4c47383fe399999c5a595f537b4a071aae5472df72c"
+    },
+    "sentry-setup-ai-monitoring": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-setup-ai-monitoring/SKILL.md",
+      "computedHash": "d73cc1844261d704e6a385fb937e58c66bc2d88f05d3cc2f807edc7c465dc80c"
+    },
+    "sentry-span-streaming": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-span-streaming/SKILL.md",
+      "computedHash": "1d3efb015102365c7ea55f138e6a84497fc9065b84169dc70ed7ca3f6a7d1158"
+    },
+    "sentry-workflow": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-workflow/SKILL.md",
+      "computedHash": "3384bbf87660a1e633ad72e56f0fb520c4d93956e41eb4ef8d70187a29955fb8"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
