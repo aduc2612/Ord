@@ -56,7 +56,7 @@ export default function CaptureScreen() {
       <OnboardingHeader onNext={handleNext} nextDisabled={!text.trim()} />
       <View style={styles.content}>
         <Text style={styles.title}>
-          What's one thing on your mind right now?
+          {"What's one thing on your mind right now?"}
         </Text>
         <TextInput
           style={styles.input}

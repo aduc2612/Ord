@@ -18,13 +18,14 @@ function RootNavigator() {
   const theme = useTheme();
   const onboardingComplete = useOnboardingStore((s) => s.onboardingComplete);
   const resetOnboarding = useOnboardingStore((s) => s.resetOnboarding);
+  const isHydrated = useOnboardingStore((s) => s._hydrated);
 
   // Reset onboarding state when user signs out (not during initial load)
   useEffect(() => {
-    if (!isLoggedIn && !isLoading) {
+    if (!isLoggedIn && !isLoading && isHydrated) {
       resetOnboarding();
     }
-  }, [isLoggedIn, isLoading, resetOnboarding]);
+  }, [isLoggedIn, isLoading, isHydrated, resetOnboarding]);
 
   return (
     <Stack

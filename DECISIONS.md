@@ -14,4 +14,4 @@ In `src/app/(tabs)/tasks.tsx`, the `useFocusEffect` block resets local filters a
 
 ## Padding bottom to avoid tab bar
 
-Every screen must have some kind of spacing.tabBar at the bottom to avoid the tab bar
+All tab-routed screens should include spacing.tabBar at the bottom to avoid the tab bar. This applies only to pages rendered inside the bottom-tab navigator, not standalone flows like auth or onboarding.

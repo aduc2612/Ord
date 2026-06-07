@@ -3,15 +3,15 @@ import FilterSheet, { type FilterSelections } from "@/components/filter-sheet";
 import TaskDetailsSheet from "@/components/task-details-sheet";
 import TaskItem from "@/components/task-item";
 import { borderRadius, spacing, typography } from "@/constants/theme";
+import { useCurrentTime } from "@/hooks/use-current-time";
 import { useDbProjects } from "@/hooks/use-db-projects";
 import { useDbTaskTags } from "@/hooks/use-db-task-tags";
 import { useDbTasks } from "@/hooks/use-db-tasks";
-import { useCurrentTime } from "@/hooks/use-current-time";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
+import ToastProvider from "@/providers/toast-provider";
 import { Ionicons } from "@expo/vector-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import ToastProvider from "@/providers/toast-provider";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   FlatList,
@@ -79,7 +79,6 @@ function createStyles(theme: Theme) {
       gap: spacing.sm,
       paddingHorizontal: spacing.lg,
       backgroundColor: theme.colors.background,
-      flex: 1,
     },
     emptyState: {
       ...typography.bodyMedium,

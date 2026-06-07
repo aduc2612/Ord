@@ -12,8 +12,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CompletedTasksScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.bottom, insets.top);
 
   const { taskList, uncompleteTask } = useDbTasks();
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,15 +63,8 @@ export default function CompletedTasksScreen() {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingBottom: insets.bottom + spacing.tabBar },
-      ]}
-    >
-      <View
-        style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
-      >
+    <View style={styles.container}>
+      <View style={styles.topSection}>
         <View style={styles.headerWrapper}>
           <Text style={styles.header}>Completed</Text>
         </View>
@@ -97,11 +90,12 @@ export default function CompletedTasksScreen() {
   );
 }
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsBottom: number, insetsTop: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingBottom: insetsBottom + spacing.tabBar,
     },
     header: {
       ...typography.headlineLarge,
@@ -113,6 +107,7 @@ function createStyles(theme: Theme) {
     topSection: {
       gap: spacing.lg,
       marginBottom: spacing.lg,
+      paddingTop: insetsTop + spacing.lg,
     },
     searchWrapper: {
       paddingHorizontal: spacing.lg,

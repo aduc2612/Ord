@@ -29,7 +29,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
       onboardingComplete: false,
       _hydrated: false,
 
-      setStep: (step) => set({ currentStep: step }),
+      setStep: (step) => set({ currentStep: Math.max(0, Math.min(4, step)) as OnboardingStep }),
       setCapturedNote: (text) => set({ capturedNoteText: text }),
       setCreatedTaskTitle: (title) => set({ createdTaskTitle: title }),
       completeOnboarding: () => set({ onboardingComplete: true }),
@@ -49,7 +49,10 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         const { _hydrated, ...rest } = state;
         return rest;
       },
-      onRehydrateStorage: () => () => {
+      onRehydrateStorage: () => (state) => {
+        if (state && (state.currentStep < 0 || state.currentStep > 4)) {
+          useOnboardingStore.setState({ currentStep: 0 });
+        }
         useOnboardingStore.setState({ _hydrated: true });
       },
     },

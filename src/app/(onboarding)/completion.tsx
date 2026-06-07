@@ -8,11 +8,12 @@ import { useCallback, useEffect } from "react";
 import { BackHandler, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsTop: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingTop: insetsTop,
     },
     content: {
       flex: 1,
@@ -30,8 +31,8 @@ function createStyles(theme: Theme) {
 
 export default function CompletionScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.top);
   const router = useRouter();
 
   const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
@@ -53,7 +54,7 @@ export default function CompletionScreen() {
   }, []);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <OnboardingHeader onNext={handleDone} nextLabel="Done" />
       <View style={styles.content}>
         <Text style={styles.message}>Your system is ready.</Text>

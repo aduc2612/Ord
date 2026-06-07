@@ -12,15 +12,17 @@ import { useCallback, useMemo, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsTop: number, insetsBottom: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingBottom: insetsBottom + spacing.tabBar,
     },
     headerWrapper: {
       paddingHorizontal: spacing.lg,
       marginBottom: spacing.lg,
+      paddingTop: insetsTop + spacing.lg,
     },
     searchWrapper: {
       paddingHorizontal: spacing.lg,
@@ -41,8 +43,8 @@ function createStyles(theme: Theme) {
 
 export default function ProjectsScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.top, insets.bottom);
 
   const { projectList } = useDbProjects();
   const { taskList } = useDbTasks();
@@ -97,10 +99,8 @@ export default function ProjectsScreen() {
   );
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + spacing.tabBar }]}>
-      <View
-        style={[styles.headerWrapper, { paddingTop: insets.top + spacing.lg }]}
-      >
+    <View style={styles.container}>
+      <View style={styles.headerWrapper}>
         <Text style={styles.header}>Projects</Text>
       </View>
 

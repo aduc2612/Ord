@@ -28,11 +28,12 @@ const DEFAULT_FILTERS: FilterSelections = {
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsTop: number, insetsBottom: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingBottom: insetsBottom + spacing.tabBar,
     },
     header: {
       ...typography.headlineLarge,
@@ -44,6 +45,7 @@ function createStyles(theme: Theme) {
     topSection: {
       gap: spacing.lg,
       marginBottom: spacing.lg,
+      paddingTop: insetsTop + spacing.lg,
     },
     searchWrapper: {
       paddingHorizontal: spacing.lg,
@@ -87,8 +89,8 @@ function createStyles(theme: Theme) {
 
 export default function TasksScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.top, insets.bottom);
 
   const clearPendingFilters = usePendingFiltersStore(
     (s) => s.clearPendingFilters,
@@ -206,11 +208,9 @@ export default function TasksScreen() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + spacing.tabBar }]}>
+    <View style={styles.container}>
       {/* Fixed header area: title + search + filter */}
-      <View
-        style={[styles.topSection, { paddingTop: insets.top + spacing.lg }]}
-      >
+      <View style={styles.topSection}>
         <View style={styles.headerWrapper}>
           <Text style={styles.header}>Tasks</Text>
         </View>

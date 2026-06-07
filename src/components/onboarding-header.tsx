@@ -65,7 +65,7 @@ export default function OnboardingHeader({
   const styles = createStyles(theme);
   const currentStep = useOnboardingStore((s) => s.currentStep);
 
-  const progress = ((currentStep + 1) / 5) * 100;
+  const progress = Math.max(0, Math.min(100, ((currentStep + 1) / 5) * 100));
 
   return (
     <View style={styles.container}>

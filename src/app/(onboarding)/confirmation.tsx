@@ -7,11 +7,12 @@ import { useCallback } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, insetsTop: number) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingTop: insetsTop,
     },
     content: {
       flex: 1,
@@ -24,7 +25,7 @@ function createStyles(theme: Theme) {
       ...typography.bodyLarge,
       color: theme.colors.onBackground,
       // textAlign: "center",
-      lineHeight: 28,
+      lineHeight: typography.titleLarge.lineHeight,
     },
     subtitle: {
       ...typography.bodyMedium,
@@ -32,15 +33,15 @@ function createStyles(theme: Theme) {
       textAlign: "center",
     },
     boldText: {
-      fontWeight: "700",
+      fontWeight: typography.titleMedium.fontWeight,
     },
   });
 }
 
 export default function ConfirmationScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
   const insets = useSafeAreaInsets();
+  const styles = createStyles(theme, insets.top);
   const setStep = useOnboardingStore((s) => s.setStep);
   const createdTaskTitle = useOnboardingStore((s) => s.createdTaskTitle);
 
@@ -49,7 +50,7 @@ export default function ConfirmationScreen() {
   }, [setStep]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <OnboardingHeader onNext={handleNext} />
       <View style={styles.content}>
         <Text style={styles.quote}>

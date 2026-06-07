@@ -407,8 +407,8 @@ export default function SettingsScreen() {
         ).map(([, tpl]) => ({
           icon: tpl.icon,
           label: tpl.label,
-          onPress: () => {
-            Linking.openURL(
+          onPress: async () => {
+            await Linking.openURL(
               `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(tpl.body)}`,
             );
           },

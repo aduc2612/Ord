@@ -3,18 +3,17 @@ import OnboardingHeader from "@/components/onboarding-header";
 import SegmentedControl from "@/components/segmented-control";
 import TaskMetaChooser from "@/components/task-meta-chooser";
 import { borderRadius, spacing, typography } from "@/constants/theme";
-import { useDbTaskTags } from "@/hooks/use-db-task-tags";
-import { useDbTasks } from "@/hooks/use-db-tasks";
 import type { Theme } from "@/hooks/use-theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useOnboardingStore } from "@/store/onboarding-store";
+import type { PrimaryAction, SecondaryAction } from "@/types/onboarding";
+import { useClarifyWorkflow } from "@/hooks/use-clarify-workflow";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import DateTimePicker, {
   type DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
-  Keyboard,
   Platform,
   ScrollView,
   StyleSheet,
@@ -23,10 +22,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
-
-type PrimaryAction = "" | "someday" | "actionable";
-type SecondaryAction = "" | "done_2min" | "delegate" | "defer";
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
@@ -83,11 +78,6 @@ export default function ClarifyScreen() {
   const insets = useSafeAreaInsets();
 
   const capturedNoteText = useOnboardingStore((s) => s.capturedNoteText);
-  const setCreatedTaskTitle = useOnboardingStore((s) => s.setCreatedTaskTitle);
-  const setStep = useOnboardingStore((s) => s.setStep);
-
-  const { insertTask } = useDbTasks();
-  const { addTagToTask } = useDbTaskTags();
 
   const [primaryAction, setPrimaryAction] = useState<PrimaryAction>("");
   const [secondaryAction, setSecondaryAction] = useState<SecondaryAction>("");
@@ -98,78 +88,8 @@ export default function ClarifyScreen() {
   );
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const isSavingRef = useRef(false);
 
-  const handleNext = useCallback(async () => {
-    if (!primaryAction) {
-      Toast.show({ type: "warning", text1: "Please select an action" });
-      return;
-    }
-
-    if (primaryAction === "actionable") {
-      if (!secondaryAction) {
-        Toast.show({ type: "warning", text1: "Please select a sub-action" });
-        return;
-      }
-      if (!actionText.trim()) {
-        Toast.show({ type: "warning", text1: "Please enter a next action" });
-        return;
-      }
-    }
-
-    if (isSavingRef.current) return;
-    isSavingRef.current = true;
-
-    try {
-      let taskId: string | undefined;
-      let title: string;
-
-      if (primaryAction === "someday") {
-        title = capturedNoteText;
-        taskId = await insertTask({ category: "someday", title });
-      } else if (primaryAction === "actionable") {
-        title = actionText.trim();
-        if (secondaryAction === "done_2min") {
-          taskId = await insertTask({ category: "next_action", title });
-        } else if (secondaryAction === "delegate") {
-          taskId = await insertTask({
-            category: "waiting_for",
-            title,
-            projectId: selectedProjectId,
-            dueDate: dueDate?.getTime() ?? null,
-          });
-        } else if (secondaryAction === "defer") {
-          taskId = await insertTask({
-            category: "next_action",
-            title,
-            projectId: selectedProjectId,
-            dueDate: dueDate?.getTime() ?? null,
-          });
-        }
-      }
-
-      if (!taskId) {
-        Toast.show({ type: "error", text1: "Failed to create task" });
-        return;
-      }
-
-      if (selectedTagIds.length > 0) {
-        await Promise.all(
-          selectedTagIds.map((tagId) => addTagToTask(taskId!, tagId)),
-        );
-      }
-
-      setCreatedTaskTitle(
-        primaryAction === "someday" ? capturedNoteText : actionText.trim(),
-      );
-      Keyboard.dismiss();
-      setStep(3);
-    } catch {
-      Toast.show({ type: "error", text1: "An error occurred" });
-    } finally {
-      isSavingRef.current = false;
-    }
-  }, [
+  const { handleNext } = useClarifyWorkflow({
     primaryAction,
     secondaryAction,
     actionText,
@@ -177,11 +97,7 @@ export default function ClarifyScreen() {
     selectedTagIds,
     selectedProjectId,
     dueDate,
-    insertTask,
-    addTagToTask,
-    setCreatedTaskTitle,
-    setStep,
-  ]);
+  });
 
   const handlePrimarySelect = useCallback((value: string) => {
     setPrimaryAction(value as PrimaryAction);
